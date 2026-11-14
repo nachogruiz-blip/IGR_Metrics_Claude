@@ -1,0 +1,255 @@
+\chapter{La derivada de Malliavin}\label{cap:derivada}
+
+\begin{panorama}
+Definimos la derivada $D$ en las variables suaves, probamos la fórmula de integración por
+partes fundamental, la cerrabilidad de $D$ y construimos los espacios de Sobolev--Watanabe
+$\D^{k,p}$. Establecemos la regla de la cadena, la expresión de $D$ en el caos de Wiener (incluida
+la fórmula de Stroock) y calculamos la derivada de funcionales típicos: integrales de
+Wiener, el supremo del browniano y esperanzas condicionales.
+\end{panorama}
+
+Trabajamos con un proceso isonormal $W$ sobre $\Hf$, y $\F=\sigma(W)$.
+
+\section{Definición en las variables suaves}
+
+\begin{definicion}
+Para $F=f(W(h_1),\dots,W(h_n))\in\Sc$, la \emph{derivada de Malliavin} es la variable
+con valores en $\Hf$
+\[
+  DF=\sum_{i=1}^n\partial_if\big(W(h_1),\dots,W(h_n)\big)\,h_i.
+\]
+\end{definicion}
+
+Es fácil ver que $DF$ no depende de la representación de $F$ (si $F$ admite dos representaciones,
+se reducen a una común con $h_i$ linealmente independientes). En el espacio de Wiener clásico,
+$\Hf=L^2([0,T])$, $DF$ es un proceso $(D_tF)_{t\in[0,T]}$ y
+\[
+  \ip{DF}{\dot h}_{L^2}=\int_0^TD_tF\,\dot h(t)\,\dd t=\frac{\dd}{\dd\varepsilon}F(\omega+\varepsilon h)\Big|_{\varepsilon=0},\qquad h=\textstyle\int_0^\cdot\dot h,
+\]
+pues $W(g)(\omega+\varepsilon h)=W(g)(\omega)+\varepsilon\ip{g}{\dot h}$. Es la \emph{derivada de Fréchet en las direcciones de
+Cameron--Martin}.
+
+\begin{ejemplo}
+\begin{enumerate}[label=(\alph*)]
+  \item $DW(h)=h$. En particular $D_tW_s=\ind_{[0,s]}(t)$.
+  \item $D_t(W_s^2)=2W_s\ind_{[0,s]}(t)$; $D_t\int_0^TW_s\,\dd s=T-t$.
+  \item $D\,e^{W(h)}=e^{W(h)}h$.
+\end{enumerate}
+\end{ejemplo}
+
+\begin{intuicion}
+$D_tF$ mide cuánto cambia $F$ cuando se perturba el ruido \emph{en el instante $t$}: es la respuesta
+de $F$ a un ``impulso'' $\delta_t$ en $\dot W$. Por ejemplo, $W_s$ responde con 1 a impulsos anteriores a $s$
+y con 0 a impulsos posteriores. Si $F$ es la solución de una EDE en el instante $T$, $D_tX_T$
+es la propagación de una perturbación desde $t$ hasta $T$ (Capítulo~\ref{cap:hormander}).
+\end{intuicion}
+
+\section{Integración por partes y cerrabilidad}
+
+\begin{lema}[Integración por partes fundamental]\label{lem:ibp}
+Para $F\in\Sc$ y $h\in\Hf$,
+\[
+  \E\ip{DF}{h}_\Hf=\E\big[F\,W(h)\big].
+\]
+\end{lema}
+
+\begin{proof}
+Por homogeneidad podemos suponer $\norm{h}=1$, y podemos escribir $F=
+f(W(e_1),\dots,W(e_n))$ con $\{e_i\}$ ortonormales y $e_1=h$. Entonces $(W(e_1),\dots,W(e_n))\sim N(0,I_n)$
+y, por el Lema~\ref{lem:stein},
+\[
+  \E\ip{DF}{h}=\E[\partial_1f(W(e))]=\int_{\R^n}\partial_1f(x)\phi_n(x)\,\dd x=\int_{\R^n}f(x)x_1\phi_n(x)\,\dd x=\E[FW(e_1)].
+  \qedhere
+\]
+\end{proof}
+
+\begin{lema}\label{lem:ibp2}
+Para $F,G\in\Sc$ y $h\in\Hf$, $\E\big[G\ip{DF}{h}\big]=\E\big[-F\ip{DG}{h}+FGW(h)\big]$.
+\end{lema}
+
+\begin{proof}
+Aplicar el Lema~\ref{lem:ibp} a $FG$ y usar la regla de Leibniz $D(FG)=F\,DG+G\,DF$,
+obvia en $\Sc$.
+\end{proof}
+
+\begin{proposicion}[Cerrabilidad]\label{prop:cerrabilidad}
+Para $p\ge1$, el operador $D:\Sc\subset L^p(\Omega)\to L^p(\Omega;\Hf)$ es
+cerrable.
+\end{proposicion}
+
+\begin{proof}
+Sea $F_n\in\Sc$ con $F_n\to0$ en $L^p$ y $DF_n\to\eta$ en $L^p(\Omega;\Hf)$. Hay que ver $\eta=0$. Sea
+$G\in\Sc$ tal que $GW(h)$ esté acotada (por ejemplo $G=g\,e^{-\varepsilon W(h)^2}$ con $g\in\Sc_b$). Por el Lema~\ref{lem:ibp2},
+\[
+  \E\big[G\ip{\eta}{h}\big]=\lim_n\E\big[G\ip{DF_n}{h}\big]=\lim_n\E\big[-F_n\ip{DG}{h}+F_nGW(h)\big]=0,
+\]
+porque $\ip{DG}{h}$ y $GW(h)$ están acotadas. Tales $G$ son densas en $L^q$ (tomando $\varepsilon\to0$), luego
+$\ip{\eta}{h}=0$ c.s.\ para todo $h$ de un subconjunto numerable denso, y $\eta=0$.
+\end{proof}
+
+\section{Espacios de Sobolev--Watanabe}
+
+\begin{definicion}
+Para $p\ge1$, $\D^{1,p}$ es el dominio de la clausura de $D$ en $L^p$, es decir, la
+compleción de $\Sc$ respecto a
+\[
+  \norm{F}_{1,p}=\big(\E\abs{F}^p+\E\norm{DF}_\Hf^p\big)^{1/p}.
+\]
+Iterando, $D^kF$ es una variable con valores en $\Hf^{\otimes k}$, y $\D^{k,p}$ es la compleción con $\norm{F}_{k,p}^p=
+\E\abs{F}^p+\sum_{j=1}^k\E\norm{D^jF}^p_{\Hf^{\otimes j}}$. Se definen análogamente $\D^{k,p}(V)$ para $V$-valuadas, con $V$ un
+Hilbert, y
+\[
+  \D^\infty=\bigcap_{k,p}\D^{k,p}.
+\]
+\end{definicion}
+
+$\D^{1,2}$ es un espacio de Hilbert. Se tiene $\D^{k,p}\subset\D^{k',p'}$ si $k\ge k'$, $p\ge p'$. Los elementos de $\D^\infty$
+son los ``funcionales suaves de Wiener''. Veremos que, gracias a las desigualdades de Meyer, $\D^{k,p}$
+coincide con el dominio de $(I-L)^{k/2}$ en $L^p$.
+
+\section{Regla de la cadena}
+
+\begin{proposicion}[Regla de la cadena]\label{prop:cadena}
+Sea $\varphi\in C^1(\R^m)$ con derivadas parciales acotadas y
+$F=(F^1,\dots,F^m)$ con $F^i\in\D^{1,p}$. Entonces $\varphi(F)\in\D^{1,p}$ y
+\[
+  D\varphi(F)=\sum_{i=1}^m\partial_i\varphi(F)\,DF^i.
+\]
+Si solo se supone $\varphi$ globalmente Lipschitz y $p>1$, entonces $\varphi(F)\in\D^{1,p}$ y existe un vector aleatorio
+$G$ con $\abs{G}\le\norm{\varphi}_{\mathrm{Lip}}$ tal que $D\varphi(F)=\sum_iG_iDF^i$. Si además la ley de $F$ es absolutamente
+continua, $G=\nabla\varphi(F)$.
+\end{proposicion}
+
+\begin{proof}
+Para $F^i\in\Sc$ y $\varphi\in C_b^1$ es la regla de la cadena clásica. En general se aproxima
+$F^i$ por $F^i_n\in\Sc$ en $\D^{1,p}$; entonces $\varphi(F_n)\to\varphi(F)$ en $L^p$ y $\sum\partial_i\varphi(F_n)DF^i_n\to\sum\partial_i\varphi(F)DF^i$ en
+$L^p(\Hf)$ (convergencia dominada sobre una subsucesión con convergencia c.s.); por cerrabilidad,
+se concluye. Para $\varphi$ Lipschitz, se regulariza $\varphi_\varepsilon=\varphi*\rho_\varepsilon$; la sucesión $D\varphi_\varepsilon(F)$ está acotada en
+$L^p(\Hf)$, que es reflexivo para $p>1$, y un límite débil identifica la derivada.
+\end{proof}
+
+\begin{ejemplo}
+Si $F\in\D^{1,2}$, entonces $\abs{F}\in\D^{1,2}$ y $D\abs{F}=\sgn(F)DF$; $F^+\in\D^{1,2}$ y $DF^+=
+\ind_{\{F>0\}}DF$.
+\end{ejemplo}
+
+\begin{ejemplo}[Una variable no derivable]\label{ej:no-derivable}
+$F=\ind_{\{W(h)>0\}}\notin\D^{1,2}$ si $h\ne0$. Si lo fuera, por
+localidad (Proposición~\ref{prop:localidad}), $DF=0$ c.s.\ en $\{F=0\}\cup\{F=1\}=\Omega$, y por el Corolario~\ref{cor:constante},
+$F$ sería constante. Los indicadores de sucesos no triviales nunca son Malliavin-diferenciables.
+Esta es la razón de fondo de por qué las griegas de opciones digitales requieren integración por
+partes (Capítulo~\ref{cap:griegas}).
+\end{ejemplo}
+
+\section{La derivada en el caos de Wiener}
+
+\begin{teorema}\label{teo:derivada-caos}
+Sea $F=\sum_nI_n(f_n)\in L^2(\Omega)$. Entonces $F\in\D^{1,2}$ si y solo si
+\[
+  \sum_{n=1}^\infty n\,n!\,\norm{f_n}^2_{\Hf^{\otimes n}}<\infty,
+\]
+y en tal caso, en el caso $\Hf=L^2(T,\mu)$,
+\[
+  D_tF=\sum_{n=1}^\infty nI_{n-1}\big(f_n(\cdot,t)\big),\qquad\E\norm{DF}^2_\Hf=\sum_{n\ge1}n\,n!\,\norm{f_n}^2.
+\]
+\end{teorema}
+
+\begin{proof}
+Para $F=I_n(h^{\otimes n})=H_n(W(h))$ con $\norm{h}=1$: $DF=H_n'(W(h))h=
+nH_{n-1}(W(h))h=nI_{n-1}(h^{\otimes(n-1)})h$, que es la fórmula. Por linealidad y densidad vale para todo
+$f_n\in\Hf^{\odot n}$, y $\E\norm{DI_n(f_n)}^2=n^2(n-1)!\norm{f_n}^2=n\,n!\norm{f_n}^2$. Además, $DI_n(f_n)$ y $DI_m(f_m)$ son
+ortogonales en $L^2(\Omega;\Hf)$ si $n\ne m$. Si la serie converge, las sumas parciales $F_N=\sum_{n\le N}I_n(f_n)$
+convergen en $\D^{1,2}$ y, por cerrabilidad, $F\in\D^{1,2}$. Recíprocamente, si $F\in\D^{1,2}$, se usa que $D$
+conmuta con las proyecciones $J_n$ (salvo desplazamiento de índice), lo que se comprueba en $\Sc$, y
+la serie es $\E\norm{DF}^2<\infty$.
+\end{proof}
+
+\begin{corolario}[Fórmula de Stroock]\label{cor:stroock}
+Si $F\in\D^{n,2}$, el núcleo del $n$-ésimo caos es $f_n=
+\frac1{n!}\E[D^nF]$.
+\end{corolario}
+
+\begin{proof}
+Aplicando $n$ veces el Teorema~\ref{teo:derivada-caos}, $D^nF=\sum_{m\ge n}\frac{m!}{(m-n)!}I_{m-n}(f_m)$, cuya esperanza es el término $m=n$: $n!f_n$.
+\end{proof}
+
+\begin{ejemplo}
+$F=W_1^3$. $\E F=0$, $\E DF=\E[3W_1^2]\ind_{[0,1]}=3\cdot\ind_{[0,1]}$, $\E D^2F=0$, $\E D^3F=6\cdot\ind_{[0,1]^3}$.
+Así $W_1^3=I_1(3\cdot\ind)+I_3(\ind^{\otimes3})=3W_1+H_3(W_1)$. Correcto: $H_3(x)=x^3-3x$.
+\end{ejemplo}
+
+\section{Propiedades estructurales}
+
+\begin{corolario}\label{cor:constante}
+Si $F\in\D^{1,2}$ y $DF=0$, entonces $F=\E F$ es constante.
+\end{corolario}
+
+\begin{proof}
+$0=\E\norm{DF}^2=\sum n\,n!\norm{f_n}^2$ obliga a $f_n=0$ para $n\ge1$.
+\end{proof}
+
+\begin{proposicion}[Localidad]\label{prop:localidad}
+Si $F\in\D^{1,1}$, entonces $DF=0$ c.s.\ en el conjunto $\{F=0\}$.
+Más en general, si $F=G$ en un suceso $A$, entonces $DF=DG$ c.s.\ en $A$.
+\end{proposicion}
+
+\begin{proof}[Esbozo]
+Sea $\psi_\varepsilon(x)=\int_0^x\ind_{[-\varepsilon,\varepsilon]}(y)\,\dd y$, Lipschitz con $\psi_\varepsilon'=\ind_{[-\varepsilon,\varepsilon]}$ c.t.p.\ y $\abs{\psi_\varepsilon}\le\varepsilon$. Por la regla
+de la cadena (versión Lipschitz), $D\psi_\varepsilon(F)=\ind_{\{\abs{F}\le\varepsilon\}}DF$. Para $u$ suave con valores en $\Hf$, la
+dualidad del Capítulo~\ref{cap:divergencia} da
+\[
+  \Big|\E\big[\ind_{\{\abs{F}\le\varepsilon\}}\ip{DF}{u}\big]\Big|=\abs{\E[\psi_\varepsilon(F)\delta(u)]}\le\varepsilon\,\E\abs{\delta(u)}\xrightarrow[\varepsilon\to0]{}0.
+\]
+Por convergencia dominada, $\E[\ind_{\{F=0\}}\ip{DF}{u}]=0$ para todo $u$ de un conjunto denso, de donde
+$\ind_{\{F=0\}}DF=0$.
+\end{proof}
+
+\begin{proposicion}[Derivada de una esperanza condicional]\label{prop:derivada-esp-cond}
+Sea $\Hf=L^2(T,\mu)$, $A\subset T$ medible
+y $\F_A=\sigma\{W(h):\ \operatorname{supp}h\subset A\}$. Si $F\in\D^{1,2}$, entonces $\cond{F}{\F_A}\in\D^{1,2}$ y
+\[
+  D_t\cond{F}{\F_A}=\cond{D_tF}{\F_A}\ind_A(t).
+\]
+En particular, con $A=[0,s]$ en el espacio de Wiener: si $F$ es $\F_s$-medible, $D_tF=0$ para $t>s$.
+\end{proposicion}
+
+\begin{proof}
+Si $F=I_n(f_n)$, entonces $\cond{F}{\F_A}=I_n(f_n\ind_A^{\otimes n})$ (por Proposición~\ref{prop:hermite}(iii), basta
+comprobarlo para $f_n=h^{\otimes n}$, donde se descompone $h=h\ind_A+h\ind_{A^c}$, cuyas integrales son
+independientes). Aplicando el Teorema~\ref{teo:derivada-caos},
+\[
+  D_t\cond{F}{\F_A}=nI_{n-1}\big(f_n(\cdot,t)\ind_A^{\otimes(n-1)}\big)\ind_A(t)=\cond{D_tF}{\F_A}\ind_A(t).
+\]
+Se concluye sumando sobre $n$.
+\end{proof}
+
+\section{Un ejemplo no trivial: el supremo del browniano}
+
+\begin{proposicion}\label{prop:supremo}
+Sea $M=\sup_{t\in[0,1]}W_t$. Entonces $M\in\D^{1,2}$ y $D_sM=\ind_{[0,\tau]}(s)$, donde $\tau$ es
+el único instante \textup{(c.s.)} en que se alcanza el máximo.
+\end{proposicion}
+
+\begin{proof}
+Sea $\{t_i\}$ denso en $[0,1]$ y $M_n=\max_{i\le n}W_{t_i}$. La aplicación $\varphi_n(x)=\max_{i\le n}x_i$
+es Lipschitz, y por la Proposición~\ref{prop:cadena}, $D_sM_n=\ind_{[0,\tau_n]}(s)$ con $\tau_n$ el $t_i$ donde se alcanza el máximo
+(único c.s.\ por continuidad absoluta). Así $\norm{DM_n}^2_\Hf=\tau_n\le1$, y $M_n\to M$ en $L^2$. Como $\{M_n\}$
+está acotada en $\D^{1,2}$, una subsucesión converge débilmente y, por cerrabilidad, $M\in\D^{1,2}$. La
+unicidad del maximizante (consecuencia de la propiedad de Markov) da $\tau_n\to\tau$ c.s., e identifica
+$DM=\ind_{[0,\tau]}$.
+\end{proof}
+
+\begin{intuicion}
+Perturbar el ruido antes de $\tau$ desplaza toda la trayectoria posterior, incluido el máximo;
+perturbarlo después de $\tau$ no cambia el máximo (a primer orden). El supremo no es
+diferenciable en sentido Fréchet en $C_0$, pero sí en el sentido de Malliavin: la derivada solo
+se pide en direcciones de Cameron--Martin y en $L^2$.
+\end{intuicion}
+
+\section{Caracterización por trayectorias}
+En el espacio de Wiener clásico, $\D^{1,p}$ tiene una descripción intrínseca debida a Kusuoka y
+Sugita: $F\in\D^{1,p}$, $p>1$, si y solo si (i) para cada $h\in H$ existe una versión de $F$ tal
+que $\varepsilon\mapsto F(\omega+\varepsilon h)$ es absolutamente continua (\emph{ray absolute continuity}); y (ii) existe $DF\in
+L^p(\Omega;H)$ tal que $\frac1\varepsilon(F(\omega+\varepsilon h)-F(\omega))\to\ip{DF}{h}$ en probabilidad para todo $h$ (\emph{diferenciabilidad
+estocástica de Gâteaux}). En particular, todo funcional $F$ que sea $H$-Lipschitz, es decir, con
+$\abs{F(\omega+h)-F(\omega)}\le C\norm{h}_H$, está en $\D^{1,p}$ con $\norm{DF}_H\le C$.

@@ -1,0 +1,219 @@
+\chapter{La divergencia y la fórmula de Clark--Ocone}\label{cap:divergencia}
+
+\begin{panorama}
+El operador divergencia $\delta$ es el adjunto de $D$. En el espacio de Wiener, $\delta$ extiende la
+integral de Itô a integrandos \emph{anticipativos}: es la \emph{integral de Skorokhod}. Probamos las
+reglas de cálculo de $\delta$, su expresión en caos, la relación de conmutación de Heisenberg
+$[D,\delta]$, y la fórmula de Clark--Ocone, que identifica explícitamente el integrando de la
+representación de martingalas.
+\end{panorama}
+
+\section{Definición como adjunto}
+
+\begin{definicion}
+El \emph{operador divergencia} $\delta$ es el adjunto de $D:\D^{1,2}\subset L^2(\Omega)\to L^2(\Omega;\Hf)$.
+Su dominio $\Dom\delta$ es el conjunto de $u\in L^2(\Omega;\Hf)$ tales que
+\[
+  \abs{\E\ip{DF}{u}_\Hf}\le c_u\norm{F}_{L^2}\qquad\text{para toda }F\in\Sc,
+\]
+y para tales $u$, $\delta(u)\in L^2(\Omega)$ es la única variable que satisface la \emph{fórmula de dualidad}
+\begin{equation}\label{eq:dualidad}
+  \E\big[F\,\delta(u)\big]=\E\ip{DF}{u}_\Hf\qquad\text{para toda }F\in\D^{1,2}.
+\end{equation}
+\end{definicion}
+
+Tomando $F=1$: $\E\delta(u)=0$. Como $D$ es cerrado y densamente definido, $\delta$ es cerrado y
+densamente definido.
+
+\begin{proposicion}\label{prop:reglas-delta}
+\begin{enumerate}[label=(\roman*)]
+  \item Si $u=\sum_{j=1}^nF_jh_j$ con $F_j\in\Sc$ y $h_j\in\Hf$, entonces $u\in\Dom\delta$ y
+  \[
+    \delta(u)=\sum_jF_jW(h_j)-\sum_j\ip{DF_j}{h_j}.
+  \]
+  \item Si $F\in\D^{1,2}$, $u\in\Dom\delta$, $Fu\in L^2(\Omega;\Hf)$ y $F\delta(u)-\ip{DF}{u}\in L^2$, entonces $Fu\in\Dom\delta$ y
+  \[
+    \delta(Fu)=F\delta(u)-\ip{DF}{u}_\Hf.
+  \]
+\end{enumerate}
+\end{proposicion}
+
+\begin{proof}
+(i) Por el Lema~\ref{lem:ibp2}, para $G\in\Sc$, $\E\ip{DG}{F_jh_j}=\E[G(F_jW(h_j)-\ip{DF_j}{h_j})]$.
+(ii) Para $G\in\Sc$, $\E\ip{DG}{Fu}=\E\ip{D(FG)-G\,DF}{u}=\E[G(F\delta(u)-\ip{DF}{u})]$.
+\end{proof}
+
+\begin{intuicion}
+La fórmula (ii) es un ``producto de Itô--Skorokhod'': sacar $F$ de la integral cuesta el
+término de corrección $\ip{DF}{u}$. Si $F$ ``no ve'' el ruido que integra $u$ (por ejemplo, si $F$
+es $\F_s$-medible y $u$ está soportado en $(s,T]$), entonces $\ip{DF}{u}=0$ y $F$ sale como una
+constante: esa es exactamente la propiedad que hace funcionar la integral de Itô.
+\end{intuicion}
+
+\section{La divergencia en el caos}
+
+\begin{proposicion}\label{prop:delta-caos}
+Sea $\Hf=L^2(T,\mu)$ y $u\in L^2(\Omega;\Hf)$ con desarrollo $u_t=\sum_{n\ge0}I_n(f_n(\cdot,t))$,
+$f_n\in\Hf^{\odot n}\otimes\Hf$. Entonces $u\in\Dom\delta$ si y solo si $\sum_n(n+1)!\,\norm{\tilde f_n}^2_{\Hf^{\otimes(n+1)}}<\infty$, y en tal caso
+\[
+  \delta(u)=\sum_{n=0}^\infty I_{n+1}(\tilde f_n),
+\]
+donde $\tilde f_n$ es la simetrización en las $n+1$ variables.
+\end{proposicion}
+
+\begin{proof}
+Sea $G=I_{n+1}(g)$, $g$ simétrica. Por el Teorema~\ref{teo:derivada-caos} y la isometría,
+\begin{align*}
+  \E\ip{DG}{u}&=\int_T\E\big[(n+1)I_n(g(\cdot,t))I_n(f_n(\cdot,t))\big]\mu(\dd t)\\
+  &=(n+1)!\ip{g}{f_n}_{\Hf^{\otimes(n+1)}}=(n+1)!\ip{g}{\tilde f_n}=\E[GI_{n+1}(\tilde f_n)].
+\end{align*}
+Para $G$ en otros caos ambos lados son cero. La condición de dominio es la acotación de esta
+forma lineal.
+\end{proof}
+
+\section{La integral de Skorokhod extiende la de Itô}
+
+\begin{teorema}\label{teo:skorokhod-ito}
+En el espacio de Wiener ($\Hf=L^2([0,T])$), todo proceso $u\in L^2_{\mathrm{prog}}$ pertenece
+a $\Dom\delta$ y
+\[
+  \delta(u)=\int_0^Tu_t\,\dd W_t.
+\]
+\end{teorema}
+
+\begin{proof}
+Sea $u=F\ind_{(s,t]}$ con $F\in\Sc$ y $\F_s$-medible. Por la Proposición~\ref{prop:reglas-delta}(i), $\delta(u)=
+F(W_t-W_s)-\int_s^tD_rF\,\dd r$. Por la Proposición~\ref{prop:derivada-esp-cond}, $D_rF=0$ para $r>s$, luego $\delta(u)=F(W_t-W_s)$,
+que es la integral de Itô. Por linealidad vale para elementales. Por densidad (Lema~\ref{lem:densidad-elementales}, con
+$F\in\Sc$ $\F_s$-medibles densas en $L^2(\F_s)$), dado $u\in L^2_{\mathrm{prog}}$, existen elementales $u_n\to u$ con
+$\delta(u_n)=\int u_n\,\dd W\to\int u\,\dd W$ en $L^2$. Como $\delta$ es cerrado, $u\in\Dom\delta$ y $\delta(u)=\int u\,\dd W$.
+\end{proof}
+
+\begin{ejemplo}[Un integrando anticipativo]
+$\delta(W_T\ind_{[0,T]})=W_TW(\ind_{[0,T]})-\int_0^TD_tW_T\,\dd t=W_T^2-T$.
+Comparar con $\int_0^TW_t\,\dd W_t=\frac12(W_T^2-T)$.
+\end{ejemplo}
+
+\section{Relación de conmutación y una isometría}
+
+\begin{proposicion}[Relación de Heisenberg]\label{prop:heisenberg}
+Si $u\in\D^{1,2}(\Hf)$ y $D_tu\in\Dom\delta$ para casi todo $t$,
+con $(\delta(D_tu))_t\in L^2(\Omega;\Hf)$, entonces $\delta(u)\in\D^{1,2}$ y
+\[
+  D_t\delta(u)=u_t+\delta(D_tu).
+\]
+\end{proposicion}
+
+\begin{proof}
+Para $u=Fh$ con $F\in\Sc$: $\delta(u)=FW(h)-\ip{DF}{h}$, luego
+\[
+  D_t\delta(u)=D_tF\,W(h)+Fh_t-\ip{D(D_tF)}{h}=Fh_t+\big(D_tF\,W(h)-\ip{D(D_tF)}{h}\big)=u_t+\delta(D_tu).
+\]
+El caso general se sigue por linealidad y cerrabilidad.
+\end{proof}
+
+En términos de operadores, $[D,\delta]=I$ en un sentido apropiado; es la relación canónica entre
+los operadores de aniquilación ($D$) y creación ($\delta$) del espacio de Fock bosónico $\Gamma(\Hf)\cong L^2(\Omega)$,
+que es exactamente la descomposición en caos.
+
+\begin{teorema}\label{teo:isometria-skorokhod}
+$\D^{1,2}(\Hf)\subset\Dom\delta$ y, para $u\in\D^{1,2}(\Hf)$,
+\[
+  \E[\delta(u)^2]=\E\norm{u}_\Hf^2+\E\int_T\int_TD_su_t\,D_tu_s\,\mu(\dd s)\mu(\dd t)\le\E\norm{u}_\Hf^2+\E\norm{Du}^2_{\Hf\otimes\Hf}.
+\]
+\end{teorema}
+
+\begin{proof}
+Para $u$ suave elemental, usando la dualidad y la relación de Heisenberg,
+\[
+  \E[\delta(u)^2]=\E\ip{D\delta(u)}{u}=\E\int u_t(u_t+\delta(D_tu))\,\dd t=\E\norm{u}^2+\int\E\ip{D(u_t)}{D_tu}\,\dd t,
+\]
+y el último término es $\E\iint D_su_tD_tu_s\,\dd s\,\dd t$. La desigualdad es Cauchy--Schwarz. Se extiende
+por densidad, lo que también prueba la inclusión.
+\end{proof}
+
+Si $u$ es adaptado, $D_su_t=0$ para $s>t$, luego $D_su_tD_tu_s=0$ salvo en la diagonal: se recupera
+la isometría de Itô.
+
+\begin{corolario}[Derivada de una integral de Itô]\label{cor:derivada-ito}
+Si $u\in L^2_{\mathrm{prog}}\cap\D^{1,2}(\Hf)$, entonces
+\[
+  D_t\int_0^Tu_s\,\dd W_s=u_t+\int_t^TD_tu_s\,\dd W_s.
+\]
+\end{corolario}
+
+\begin{proof}
+Por la Proposición~\ref{prop:heisenberg}, y porque $s\mapsto D_tu_s$ es adaptado y nulo para $s<t$, de
+modo que $\delta(D_tu)$ es una integral de Itô en $[t,T]$.
+\end{proof}
+
+\section{La fórmula de Clark--Ocone}
+
+\begin{teorema}[Clark--Ocone]\label{teo:clark-ocone}
+Sea $\F_t$ la filtración browniana. Si $F\in\D^{1,2}$, entonces
+\[
+  F=\E F+\int_0^T\cond{D_tF}{\F_t}\,\dd W_t.
+\]
+\end{teorema}
+
+\begin{proof}[Primera demostración (por dualidad)]
+Por el Teorema~\ref{teo:representacion}, $F=\E F+\int_0^Tu_t\,\dd W_t$ con $u\in L^2_{\mathrm{prog}}$.
+Sea $v\in L^2_{\mathrm{prog}}$ arbitrario. Por la isometría de Itô, el Teorema~\ref{teo:skorokhod-ito} y la dualidad,
+\[
+  \E\int_0^Tu_tv_t\,\dd t=\E\Big[F\int_0^Tv\,\dd W\Big]=\E[F\delta(v)]=\E\int_0^TD_tF\,v_t\,\dd t=\E\int_0^T\cond{D_tF}{\F_t}v_t\,\dd t,
+\]
+donde en el último paso usamos que $v_t$ es $\F_t$-medible y Fubini. Aquí $(\cond{D_tF}{\F_t})_t$ es la
+proyección predecible de $DF$, que es progresiva. Como $v$ es arbitrario en $L^2_{\mathrm{prog}}$, $u_t=\cond{D_tF}{\F_t}$
+$\dd t\otimes\dd\P$-c.s.
+\end{proof}
+
+\begin{proof}[Segunda demostración (por caos)]
+Si $F=I_n(f_n)$, por el Teorema~\ref{teo:iteradas},
+\[
+  F=n\int_0^TI_{n-1}\big(f_n(\cdot,t)\ind_{[0,t]}^{\otimes(n-1)}\big)\,\dd W_t.
+\]
+Por el Teorema~\ref{teo:derivada-caos} y la Proposición~\ref{prop:derivada-esp-cond},
+\[
+  \cond{D_tF}{\F_t}=nI_{n-1}\big(f_n(\cdot,t)\ind_{[0,t]}^{\otimes(n-1)}\big).
+\]
+Se suma en $n$.
+\end{proof}
+
+\begin{ejemplo}\label{ej:clark-ocone}
+\begin{enumerate}[label=(\alph*)]
+  \item $F=W_T^3$: $D_tF=3W_T^2$, $\cond{3W_T^2}{\F_t}=3(W_t^2+T-t)$. Así $W_T^3=
+  \int_0^T3(W_t^2+T-t)\,\dd W_t$.
+  \item $F=\int_0^TW_s\,\dd s$: $D_tF=T-t$, determinista. $F=\int_0^T(T-t)\,\dd W_t$.
+  \item $F=M=\sup_{[0,T]}W$: $D_tM=\ind_{\{t\le\tau\}}$, luego $\cond{D_tM}{\F_t}=\P(\tau\ge t\mid\F_t)=
+  \P\big(\sup_{s\in[t,T]}(W_s-W_t)\ge M_t-W_t\mid\F_t\big)=2\bar\Phi\big(\frac{M_t-W_t}{\sqrt{T-t}}\big)$, con $M_t=\sup_{s\le t}W_s$ y $\bar\Phi=1-\Phi$,
+  usando el principio de reflexión.
+\end{enumerate}
+\end{ejemplo}
+
+\begin{intuicion}
+Clark--Ocone dice: \emph{la sensibilidad de $F$ al ruido en $t$, promediada con la información
+disponible en $t$, es la exposición instantánea de la martingala $\cond{F}{\F_t}$ al incremento $\dd W_t$.}
+En finanzas, si $F$ es un pago descontado, $\cond{D_tF}{\F_t}$ es (salvo un factor $\sigma S_t$) la cantidad
+de activo de la cartera de cobertura en el instante $t$: es el \emph{delta}. Véase el Capítulo~\ref{cap:cobertura}.
+\end{intuicion}
+
+\section{Clark--Ocone bajo cambio de medida}
+En finanzas, el pago se representa bajo una medida equivalente $\Q$, mientras que la derivada se
+toma respecto al browniano original. El resultado siguiente, debido a Ocone y Karatzas~\cite{OconeKaratzas91},
+resuelve el desajuste.
+
+\begin{teorema}[Clark--Ocone generalizado]\label{teo:clark-ocone-generalizado}
+Sea $\theta$ adaptado y acotado con $\theta_s\in\D^{1,2}$ y
+condiciones de integrabilidad adecuadas, $\dd\Q=\mathcal E(-\theta)_T\,\dd\P$ y $\tilde W_t=W_t+\int_0^t\theta_s\,\dd s$, que es
+$\Q$-browniano. Si $F\in\D^{1,2}$ y es suficientemente integrable bajo $\Q$,
+\[
+  F=\E_\Q F+\int_0^T\E_\Q\Big[D_tF-F\int_t^TD_t\theta_s\,\dd\tilde W_s\,\Big|\,\F_t\Big]\,\dd\tilde W_t.
+\]
+\end{teorema}
+
+\begin{proof}[Esbozo]
+Sea $Z_t=\mathcal E(-\theta)_t$. Por Bayes, $\E_\Q[F\mid\F_t]=Z_t^{-1}\E[FZ_T\mid\F_t]$. Se aplica Clark--Ocone
+(bajo $\P$) a $FZ_T$, con $D_t(FZ_T)=Z_TD_tF+FD_tZ_T$, y la derivada de $\log Z_T=-\int\theta\,\dd W-\frac12\int\theta^2$
+es $D_t\log Z_T=-\theta_t-\int_t^TD_t\theta_s\,\dd W_s-\int_t^T\theta_sD_t\theta_s\,\dd s=-\theta_t-\int_t^TD_t\theta_s\,\dd\tilde W_s$. Se combina con la
+fórmula de Itô para el cociente $\E[FZ_T\mid\F_t]/Z_t$.
+\end{proof}

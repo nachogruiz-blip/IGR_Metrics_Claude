@@ -1,0 +1,182 @@
+\chapter{El movimiento browniano}\label{cap:browniano}
+
+\begin{panorama}
+Construimos el movimiento browniano de dos maneras (Lévy--Ciesielski y Kolmogorov),
+estudiamos la regularidad de sus trayectorias (Hölder de orden $<1/2$, en ningún punto
+diferenciable), su variación cuadrática y la propiedad de Markov fuerte. La construcción
+de Lévy--Ciesielski es especialmente importante para nosotros: muestra que el browniano
+es una \emph{serie aleatoria gaussiana} en una base ortonormal de $L^2$, que es exactamente el
+punto de vista del espacio de Wiener abstracto.
+\end{panorama}
+
+\section{Definición}
+
+\begin{definicion}
+Un \emph{movimiento browniano} (estándar, unidimensional) es un proceso
+$W=(W_t)_{t\ge0}$ tal que $W_0=0$; para $0\le t_0<\dots<t_n$ los incrementos $W_{t_k}-W_{t_{k-1}}$
+son independientes con ley $N(0,t_k-t_{k-1})$; y casi todas las trayectorias son continuas. Equivalentemente,
+$W$ es un proceso gaussiano centrado continuo con $\E[W_sW_t]=s\wedge t$. Es un
+\emph{$(\F_t)$-browniano} si es adaptado y $W_t-W_s$ es independiente de $\F_s$ para $s<t$.
+\end{definicion}
+
+\section{Construcción de Lévy--Ciesielski}
+Sea $\{e_n\}_{n\ge0}$ una base ortonormal de $L^2([0,1])$ y $\{\xi_n\}$ i.i.d.\ $N(0,1)$. Formalmente, el ``ruido
+blanco'' es $\dot W=\sum_n\xi_ne_n$ y $W_t=\ip{\dot W}{\ind_{[0,t]}}=\sum_n\xi_n\int_0^te_n(s)\,\dd s$. La serie converge en $L^2(\Omega)$
+para cada $t$, pues $\sum_n(\int_0^te_n)^2=\norm{\ind_{[0,t]}}^2=t$ por Parseval, y la covarianza es
+\[
+  \E[W_sW_t]=\sum_n\ip{e_n}{\ind_{[0,s]}}\ip{e_n}{\ind_{[0,t]}}=\ip{\ind_{[0,s]}}{\ind_{[0,t]}}=s\wedge t.
+\]
+Para obtener continuidad de trayectorias se elige la \emph{base de Haar}: $h_0\equiv1$, $h_{n,k}=
+2^{n/2}(\ind_{[k2^{-n},(k+\frac12)2^{-n})}-\ind_{[(k+\frac12)2^{-n},(k+1)2^{-n})})$, $0\le k<2^n$. Sus primitivas $s_{n,k}(t)=\int_0^th_{n,k}$ son
+las funciones de Schauder: ``tiendas'' de altura $2^{-n/2-1}$ con soportes disjuntos para $n$ fijo.
+
+\begin{teorema}[Lévy--Ciesielski]
+La serie $W_t=\xi_0t+\sum_{n\ge0}\sum_{k<2^n}\xi_{n,k}s_{n,k}(t)$ converge
+uniformemente en $[0,1]$ c.s.; su suma es un movimiento browniano en $[0,1]$.
+\end{teorema}
+
+\begin{proof}
+Sea $a_n=\max_k\abs{\xi_{n,k}}$. Como $\P(\abs{\xi}>x)\le e^{-x^2/2}$ para $x\ge1$, $\P(a_n>2\sqrt n)\le
+2^ne^{-2n}$, sumable. Por Borel--Cantelli, c.s.\ $a_n\le2\sqrt n$ para $n$ grande. Como las tiendas de
+nivel $n$ tienen soportes disjuntos, $\sup_t\abs{\sum_k\xi_{n,k}s_{n,k}(t)}\le a_n2^{-n/2-1}\le\sqrt n2^{-n/2}$, sumable. La
+convergencia uniforme da continuidad; la convergencia en $L^2$ y el cálculo de covarianza anterior
+dan la ley. Uniendo copias independientes en $[k,k+1]$ se obtiene el browniano en $[0,\infty)$.
+\end{proof}
+
+\begin{intuicion}
+El browniano es una \emph{función lineal del ruido}: $W_t=W(\ind_{[0,t]})$, donde $h\mapsto W(h)=
+\sum_n\xi_n\ip{e_n}{h}$ es una isometría de $L^2([0,1])$ en un espacio gaussiano. Esta isometría, la
+\emph{integral de Wiener} $W(h)=\int_0^1h(s)\,\dd W_s$, será el objeto primitivo de la Parte~II, bajo el
+nombre de \emph{proceso gaussiano isonormal}.
+\end{intuicion}
+
+\section{Regularidad de las trayectorias}
+
+\begin{teorema}[Criterio de continuidad de Kolmogorov--Chentsov]\label{teo:kolmogorov}
+Sea $(X_t)_{t\in[0,1]^d}$ un proceso
+con valores en un espacio métrico completo tal que $\E[\rho(X_s,X_t)^p]\le C\abs{s-t}^{d+\beta}$ para ciertos
+$p,\beta>0$. Entonces $X$ admite una modificación cuyas trayectorias son $\gamma$-Hölder para todo
+$\gamma<\beta/p$.
+\end{teorema}
+
+\begin{proof}
+Lo hacemos para $d=1$. Sea $D_n=\{k2^{-n}\}$. Por Chebyshev,
+\[
+  \P\Big(\max_k\rho(X_{(k+1)2^{-n}},X_{k2^{-n}})>2^{-\gamma n}\Big)\le2^n\cdot C2^{-n(1+\beta)}2^{\gamma pn}=C2^{-n(\beta-\gamma p)},
+\]
+sumable si $\gamma<\beta/p$. Por Borel--Cantelli existe $N(\omega)$ con $\rho(X_{(k+1)2^{-n}},X_{k2^{-n}})\le2^{-\gamma n}$ para
+$n\ge N$. Si $s<t$ son diádicos con $2^{-m-1}<t-s\le2^{-m}$, $m\ge N$, se puede ir de $s$ a $t$ con a lo
+sumo dos pasos de cada escala $n>m$ (expansión binaria), luego $\rho(X_s,X_t)\le2\sum_{n>m}2^{-\gamma n}\le
+C'\abs{t-s}^\gamma$. Así $X|_D$ es uniformemente Hölder y se extiende por continuidad; la extensión es
+una modificación por continuidad en probabilidad.
+\end{proof}
+
+Para el browniano, $\E\abs{W_t-W_s}^{2m}=c_m\abs{t-s}^m$, luego $\beta/p=(m-1)/2m\to1/2$.
+
+\begin{corolario}
+Las trayectorias brownianas son localmente $\gamma$-Hölder para todo $\gamma<1/2$.
+\end{corolario}
+
+\begin{teorema}[Paley--Wiener--Zygmund]
+Casi seguramente, $t\mapsto W_t$ no es diferenciable en
+ningún punto.
+\end{teorema}
+
+\begin{proof}
+Si $W$ fuera diferenciable en $s\in[0,1]$, existirían $M,n_0$ tales que $\abs{W_t-W_s}\le
+M\abs{t-s}$ para $\abs{t-s}\le4/n$, $n\ge n_0$. Con $k=\lfloor ns\rfloor$, los tres incrementos $\abs{W_{(j+1)/n}-W_{j/n}}$,
+$j=k+1,k+2,k+3$, serían $\le7M/n$. Pero
+\[
+  \P\Big(\exists k\le n:\ \max_{j=1,2,3}\abs{W_{(k+j+1)/n}-W_{(k+j)/n}}\le\tfrac{7M}{n}\Big)\le n\,\P\big(\abs{W_{1/n}}\le\tfrac{7M}{n}\big)^3\le n\Big(\frac{C}{\sqrt n}\Big)^3\to0.
+  \qedhere
+\]
+\end{proof}
+
+\section{Variación cuadrática}
+
+\begin{teorema}
+Sea $\pi_n=\{0=t_0<\dots<t_{k_n}=t\}$ una sucesión de particiones con $\abs{\pi_n}\to0$.
+Entonces $\sum_i(W_{t_{i+1}}-W_{t_i})^2\to t$ en $L^2$. Si $\sum_n\abs{\pi_n}<\infty$, la convergencia es casi segura.
+\end{teorema}
+
+\begin{proof}
+Sea $\Delta_i=W_{t_{i+1}}-W_{t_i}$ y $\delta_i=t_{i+1}-t_i$. Las variables $\Delta_i^2-\delta_i$ son independientes,
+centradas y $\Var(\Delta_i^2)=2\delta_i^2$. Así
+\[
+  \E\Big(\sum_i\Delta_i^2-t\Big)^2=2\sum_i\delta_i^2\le2t\abs{\pi_n}\to0.
+\]
+La convergencia casi segura sigue de Chebyshev y Borel--Cantelli.
+\end{proof}
+
+\begin{intuicion}
+``$(\dd W_t)^2=\dd t$''. Esto es lo que distingue el cálculo de Itô del clásico: el término de
+segundo orden en el desarrollo de Taylor no desaparece. Consecuencia: el browniano
+tiene variación total infinita en todo intervalo, y la integral $\int H\,\dd W$ no puede definirse
+trayectoria a trayectoria como integral de Stieltjes.
+\end{intuicion}
+
+\section{Propiedad de Markov fuerte y principio de reflexión}
+
+\begin{teorema}[Markov fuerte]
+Si $\tau$ es un tiempo de parada finito c.s., $B_t=W_{\tau+t}-W_\tau$ es
+un movimiento browniano independiente de $\F_\tau$.
+\end{teorema}
+
+\begin{proof}[Esbozo]
+Para $\tau$ con valores en un conjunto numerable se descompone según $\{\tau=t_k\}$ y se usa
+la propiedad de Markov simple. Para $\tau$ general se aproxima por $\tau_n=2^{-n}\lceil2^n\tau\rceil\downarrow\tau$ y se usa la
+continuidad de trayectorias.
+\end{proof}
+
+\begin{corolario}[Principio de reflexión]
+Para $a>0$, $\P(\sup_{s\le t}W_s\ge a)=2\P(W_t\ge a)=
+\P(\abs{W_t}\ge a)$.
+\end{corolario}
+
+\begin{proof}
+Sea $\tau_a=\inf\{s:W_s=a\}$. El proceso reflejado en $\tau_a$ es también browniano
+(Markov fuerte), luego $\P(\tau_a\le t,W_t<a)=\P(\tau_a\le t,W_t>a)=\P(W_t>a)$.
+\end{proof}
+
+\section{El espacio de Wiener clásico}
+Sea $\Omega=C_0([0,T];\R^d)$ con la norma del supremo, $\F$ su $\sigma$-álgebra boreliana (completada) y $\P$ la
+\emph{medida de Wiener}, ley del browniano $d$-dimensional; el proceso canónico $W_t(\omega)=\omega(t)$ es un
+browniano. Este es el escenario original de Malliavin.
+
+\begin{definicion}
+El \emph{espacio de Cameron--Martin} es $H=\{h\in\Omega:\ h(t)=\int_0^t\dot h(s)\,\dd s,\ \dot h\in
+L^2([0,T];\R^d)\}$ con $\ip{h}{g}_H=\ip{\dot h}{\dot g}_{L^2}$.
+\end{definicion}
+
+\begin{teorema}[Cameron--Martin]\label{teo:cameron-martin}
+Para $h\in H$, la ley de $\omega+h$ bajo $\P$ es equivalente a $\P$
+con densidad
+\[
+  \frac{\dd\P\circ\tau_h^{-1}}{\dd\P}(\omega)=\exp\Big(\int_0^T\dot h\,\dd W-\tfrac12\norm{h}_H^2\Big),\qquad\tau_h(\omega)=\omega+h.
+\]
+Si $h\notin H$, las leyes son mutuamente singulares.
+\end{teorema}
+
+\begin{proof}[Demostración de la primera parte]
+Basta comparar las leyes de los vectores $(W_{t_1},\dots,W_{t_n})$, o
+mejor, las transformadas de Laplace de $W(g)=\int\dot g\,\dd W$ para $g\in H$. Con $Z=\exp(W(h)-
+\frac12\norm{h}^2)$:
+\[
+  \E[Ze^{W(g)}]=e^{-\frac12\norm{h}^2}\E e^{W(h+g)}=e^{-\frac12\norm{h}^2+\frac12\norm{h+g}^2}=e^{\ip{h}{g}+\frac12\norm{g}^2}=\E[e^{W(g)+\ip{g}{h}}],
+\]
+que es la transformada de $W(g)$ evaluada en $\omega+h$. Como las exponenciales $e^{W(g)}$ determinan
+la medida, $Z\,\dd\P=\P\circ\tau_h^{-1}$. La singularidad para $h\notin H$ es la dicotomía de Feldman--Hájek; no
+la usaremos.
+\end{proof}
+
+\begin{intuicion}
+El espacio de Cameron--Martin $H$ es el conjunto de \emph{direcciones admisibles}: desplazar el
+browniano en una dirección $h\in H$ cambia la medida de manera absolutamente continua.
+Es, por tanto, la dirección natural en la que derivar: la derivada de Malliavin de $F$ en la
+dirección $h$ será
+\[
+  D_hF(\omega)=\lim_{\varepsilon\to0}\frac{F(\omega+\varepsilon h)-F(\omega)}{\varepsilon}.
+\]
+Notemos que $\P(H)=0$: las trayectorias brownianas no son absolutamente continuas.
+Derivamos en direcciones que el proceso casi nunca visita.
+\end{intuicion}

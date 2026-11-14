@@ -1,0 +1,212 @@
+\chapter{Griegas por integración por partes}\label{cap:griegas}
+
+\begin{panorama}
+Las \emph{griegas} son las derivadas del precio de un derivado respecto a sus parámetros:
+$\Delta=\partial_{S_0}V$, $\Gamma=\partial^2_{S_0}V$, $\mathcal V=\partial_\sigma V$ (vega), etc. Cuando el pago es discontinuo (digitales,
+barreras) o depende de la trayectoria (asiáticas, lookback), las técnicas Monte Carlo
+ingenuas fallan o son muy ruidosas. El trabajo de Fournié, Lasry, Lebuchoux, Lions y
+Touzi~\cite{Fournie99} (1999) mostró que el cálculo de Malliavin produce estimadores de la forma
+$\E[\Phi(\cdot)\,\pi]$, con un \emph{peso} $\pi$ que no depende del pago. Desarrollamos la teoría, calculamos
+los pesos clásicos, discutimos su optimalidad en varianza y la localización, e ilustramos
+numéricamente.
+\end{panorama}
+
+\section{Planteamiento: tres métodos para una derivada}
+Sea $X^\theta$ un vector aleatorio que depende de un parámetro $\theta$ y $V(\theta)=\E[\Phi(X^\theta)]$. Hay tres formas
+clásicas de estimar $V'(\theta)$ por Monte Carlo:
+\begin{enumerate}
+  \item \textbf{Diferencias finitas:} $\frac1{2h}\E[\Phi(X^{\theta+h})-\Phi(X^{\theta-h})]$. Sesgo $O(h^2)$ (si $V$ es regular) y varianza
+  $O(h^{-1})$ para $\Phi$ discontinua aun con números aleatorios comunes. Hay que equilibrar
+  ambas.
+  \item \textbf{Derivada trayectorial:} $\E[\nabla\Phi(X^\theta)\,\partial_\theta X^\theta]$. Insesgado y de baja varianza, pero exige $\Phi$
+  (Lipschitz) diferenciable: no sirve para digitales.
+  \item \textbf{Razón de verosimilitud:} si $X^\theta$ tiene densidad $p_\theta$ conocida, $V'(\theta)=\E[\Phi(X^\theta)\,\partial_\theta\log p_\theta(X^\theta)]$.
+  No requiere regularidad de $\Phi$, pero sí la densidad explícita, que rara vez se conoce.
+\end{enumerate}
+El método de Malliavin combina las ventajas de 2 y 3: parte de la derivada trayectorial y
+\emph{transfiere} la derivada de $\Phi$ a un peso mediante integración por partes en el espacio de Wiener,
+\emph{sin conocer la densidad}.
+
+\section{El principio general}
+
+\begin{proposicion}[Pesos de Malliavin]\label{prop:pesos}
+Sea $F\in\D^{1,2}$ real, $G\in\D^{1,2}$, y $a\in L^2(\Omega;\Hf)$ un
+proceso tal que $\ip{DF}{a}_\Hf\ne0$ c.s.\ y $u=Ga/\ip{DF}{a}\in\Dom\delta$. Entonces, para toda $\Phi$ medible
+con crecimiento polinomial,
+\[
+  \E\big[\Phi'(F)\,G\big]=\E\big[\Phi(F)\,\delta(u)\big],
+\]
+donde el lado izquierdo se interpreta, para $\Phi$ no derivable, como $\lim_n\E[\Phi_n'(F)G]$ con $\Phi_n$ suaves
+que aproximan $\Phi$ (por ejemplo, en $L^2$ de la ley de $F$, que tiene densidad bajo estas hipótesis).
+\end{proposicion}
+
+\begin{proof}
+Para $\Phi\in C_b^1$: $\ip{D\Phi(F)}{a}=\Phi'(F)\ip{DF}{a}$, luego $\Phi'(F)G=\ip{D\Phi(F)}{u}$ y basta
+aplicar la dualidad. Para $\Phi$ general, $\E[\Phi_n(F)\delta(u)]\to\E[\Phi(F)\delta(u)]$ si $\Phi_n\to\Phi$ en $L^2(\P\circ F^{-1})$ y
+$\delta(u)\in L^2$.
+\end{proof}
+
+\begin{intuicion}
+El proceso $a$ es una elección libre: es la \emph{dirección} en el espacio de Cameron--Martin en
+la que perturbamos el ruido para reproducir el efecto de mover $\theta$. Diferentes elecciones
+dan diferentes pesos, todos insesgados pero con distinta varianza (§\ref{sec:pesos-optimos}). La elección
+canónica en el espacio de Wiener es $a\equiv1$ en $[0,T]$, pero en problemas de trayectoria
+(asiáticas) conviene $a_t=S_t$.
+\end{intuicion}
+
+\section{Black--Scholes: pesos explícitos}
+Bajo la medida de riesgo neutro, $S_T=S_0\exp\big((r-\frac{\sigma^2}{2})T+\sigma W_T\big)$ y $V=e^{-rT}\E[\Phi(S_T)]$. Se tiene
+$D_tS_T=\sigma S_T\ind_{[0,T]}(t)$.
+
+\begin{proposicion}\label{prop:pesos-bs}
+Para toda $\Phi$ con crecimiento polinomial,
+\begin{align*}
+  \Delta&=\frac{e^{-rT}}{S_0\sigma T}\,\E\big[\Phi(S_T)\,W_T\big],\\
+  \Gamma&=\frac{e^{-rT}}{S_0^2\sigma T}\,\E\Big[\Phi(S_T)\Big(\frac{W_T^2}{\sigma T}-W_T-\frac1\sigma\Big)\Big],\\
+  \mathcal V&=e^{-rT}\,\E\Big[\Phi(S_T)\Big(\frac{W_T^2}{\sigma T}-W_T-\frac1\sigma\Big)\Big].
+\end{align*}
+\end{proposicion}
+
+\begin{proof}
+\emph{Delta.} $\partial_{S_0}\E\Phi(S_T)=\E[\Phi'(S_T)S_T/S_0]$. Con $F=S_T$, $G=S_T/S_0$, $a\equiv1$:
+$\ip{DF}{a}=\sigma TS_T$ y $u=\frac1{S_0\sigma T}$, constante. Así $\delta(u)=\frac{W_T}{S_0\sigma T}$.
+
+\emph{Vega.} $\partial_\sigma S_T=S_T(W_T-\sigma T)$, luego $\partial_\sigma\E\Phi(S_T)=\E[\Phi'(S_T)S_T(W_T-\sigma T)]$. Con $a\equiv1$,
+$u=\frac{W_T-\sigma T}{\sigma T}$ y, por la Proposición~\ref{prop:reglas-delta}(ii) con $D_tW_T=1$,
+\[
+  \delta(u)=\frac{(W_T-\sigma T)W_T}{\sigma T}-\frac{T}{\sigma T}=\frac{W_T^2}{\sigma T}-W_T-\frac1\sigma.
+\]
+
+\emph{Gamma.} $\partial^2_{S_0}\E\Phi(S_T)=\frac1{S_0^2}\E[\Phi''(S_T)S_T^2]$. Integramos por partes una vez con $G=S_T^2$: $u=\frac{S_T}{\sigma T}$,
+$\delta(u)=\frac{S_TW_T}{\sigma T}-\frac{\sigma TS_T}{\sigma T}=S_T(\frac{W_T}{\sigma T}-1)$. Así $\E[\Phi''(S_T)S_T^2]=\E[\Phi'(S_T)S_T(\frac{W_T}{\sigma T}-1)]$. Una segunda
+integración por partes con $G=S_T(\frac{W_T}{\sigma T}-1)$, $u=\frac1{\sigma T}(\frac{W_T}{\sigma T}-1)$, da $\delta(u)=\frac1{\sigma T}\big(\frac{W_T^2}{\sigma T}-W_T-\frac1\sigma\big)$.
+\end{proof}
+
+Observemos la relación clásica $\mathcal V=\sigma TS_0^2\Gamma$, que se lee directamente en los pesos.
+
+\section{Difusiones generales: la fórmula de Bismut--Elworthy--Li}
+Sea $X^x$ la solución de $\dd X=b(X)\,\dd t+\sigma(X)\,\dd W$ en $\R^d$ con $\sigma$ invertible y $\sigma^{-1}$ acotada,
+$Y_t=\nabla_xX_t$.
+
+\begin{teorema}[Bismut--Elworthy--Li]\label{teo:bel}
+Para toda $\Phi$ medible acotada, $x\mapsto\E[\Phi(X_T^x)]$ es
+diferenciable y
+\[
+  \nabla_x\E\big[\Phi(X_T^x)\big]=\E\Big[\Phi(X_T^x)\,\frac1T\int_0^T\big(\sigma^{-1}(X_t)Y_t\big)^\top\dd W_t\Big].
+\]
+Más en general, puede sustituirse $\frac1T\ind_{[0,T]}(t)$ por cualquier $\alpha(t)$ determinista con $\int_0^T\alpha=1$.
+\end{teorema}
+
+\begin{proof}
+Para $\Phi\in C_b^1$, $\nabla_x\E\Phi(X_T)=\E[\nabla\Phi(X_T)Y_T]$. Por el Teorema~\ref{teo:derivada-ede}, $D_tX_T=
+Y_TZ_t\sigma(X_t)$, de modo que $Y_T=D_tX_T\,\sigma^{-1}(X_t)Y_t$ para todo $t\le T$. Promediando en $t$ con peso
+$\alpha$:
+\[
+  Y_T=\int_0^TD_tX_T\,\sigma^{-1}(X_t)Y_t\,\alpha(t)\,\dd t.
+\]
+Por tanto, para cada vector $v$,
+\[
+  \E[\nabla\Phi(X_T)Y_Tv]=\E\int_0^TD_t\big(\Phi(X_T)\big)\,\sigma^{-1}(X_t)Y_tv\,\alpha(t)\,\dd t=\E\Big[\Phi(X_T)\,\delta\big(\sigma^{-1}(X_\cdot)Y_\cdot v\,\alpha\big)\Big].
+\]
+El integrando es adaptado, luego $\delta$ es la integral de Itô. Por densidad, la fórmula vale para $\Phi$
+acotada medible.
+\end{proof}
+
+\begin{observacion}
+La fórmula da, como subproducto, una estimación de regularización:
+$\abs{\nabla P_T\Phi(x)}\le\frac{C}{\sqrt T}\norm{\Phi}_\infty$. Es una herramienta estándar en el estudio de EDPs parabólicas y de
+ergodicidad.
+\end{observacion}
+
+\section{Opciones dependientes de la trayectoria: la asiática}
+Sea $A=\int_0^TS_t\,\dd t$ y $V=e^{-rT}\E[\Phi(A/T)]$ en Black--Scholes.
+
+\begin{proposicion}\label{prop:asiatica}
+\[
+  \Delta_{\text{asiática}}=\frac{e^{-rT}}{S_0}\,\E\Big[\Phi\Big(\frac AT\Big)\Big(\frac{2(S_T-S_0)}{\sigma^2A}-\frac{2r}{\sigma^2}+1\Big)\Big].
+\]
+\end{proposicion}
+
+\begin{proof}
+$\partial_{S_0}A=A/S_0$. Elegimos $a_t=S_t$. Como $D_tA=\sigma\int_t^TS_u\,\dd u$,
+\[
+  \ip{DA}{a}=\sigma\int_0^TS_t\int_t^TS_u\,\dd u\,\dd t=\frac\sigma2A^2.
+\]
+Así $u_t=\frac{A}{S_0}\frac{S_t}{\sigma A^2/2}=\frac{2}{\sigma S_0A}S_t$. Por la Proposición~\ref{prop:reglas-delta}(ii), con $F=\frac{2}{\sigma S_0A}$ y $\ip{DF}{S}=
+-\frac{2}{\sigma S_0A^2}\ip{DA}{S}=-\frac1{S_0}$,
+\[
+  \delta(u)=\frac{2}{\sigma S_0A}\int_0^TS_t\,\dd W_t+\frac1{S_0}.
+\]
+Finalmente, $\int_0^T\sigma S_t\,\dd W_t=S_T-S_0-rA$, de donde se obtiene la fórmula.
+\end{proof}
+
+La elección $a=S$ en lugar de $a=1$ es la que hace que $\ip{DA}{a}$ sea un cuadrado perfecto y
+el peso sea explícito.
+
+\section{Pesos óptimos y localización}\label{sec:pesos-optimos}
+
+\begin{proposicion}[Peso de varianza mínima]
+Sea $F$ real, y sea $\mathcal W$ el conjunto de pesos $\pi\in L^2$
+tales que $\E[\Phi'(F)G]=\E[\Phi(F)\pi]$ para toda $\Phi\in C_b^1$. Entonces $\mathcal W=\pi_0+\{\pi:\ \cond{\pi}{F}=0\}$
+para cualquier $\pi_0\in\mathcal W$, y el peso de varianza mínima, simultáneamente para todas las $\Phi$, es
+$\pi^*=\cond{\pi_0}{F}$.
+\end{proposicion}
+
+\begin{proof}
+$\E[\Phi(F)(\pi-\pi_0)]=0$ para toda $\Phi$ equivale a $\cond{\pi-\pi_0}{F}=0$. Para
+$\pi\in\mathcal W$, $\E[\Phi(F)^2\pi^2]=\E[\Phi(F)^2\pi^{*2}]+\E[\Phi(F)^2(\pi-\pi^*)^2]$, porque el término cruzado es
+$\E[\Phi(F)^2\pi^*\cond{\pi-\pi^*}{F}]=0$.
+\end{proof}
+
+En Black--Scholes, el peso $W_T/(S_0\sigma T)$ es función de $S_T$, luego ya es óptimo: coincide con el
+peso de razón de verosimilitud $\partial_{S_0}\log p(S_T)$. En problemas multidimensionales o dependientes
+de la trayectoria, $\cond{\pi_0}{F}$ no es calculable, y la elección de $a$ importa.
+
+\paragraph{Localización.} El peso tiene varianza grande cuando $\Phi(F)$ es grande lejos de las discontinuidades.
+La idea de~\cite{Fournie99,Fournie01} es separar: $\Phi=\Phi_{\mathrm{reg}}+\Phi_{\mathrm{sing}}$, donde $\Phi_{\mathrm{sing}}$ tiene soporte compacto
+cerca de la singularidad, y usar la derivada trayectorial para la parte regular y el peso solo para
+la singular:
+\[
+  \Delta=\E\big[\Phi_{\mathrm{reg}}'(F)G\big]+\E\big[\Phi_{\mathrm{sing}}(F)\pi\big].
+\]
+
+\section{Ilustración numérica}
+Calculamos la delta de una opción digital $\Phi(S)=\ind_{\{S>K\}}$ en Black--Scholes con $S_0=K=100$,
+$r=0{,}05$, $\sigma=0{,}2$, $T=1$. El valor exacto es $\Delta=e^{-rT}\varphi(d_2)/(S_0\sigma\sqrt T)=0{,}018762$. Cada
+estimador usa $N=10^5$ trayectorias; repetimos 50 veces para medir la desviación típica. Las
+diferencias finitas usan números aleatorios comunes. La versión localizada usa $\Phi_{\mathrm{reg}}(S)=
+(1+e^{-(S-K)/5})^{-1}$.
+
+\begin{center}
+\begin{tabular}{lcc}
+\toprule
+Estimador & Media & Desv.\ típica\\
+\midrule
+Diferencias finitas, $h=1$ & 0,018803 & $2{,}8\times10^{-4}$\\
+Diferencias finitas, $h=0{,}1$ & 0,018798 & $9{,}6\times10^{-4}$\\
+Malliavin, peso $W_T/(S_0\sigma T)$ & 0,018758 & $9{,}0\times10^{-5}$\\
+Malliavin localizado & 0,018771 & $5{,}4\times10^{-5}$\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+El peso de Malliavin reduce la desviación típica en un factor 3 frente a la mejor diferencia
+finita, y la localización la reduce otro 40\%; las diferencias entre las medias de los cuatro
+estimadores están dentro del error de Monte Carlo. Para griegas de segundo orden (gamma de
+digitales), la ventaja es mucho mayor: las diferencias finitas centradas tienen varianza $O(h^{-3})$.
+
+\section{Extensiones}
+\begin{itemize}
+  \item \textbf{Volatilidad estocástica.} En Heston o SABR la matriz de Malliavin del par $(S_T,v_T)$
+  no es explícita, pero el principio de la Proposición~\ref{prop:pesos} con $a$ elegido en la dirección del
+  browniano del subyacente da pesos calculables por simulación de $Y_t$ (\cite{Fournie99,MalliavinThalmaier06}).
+  \item \textbf{Saltos.} En modelos de Lévy se usa el cálculo de Malliavin en el espacio de Poisson o se
+  integra por partes solo respecto a la componente browniana (\cite{DiNunnoOksendalProske09}).
+  \item \textbf{Barreras y lookback.} Las discontinuidades en la trayectoria exigen localizar alrededor
+  del tiempo de toque; la Proposición~\ref{prop:supremo} da la derivada del supremo, y se combinan pesos
+  con puentes brownianos.
+  \item \textbf{Diferenciación automática adjunta (AAD).} En la práctica bancaria actual, las
+  griegas de pagos regulares se calculan con AAD; los pesos de Malliavin siguen siendo
+  la herramienta de referencia para pagos discontinuos y se combinan con AAD mediante
+  suavizado o localización.
+\end{itemize}

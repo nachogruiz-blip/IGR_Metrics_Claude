@@ -1,0 +1,108 @@
+\chapter{Procesos gaussianos isonormales}\label{cap:isonormales}
+
+\begin{panorama}
+Abstraemos el marco: en lugar de trabajar en el espacio de trayectorias $C_0([0,T])$,
+trabajamos con una isometría $W:\Hf\to L^2(\Omega)$ de un espacio de Hilbert real separable
+$\Hf$ en un espacio gaussiano. Este punto de vista, debido esencialmente a Gross, Itô y
+Segal y sistematizado por Nualart~\cite{Nualart06}, cubre de una vez el browniano $d$-dimensional, el
+browniano fraccionario, el ruido blanco espacio-temporal y los ruidos coloreados de las
+EDPEs.
+\end{panorama}
+
+\section{Definición y ejemplos}
+
+\begin{definicion}
+Sea $\Hf$ un espacio de Hilbert real separable. Un \emph{proceso gaussiano isonormal}
+sobre $\Hf$ es una familia $W=\{W(h):h\in\Hf\}$ de variables gaussianas centradas definidas en
+$(\Omega,\F,\P)$ tal que
+\[
+  \E[W(h)W(g)]=\ip{h}{g}_\Hf\qquad\text{para todo }h,g\in\Hf.
+\]
+Supondremos siempre que $\F$ es la $\sigma$-álgebra generada por $W$ (completada).
+\end{definicion}
+
+\begin{proposicion}
+$h\mapsto W(h)$ es lineal, y por tanto una isometría lineal de $\Hf$ sobre un espacio
+gaussiano $\Hc_1\subset L^2(\Omega)$, \textup{el primer caos}. Dado $\Hf$, siempre existe un proceso isonormal.
+\end{proposicion}
+
+\begin{proof}
+$\E[(W(ah+bg)-aW(h)-bW(g))^2]=0$ desarrollando con la isometría. Para
+la existencia, toma una base ortonormal $\{e_n\}$, variables i.i.d.\ $\xi_n\sim N(0,1)$ y define $W(h)=
+\sum_n\xi_n\ip{h}{e_n}$, que converge en $L^2$ y es gaussiana por la Proposición~\ref{prop:gaussianos}.
+\end{proof}
+
+\begin{ejemplo}[Browniano]
+$\Hf=L^2([0,T];\R^m)$ y $W(h)=\sum_k\int_0^Th^k(s)\,\dd W^k_s$, la \emph{integral de
+Wiener}. Entonces $W^k_t=W(\ind_{[0,t]}e_k)$.
+\end{ejemplo}
+
+\begin{ejemplo}[Ruido blanco espacio-temporal]
+$\Hf=L^2(\R_+\times\R^d)$. Para un boreliano $A$ de
+medida finita, $W(A)=W(\ind_A)$ es $N(0,\abs{A})$, y $W(A),W(B)$ son independientes si $A\cap B=\emptyset$.
+Es el ruido de la ecuación del calor estocástica de Walsh (Capítulo~\ref{cap:integracion-edpe}).
+\end{ejemplo}
+
+\begin{ejemplo}[Ruido coloreado en espacio]
+Sea $\gamma$ una medida no negativa definida (la covarianza
+espacial) con transformada de Fourier $\mu=\hat\gamma$ (la \emph{medida espectral}). Se toma $\Hf$ como la compleción
+de $C_c^\infty(\R_+\times\R^d)$ respecto a
+\[
+  \ip{\varphi}{\psi}_\Hf=\int_0^\infty\int_{\R^{2d}}\varphi(s,x)\psi(s,y)\gamma(x-y)\,\dd x\,\dd y\,\dd s=\int_0^\infty\int_{\R^d}\hat\varphi(s,\xi)\overline{\hat\psi(s,\xi)}\mu(\dd\xi)\,\dd s.
+\]
+Es el marco de Dalang para EDPEs en dimensión $d\ge2$ (Capítulo~\ref{cap:integracion-edpe}). Notemos que $\Hf$ puede
+contener distribuciones, no solo funciones.
+\end{ejemplo}
+
+\begin{ejemplo}[Browniano fraccionario]
+Para $H\in(0,1)$, $\Hf$ es la compleción de las funciones
+escalonadas en $[0,T]$ respecto a $\ip{\ind_{[0,t]}}{\ind_{[0,s]}}_\Hf=R_H(s,t)=\frac12(t^{2H}+s^{2H}-\abs{t-s}^{2H})$. Ver
+Capítulo~\ref{cap:fraccionario}.
+\end{ejemplo}
+
+\section{Variables suaves y densidad}
+
+\begin{definicion}
+Denotamos por $\Sc$ el conjunto de \emph{variables aleatorias suaves} (o cilíndricas)
+\[
+  F=f\big(W(h_1),\dots,W(h_n)\big),\qquad h_i\in\Hf,\ f\in C_p^\infty(\R^n),
+\]
+donde $C_p^\infty$ son las funciones $C^\infty$ con todas sus derivadas de crecimiento polinomial. Análogamente
+$\Sc_b$ (con $f\in C_b^\infty$) y $\mathcal P$ (con $f$ polinomio).
+\end{definicion}
+
+\begin{lema}\label{lem:densidad-suaves}
+Para todo $p\in[1,\infty)$, los conjuntos $\mathcal P$, $\Sc_b$ y el espacio generado por $\{e^{W(h)}:h\in\Hf\}$
+son densos en $L^p(\Omega,\F,\P)$.
+\end{lema}
+
+\begin{proof}
+Lo vemos para las exponenciales en $L^2$; el caso $L^p$ es análogo usando dualidad
+$L^p$--$L^q$. Sea $G\in L^2$ ortogonal a todas las $e^{W(h)}$ y sea $\{e_n\}$ una base de $\Hf$. Para cada $n$, la
+función $\lambda\mapsto\E[G\exp(\sum_{i\le n}\lambda_iW(e_i))]$ se anula en $\R^n$ y es entera, luego se anula para $\lambda\in i\R^n$:
+la medida $\E[G\mid W(e_1),\dots,W(e_n)]\,\dd\P$ tiene transformada de Fourier nula y $\cond{G}{\G_n}=0$,
+con $\G_n=\sigma(W(e_1),\dots,W(e_n))$. Como $\G_n\uparrow\F$, por convergencia de martingalas, $G=0$. Los
+polinomios aproximan las exponenciales en $L^2$ (serie de Taylor, con convergencia dominada por
+$e^{\abs{W(h)}}$), luego también son densos.
+\end{proof}
+
+\section{El espacio de Wiener abstracto}
+El marco de proceso isonormal es puramente $L^2$. A veces conviene una realización topológica.
+
+\begin{definicion}
+Un \emph{espacio de Wiener abstracto} es una terna $(B,H,\mu)$ donde $B$ es un espacio
+de Banach separable, $H\hookrightarrow B$ un espacio de Hilbert inyectado continua y densamente, y $\mu$
+una medida gaussiana centrada en $B$ con $\int_Be^{i\ell(x)}\mu(\dd x)=e^{-\frac12\norm{\ell}_H^2}$ para $\ell\in B^*\subset H^*\cong H$.
+\end{definicion}
+
+El ejemplo canónico es $B=C_0([0,T])$, $H$ el espacio de Cameron--Martin, $\mu$ la medida de
+Wiener. Para $\ell\in B^*$, $W(\ell)=\ell(\omega)$ se extiende por isometría a $H$, dando un proceso isonormal.
+El Teorema de Cameron--Martin vale en este marco: $\mu(\cdot-h)\ll\mu$ si y solo si $h\in H$.
+
+\begin{intuicion}
+¿Por qué no usar directamente $\Hf$ como espacio muestral? Porque una medida gaussiana
+estándar no existe en un Hilbert de dimensión infinita: si $\xi=\sum\xi_ne_n$ con $\xi_n$ i.i.d., entonces
+$\norm{\xi}^2=\sum\xi_n^2=\infty$ c.s. El ruido ``vive'' en un espacio más grande $B$, mientras que $H$ es la
+parte de $B$ que describe las direcciones de traslación admisibles. Por eso la derivada de
+Malliavin, aunque se calcula ``en el punto $\omega\in B$'', toma valores en $H$.
+\end{intuicion}

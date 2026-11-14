@@ -1,0 +1,190 @@
+\chapter{El cálculo de Itô}\label{cap:ito}
+
+\begin{panorama}
+Construimos la integral estocástica $\int_0^tH_s\,\dd W_s$ para integrandos progresivos, demostramos
+la isometría de Itô, la fórmula de Itô, la desigualdad de Burkholder--Davis--Gundy, el
+teorema de Girsanov y el teorema de representación de martingalas. Este último plantea la
+pregunta que el cálculo de Malliavin responderá en el Capítulo~\ref{cap:divergencia}: \emph{¿cuál es explícitamente
+el integrando?}
+\end{panorama}
+
+Fijamos un $(\F_t)$-browniano $W$ en $[0,T]$.
+
+\section{La integral para procesos elementales}
+
+\begin{definicion}
+Un proceso \emph{elemental} es $H_t=\sum_{i=0}^{n-1}\xi_i\ind_{(t_i,t_{i+1}]}(t)$ con $0=t_0<\dots<t_n=T$
+y $\xi_i\in L^2(\F_{t_i})$. Su integral es
+\[
+  I(H)_t=\int_0^tH_s\,\dd W_s:=\sum_i\xi_i(W_{t_{i+1}\wedge t}-W_{t_i\wedge t}).
+\]
+\end{definicion}
+
+\begin{lema}[Isometría de Itô para elementales]\label{lem:isometria-elemental}
+$I(H)$ es una martingala continua de cuadrado
+integrable y $\E[I(H)_T^2]=\E\int_0^TH_s^2\,\dd s$.
+\end{lema}
+
+\begin{proof}
+La propiedad de martingala es el Lema~\ref{lem:transformada} en tiempo continuo:
+\[
+  \cond{\xi_i(W_{t_{i+1}}-W_{t_i})}{\F_{t_i}}=\xi_i\cond{W_{t_{i+1}}-W_{t_i}}{\F_{t_i}}=0.
+\]
+Para la isometría, desarrollamos el cuadrado. Los términos cruzados, $i<j$, se anulan:
+condicionando a $\F_{t_j}$, $\E[\xi_i\Delta_i\xi_j\Delta_j]=\E[\xi_i\Delta_i\xi_j\cond{\Delta_j}{\F_{t_j}}]=0$. Los diagonales: $\E[\xi_i^2\Delta_i^2]=
+\E[\xi_i^2\cond{\Delta_i^2}{\F_{t_i}}]=\E[\xi_i^2](t_{i+1}-t_i)$.
+\end{proof}
+
+\section{Extensión por densidad}
+Sea $L^2_{\mathrm{prog}}=L^2_{\mathrm{prog}}(\Omega\times[0,T])$ el espacio de procesos progresivos con $\E\int_0^TH_s^2\,\dd s<\infty$.
+
+\begin{lema}\label{lem:densidad-elementales}
+Los procesos elementales son densos en $L^2_{\mathrm{prog}}$.
+\end{lema}
+
+\begin{proof}
+(a) Si $H$ es continuo y acotado, $H^n=\sum_iH_{t_i}\ind_{(t_i,t_{i+1}]}$ converge por convergencia
+dominada. (b) Si $H$ es acotado y progresivo, $\tilde H^m_t=m\int_{(t-1/m)\vee0}^tH_s\,\dd s$ es continuo, adaptado y
+converge a $H$ en $L^2(\dd t\otimes\dd\P)$ por el teorema de diferenciación de Lebesgue. (c) Truncación:
+$H\ind_{\abs{H}\le n}\to H$.
+\end{proof}
+
+\begin{teorema}[Integral de Itô]\label{teo:integral-ito}
+La aplicación $H\mapsto I(H)$ se extiende de manera única a
+una isometría
+\[
+  I:L^2_{\mathrm{prog}}\to\mathcal M^2_c([0,T]),\qquad\E\Big[\Big(\int_0^TH\,\dd W\Big)^2\Big]=\E\int_0^TH_s^2\,\dd s.
+\]
+\end{teorema}
+
+\begin{proof}
+Lemas~\ref{lem:isometria-elemental} y~\ref{lem:densidad-elementales} y la completitud de $\mathcal M^2_c$ (Proposición~\ref{prop:M2c}).
+\end{proof}
+
+\paragraph{Localización.} Si $H$ es progresivo con $\int_0^TH_s^2\,\dd s<\infty$ c.s., sea $\tau_n=\inf\{t:\int_0^tH^2\ge n\}\wedge T$.
+Entonces $H\ind_{[0,\tau_n]}\in L^2_{\mathrm{prog}}$ y las integrales son compatibles, lo que define $\int_0^tH\,\dd W$ como
+\emph{martingala local} continua.
+
+\begin{proposicion}[Variación cuadrática de la integral]
+Si $M_t=\int_0^tH\,\dd W$ con $H\in L^2_{\mathrm{prog}}$, el
+proceso $M_t^2-\int_0^tH_s^2\,\dd s$ es martingala, es decir, $\langle M\rangle_t=\int_0^tH_s^2\,\dd s$. Además $\sum_i(M_{t_{i+1}}-M_{t_i})^2\to
+\langle M\rangle_t$ en probabilidad.
+\end{proposicion}
+
+\section{Semimartingalas y la fórmula de Itô}
+Un \emph{proceso de Itô} es $X_t=X_0+\int_0^tb_s\,\dd s+\int_0^t\sigma_s\,\dd W_s$ con $b,\sigma$ progresivos, $\int\abs{b}+\int\sigma^2<\infty$ c.s.
+Escribimos $\dd X=b\,\dd t+\sigma\,\dd W$ y $\dd\langle X\rangle=\sigma^2\,\dd t$.
+
+\begin{teorema}[Fórmula de Itô]\label{teo:formula-ito}
+Si $f\in C^{1,2}([0,T]\times\R)$ y $X$ es un proceso de Itô,
+\[
+  f(t,X_t)=f(0,X_0)+\int_0^t\partial_sf(s,X_s)\,\dd s+\int_0^t\partial_xf(s,X_s)\,\dd X_s+\frac12\int_0^t\partial_{xx}f(s,X_s)\sigma_s^2\,\dd s.
+\]
+En dimensión $d$, con $\dd X^i=b^i\,\dd t+\sum_k\sigma^{ik}\,\dd W^k$ y $\dd\langle X^i,X^j\rangle=(\sigma\sigma^\top)^{ij}\,\dd t$,
+\[
+  \dd f(t,X_t)=\partial_tf\,\dd t+\sum_i\partial_if\,\dd X^i_t+\frac12\sum_{i,j}\partial_{ij}f\,\dd\langle X^i,X^j\rangle_t.
+\]
+\end{teorema}
+
+\begin{proof}
+Por localización podemos suponer $X$, $b$, $\sigma$ acotados y $f$ con soporte compacto;
+además omitimos la dependencia en $t$, que añade un término de primer orden inocuo. Sea
+$\pi=\{t_i\}$ una partición de $[0,t]$. Por Taylor,
+\[
+  f(X_t)-f(X_0)=\sum_if'(X_{t_i})\Delta X_i+\frac12\sum_if''(X_{t_i})(\Delta X_i)^2+\sum_iR_i,
+\]
+con $\abs{R_i}\le\omega_{f''}(\abs{\Delta X_i})(\Delta X_i)^2$, siendo $\omega_{f''}$ el módulo de continuidad de $f''$.
+
+\emph{Primer término.} $\sum_if'(X_{t_i})\Delta X_i\to\int_0^tf'(X_s)\,\dd X_s$ en probabilidad: la parte $\dd s$ por convergencia
+dominada; la parte $\dd W$ porque el integrando elemental $\sum f'(X_{t_i})\ind_{(t_i,t_{i+1}]}$ converge en
+$L^2_{\mathrm{prog}}$, por continuidad, y por la isometría.
+
+\emph{Segundo término.} $(\Delta X_i)^2=(\int b)^2+2\int b\int\sigma\,\dd W+(\int\sigma\,\dd W)^2$. Los dos primeros suman
+$O(\abs{\pi})\cdot(\text{acotado})\to0$. Para el tercero, $\sum_if''(X_{t_i})(\Delta M_i)^2-\sum_if''(X_{t_i})\Delta\langle M\rangle_i\to0$ en
+$L^2$: sus sumandos son incrementos de martingala ortogonales, y $\E[((\Delta M_i)^2-\Delta\langle M\rangle_i)^2]\le
+C\E[(\Delta\langle M\rangle_i)^2]\le C\abs{\pi}\delta_i$, por BDG o un cálculo directo con $\sigma$ acotado. Finalmente
+$\sum f''(X_{t_i})\Delta\langle M\rangle_i\to\int f''(X_s)\sigma_s^2\,\dd s$.
+
+\emph{Resto.} $\sum\abs{R_i}\le\max_i\omega_{f''}(\abs{\Delta X_i})\sum(\Delta X_i)^2\to0$ en probabilidad, pues el máximo tiende a $0$
+por continuidad uniforme y la suma está acotada en probabilidad.
+
+Pasando a una subsucesión con convergencia casi segura y usando la continuidad de ambos
+lados en $t$, la igualdad vale para todo $t$ c.s.
+\end{proof}
+
+\begin{ejemplo}
+$W_t^2=2\int_0^tW_s\,\dd W_s+t$. La exponencial estocástica $\mathcal E(h)_t=\exp(\int_0^th\,\dd W-
+\frac12\int_0^th^2\,\dd s)$ satisface $\dd\mathcal E_t=h_t\mathcal E_t\,\dd W_t$.
+\end{ejemplo}
+
+\section{Desigualdades de Burkholder--Davis--Gundy}
+
+\begin{teorema}[BDG]\label{teo:bdg}
+Para cada $p>0$ existen constantes $c_p,C_p$ tales que, para toda
+martingala local continua $M$ con $M_0=0$ y todo tiempo de parada $\tau$,
+\[
+  c_p\E[\langle M\rangle_\tau^{p/2}]\le\E\Big[\sup_{t\le\tau}\abs{M_t}^p\Big]\le C_p\E[\langle M\rangle_\tau^{p/2}].
+\]
+\end{teorema}
+
+\begin{proof}[Demostración para $p\ge2$, cota superior]
+Por localización, $M$ y $\langle M\rangle$ acotados. Por Itô,
+$\abs{M_t}^p=\int_0^tp\abs{M_s}^{p-1}\sgn(M_s)\,\dd M_s+\frac{p(p-1)}{2}\int_0^t\abs{M_s}^{p-2}\,\dd\langle M\rangle_s$. Tomando esperanzas y con
+$M^*=\sup_{s\le\tau}\abs{M_s}$,
+\[
+  \E\abs{M_\tau}^p\le\tfrac{p(p-1)}{2}\E\big[(M^*)^{p-2}\langle M\rangle_\tau\big]\le\tfrac{p(p-1)}{2}\norm{M^*}_p^{p-2}\norm{\langle M\rangle_\tau}_{p/2},
+\]
+por Hölder con exponentes $\frac{p}{p-2}$ y $\frac p2$. Por Doob, $\norm{M^*}_p^p\le(\frac{p}{p-1})^p\E\abs{M_\tau}^p$. Combinando y
+dividiendo entre $\norm{M^*}_p^{p-2}$ se obtiene $\norm{M^*}_p^2\le C\norm{\langle M\rangle_\tau}_{p/2}$. Los demás casos se prueban con
+argumentos de ``buen $\lambda$''; véase \cite[Th.~IV.4.1]{RevuzYor99}.
+\end{proof}
+
+\section{Teorema de Girsanov}
+
+\begin{teorema}[Girsanov]\label{teo:girsanov}
+Sea $\theta$ progresivo tal que $Z_t=\mathcal E(\theta)_t$ es martingala en $[0,T]$, lo cual
+ocurre por ejemplo bajo la condición de Novikov, $\E\exp(\frac12\int_0^T\theta^2)<\infty$. Bajo $\dd\Q=Z_T\,\dd\P$, el
+proceso $\tilde W_t=W_t-\int_0^t\theta_s\,\dd s$ es un browniano.
+\end{teorema}
+
+\begin{proof}
+Por la caracterización de Lévy (una martingala local continua $M$ con $\langle M\rangle_t=t$
+es browniana), basta ver que $\tilde W$ y $\tilde W^2-t$ son $\Q$-martingalas locales. Por la regla de Bayes, $X$ es
+$\Q$-martingala local si $XZ$ es $\P$-martingala local. Por Itô, $\dd(\tilde WZ)=\tilde W\,\dd Z+Z\,\dd\tilde W+\dd\langle\tilde W,Z\rangle=
+\tilde WZ\theta\,\dd W+Z\,\dd W-Z\theta\,\dd t+Z\theta\,\dd t$, que no tiene término en $\dd t$. Para $\tilde W^2-t$ el cálculo es
+análogo.
+\end{proof}
+
+El Teorema de Cameron--Martin (\ref{teo:cameron-martin}) es el caso particular $\theta=\dot h$ determinista.
+
+\section{Representación de martingalas}
+
+\begin{teorema}[Representación de Itô]\label{teo:representacion}
+Sea $\F_t=\F^W_t$ la filtración (completada) del
+browniano. Toda $F\in L^2(\Omega,\F_T,\P)$ se escribe de manera única como
+\[
+  F=\E F+\int_0^Tu_s\,\dd W_s,\qquad u\in L^2_{\mathrm{prog}}.
+\]
+En consecuencia, toda $(\F^W_t)$-martingala de cuadrado integrable tiene una versión continua y
+es una integral estocástica.
+\end{teorema}
+
+\begin{proof}
+Sea $\mathcal R=\{\E F+\int_0^Tu\,\dd W:\ u\in L^2_{\mathrm{prog}}\}$. Por la isometría, $\mathcal R$ es cerrado en
+$L^2$. Contiene las exponenciales $\mathcal E(h)_T=e^{W(h)-\frac12\norm{h}^2}$, con $h\in L^2([0,T])$ determinista, porque
+$\mathcal E(h)_T=1+\int_0^Th_s\mathcal E(h)_s\,\dd W_s$. Basta ver que estas exponenciales generan un subespacio denso. Si
+$G\in L^2(\F_T)$ es ortogonal a todas, en particular a $\exp(\sum_j\lambda_jW_{t_j})$ para todo $\lambda\in\R^n$, entonces la
+medida (con signo) $G\,\dd\P$ restringida a $\sigma(W_{t_1},\dots,W_{t_n})$ tiene transformada de Laplace nula, que
+es analítica en $\lambda$; por tanto se anula y $\cond{G}{W_{t_1},\dots,W_{t_n}}=0$. Por el teorema de convergencia
+de martingalas, $G=0$. La unicidad es la isometría.
+\end{proof}
+
+\begin{intuicion}
+El teorema es \emph{no constructivo}: prueba que $u$ existe por un argumento de densidad, pero
+no dice cuál es. La \textbf{fórmula de Clark--Ocone} (Teorema~\ref{teo:clark-ocone}) dará la respuesta:
+\[
+  u_t=\cond{D_tF}{\F_t},
+\]
+donde $D_tF$ es la derivada de Malliavin. En finanzas, $u$ es la cartera de cobertura
+(Capítulo~\ref{cap:cobertura}).
+\end{intuicion}

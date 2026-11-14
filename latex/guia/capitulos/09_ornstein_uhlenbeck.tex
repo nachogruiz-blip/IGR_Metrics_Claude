@@ -1,0 +1,231 @@
+\chapter{El operador de Ornstein--Uhlenbeck}\label{cap:ou}
+
+\begin{panorama}
+El tercer operador básico es $L=-\delta D$, generador del semigrupo de Ornstein--Uhlenbeck
+en dimensión infinita. Es diagonal en el caos: $L=-\sum_nnJ_n$. Probamos la fórmula
+de Mehler, la propiedad de difusión, la desigualdad de Poincaré y la representación de
+covarianzas, la desigualdad logarítmica de Sobolev de Gross, la hipercontractividad de
+Nelson y enunciamos (con esbozo de prueba) las desigualdades de Meyer, que hacen de
+los espacios $\D^{k,p}$ una escala bien comportada.
+\end{panorama}
+
+\section{El semigrupo y su generador}
+
+\begin{definicion}
+El \emph{semigrupo de Ornstein--Uhlenbeck} es la familia de contracciones de $L^2(\Omega)$
+\[
+  P_tF=\sum_{n=0}^\infty e^{-nt}J_nF,\qquad t\ge0.
+\]
+Su generador es $L=-\sum_nnJ_n$, con dominio $\Dom L=\{F:\sum_nn^2\E(J_nF)^2<\infty\}$. La
+\emph{pseudoinversa} es $L^{-1}F=-\sum_{n\ge1}\frac1nJ_nF$, que satisface $LL^{-1}F=F-\E F$.
+\end{definicion}
+
+\begin{teorema}[Fórmula de Mehler]\label{teo:mehler}
+Sea $W'$ una copia independiente de $W$, definida en
+$(\Omega',\F',\P')$. Para $F\in L^2(\Omega)$, viendo $F$ como funcional de $W$, $F=\Psi(W)$,
+\[
+  P_tF=\E'\Big[\Psi\big(e^{-t}W+\sqrt{1-e^{-2t}}\,W'\big)\Big].
+\]
+\end{teorema}
+
+\begin{proof}
+El proceso $W^{(t)}=e^{-t}W+\sqrt{1-e^{-2t}}W'$ es isonormal sobre $\Hf$, luego la fórmula
+define una contracción de $L^p$ para todo $p$ (Jensen). Basta comprobarla en $F=\mathcal E(h)=
+e^{W(h)-\frac12\norm{h}^2}$, que generan un subespacio denso:
+\[
+  \E'\big[e^{e^{-t}W(h)+\sqrt{1-e^{-2t}}W'(h)-\frac12\norm{h}^2}\big]=e^{e^{-t}W(h)-\frac12e^{-2t}\norm{h}^2}=\mathcal E(e^{-t}h).
+\]
+Por otra parte, $\mathcal E(h)=\sum_n\frac1{n!}I_n(h^{\otimes n})$, de modo que $\sum_ne^{-nt}\frac1{n!}I_n(h^{\otimes n})=\sum_n\frac1{n!}I_n((e^{-t}h)^{\otimes n})=
+\mathcal E(e^{-t}h)$.
+\end{proof}
+
+\begin{corolario}
+$(P_t)$ es un semigrupo markoviano: $P_t1=1$, $P_tF\ge0$ si $F\ge0$, y $\norm{P_tF}_p\le\norm{F}_p$
+para todo $p\ge1$. Es simétrico respecto a $\P$ y ergódico: $P_tF\to\E F$ cuando $t\to\infty$.
+\end{corolario}
+
+\begin{proposicion}
+$F\in\Dom L$ si y solo si $F\in\D^{1,2}$ y $DF\in\Dom\delta$, y en ese caso $LF=-\delta DF$.
+\end{proposicion}
+
+\begin{proof}
+Para $F=I_n(f_n)$: $DF=nI_{n-1}(f_n(\cdot,t))$ y, por la Proposición~\ref{prop:delta-caos}, $\delta DF=
+nI_n(f_n)=-LF$. Las condiciones de dominio coinciden con $\sum n^2n!\norm{f_n}^2<\infty$.
+\end{proof}
+
+\begin{proposicion}[Propiedades de cálculo]
+\begin{enumerate}[label=(\roman*)]
+  \item Para $F=f(W(h_1),\dots,W(h_n))\in\Sc$,
+  \[
+    LF=\sum_{i,j}\partial_{ij}f(\cdot)\ip{h_i}{h_j}-\sum_i\partial_if(\cdot)W(h_i).
+  \]
+  \item \textup{Propiedad de difusión}: si $F_1,\dots,F_m\in\Sc$ y $\varphi\in C^2$,
+  \[
+    L\varphi(F)=\sum_i\partial_i\varphi(F)LF_i+\sum_{i,j}\partial_{ij}\varphi(F)\ip{DF_i}{DF_j}.
+  \]
+  En particular $\Gamma(F,G):=\frac12\big(L(FG)-FLG-GLF\big)=\ip{DF}{DG}$.
+  \item \textup{Conmutación}: $DP_tF=e^{-t}P_tDF$, donde $P_t$ actúa componente a componente sobre las
+  variables $\Hf$-valuadas.
+\end{enumerate}
+\end{proposicion}
+
+\begin{proof}
+(i) Es $-\delta DF$ con la Proposición~\ref{prop:reglas-delta}(i). (ii) Se deduce de (i). (iii) En caos:
+$DP_tI_n(f)=e^{-nt}nI_{n-1}(f)$ y $P_tDI_n(f)=e^{-(n-1)t}nI_{n-1}(f)$.
+\end{proof}
+
+\begin{intuicion}
+En dimensión finita, con $\gamma_n=N(0,I_n)$, $L=\Delta-x\cdot\nabla$ es el generador de la difusión de
+Ornstein--Uhlenbeck $\dd X=-X\,\dd t+\sqrt2\,\dd B$, cuya medida invariante es $\gamma_n$. El cálculo de
+Malliavin es, en este sentido, el análisis armónico de la medida gaussiana en dimensión
+infinita: $D$ es el gradiente, $\delta=D^*$ la divergencia, $L=-D^*D$ el laplaciano (de Witten) y
+el caos de Wiener su descomposición espectral, con autovalores $0,-1,-2,\dots$
+\end{intuicion}
+
+\section{Desigualdad de Poincaré y representación de covarianzas}
+
+\begin{teorema}[Poincaré gaussiana]\label{teo:poincare}
+Para $F\in\D^{1,2}$, $\Var(F)\le\E\norm{DF}^2_\Hf$.
+\end{teorema}
+
+\begin{proof}
+$\Var F=\sum_{n\ge1}n!\norm{f_n}^2\le\sum_{n\ge1}n\,n!\norm{f_n}^2=\E\norm{DF}^2$.
+\end{proof}
+
+La constante 1 es óptima (igualdad en el primer caos) y no depende de la dimensión: esta
+es la fuente de los fenómenos de \emph{concentración de la medida} gaussiana.
+
+\begin{proposicion}[Representación de covarianzas]\label{prop:covarianzas}
+Para $F,G\in\D^{1,2}$,
+\[
+  \Cov(F,G)=\E\ip{DF}{-DL^{-1}G}_\Hf=\int_0^\infty e^{-t}\,\E\ip{DF}{P_tDG}_\Hf\,\dd t.
+\]
+\end{proposicion}
+
+\begin{proof}
+$G-\E G=LL^{-1}G=-\delta DL^{-1}G$, luego, por dualidad, $\E[F(G-\E G)]=
+\E\ip{DF}{-DL^{-1}G}$. Para la segunda forma: $-L^{-1}=\int_0^\infty P_t\,\dd t$ sobre variables centradas, y
+$DP_t=e^{-t}P_tD$.
+\end{proof}
+
+\begin{corolario}[Concentración gaussiana]
+Si $F\in\D^{1,2}$ y $\norm{DF}_\Hf\le1$ c.s., entonces $\P(F-\E F\ge
+r)\le e^{-r^2/2}$ para $r\ge0$.
+\end{corolario}
+
+\begin{proof}
+Podemos suponer $\E F=0$. Sea $\phi(\lambda)=\E e^{\lambda F}$. Por la Proposición~\ref{prop:covarianzas} con
+$G=e^{\lambda F}$, para la que $DG=\lambda e^{\lambda F}DF$,
+\[
+  \phi'(\lambda)=\E[Fe^{\lambda F}]=\int_0^\infty e^{-t}\E\ip{\lambda e^{\lambda F}DF}{P_tDF}\,\dd t\le\lambda\phi(\lambda),
+\]
+porque $\norm{P_tDF}\le P_t\norm{DF}\le1$ y $\int e^{-t}=1$. Así $\phi(\lambda)\le e^{\lambda^2/2}$ y se aplica Chebyshev exponencial
+con $\lambda=r$.
+\end{proof}
+
+\begin{ejemplo}
+$M=\sup_{[0,1]}W$ satisface $\norm{DM}^2=\tau\le1$, luego $\P(M-\E M\ge r)\le e^{-r^2/2}$. Más
+en general, el supremo de cualquier proceso gaussiano acotado con $\sup_t\Var X_t\le\sigma^2$ satisface la
+desigualdad de Borell--TIS, $\P(\sup X-\E\sup X\ge r)\le e^{-r^2/2\sigma^2}$.
+\end{ejemplo}
+
+\section{Desigualdad logarítmica de Sobolev}
+
+\begin{teorema}[Gross~\cite{Gross75}]\label{teo:log-sobolev}
+Para $F\in\D^{1,2}$,
+\[
+  \Ent(F^2):=\E[F^2\log F^2]-\E F^2\log\E F^2\le2\,\E\norm{DF}^2_\Hf.
+\]
+\end{teorema}
+
+\begin{proof}
+Probamos la forma equivalente $\Ent(G)\le\frac12\E[\norm{DG}^2/G]$ para $G=F^2$ suave
+y $G\ge\varepsilon>0$ (luego se aproxima). Por ergodicidad, $\Ent(G)=-\int_0^\infty\frac{\dd}{\dd t}\E[P_tG\log P_tG]\,\dd t$.
+Derivando y usando $\E[LH\cdot K]=-\E\ip{DH}{DK}$,
+\[
+  -\frac{\dd}{\dd t}\E[P_tG\log P_tG]=-\E[LP_tG\,(1+\log P_tG)]=\E\frac{\norm{DP_tG}^2}{P_tG}.
+\]
+Por la conmutación $DP_tG=e^{-t}P_tDG$ y Cauchy--Schwarz para la medida de Mehler, $\norm{P_tDG}^2\le
+(P_t\norm{DG})^2\le P_tG\cdot P_t(\norm{DG}^2/G)$. Así
+\[
+  \E\frac{\norm{DP_tG}^2}{P_tG}\le e^{-2t}\E P_t\Big(\frac{\norm{DG}^2}{G}\Big)=e^{-2t}\E\frac{\norm{DG}^2}{G},
+\]
+e integrando, $\Ent(G)\le\frac12\E[\norm{DG}^2/G]$. Con $G=F^2$, $\norm{DG}^2/G=4\norm{DF}^2$.
+\end{proof}
+
+\section{Hipercontractividad}
+
+\begin{teorema}[Nelson]\label{teo:hipercontractividad}
+Sean $1<p<q<\infty$ y $t>0$ con $e^{2t}\ge\frac{q-1}{p-1}$. Entonces
+$\norm{P_tF}_q\le\norm{F}_p$ para toda $F\in L^p$.
+\end{teorema}
+
+\begin{proof}[Demostración (Gross)]
+Sea $F\ge0$ suave, acotada inferiormente por una constante positiva,
+$q(t)=1+(p-1)e^{2t}$ y $N(t)=\norm{P_tF}_{q(t)}$. Basta ver que $N$ es decreciente. Con $G_t=P_tF$ y
+$q=q(t)$, un cálculo directo da
+\[
+  \frac{\dd}{\dd t}\log N(t)=\frac{q'}{q^2}\frac{\Ent(G_t^q)}{\E G_t^q}+\frac{\E[G_t^{q-1}LG_t]}{\E G_t^q}.
+\]
+Ahora $\E[G^{q-1}LG]=-(q-1)\E[G^{q-2}\norm{DG}^2]=-\frac{4(q-1)}{q^2}\E\norm{D(G^{q/2})}^2$. Por la desigualdad
+log-Sobolev aplicada a $G^{q/2}$, $\Ent(G^q)\le2\E\norm{D(G^{q/2})}^2$. Así
+\[
+  \frac{\dd}{\dd t}\log N\le\frac{2}{q^2\E G^q}\big(q'-2(q-1)\big)\E\norm{D(G^{q/2})}^2=0,
+\]
+porque $q'=2(q-1)$. Para $F$ de signo arbitrario se usa $\abs{P_tF}\le P_t\abs{F}$.
+\end{proof}
+
+\begin{proof}[Demostración del Teorema~\ref{teo:normas-caos}]
+Si $F\in\Hc_n$, $P_tF=e^{-nt}F$. Con $p=2$ y $e^{2t}=q-1$:
+$e^{-nt}\norm{F}_q\le\norm{F}_2$, es decir, $\norm{F}_q\le(q-1)^{n/2}\norm{F}_2$.
+\end{proof}
+
+\section{Desigualdades de Meyer}
+
+\begin{teorema}[Meyer, 1984]\label{teo:meyer}
+Para cada $p\in(1,\infty)$ existen $c_p,C_p>0$ tales que para toda
+$F\in\Sc$,
+\[
+  c_p\norm{DF}_{L^p(\Omega;\Hf)}\le\norm{(-L)^{1/2}F}_{L^p}\le C_p\big(\norm{DF}_{L^p(\Omega;\Hf)}+\abs{\E F}\big).
+\]
+Más en general, $\norm{F}_{k,p}$ es equivalente a $\norm{(I-L)^{k/2}F}_p$, y $\D^{k,p}=\Dom_{L^p}(I-L)^{k/2}$.
+\end{teorema}
+
+\begin{proof}[Esbozo (método de Pisier)]
+La idea es expresar la ``transformada de Riesz'' $D(-L)^{-1/2}$ como
+un operador singular de tipo transformada de Hilbert. Se parte de la fórmula de subordinación
+$(-L)^{-1/2}=\frac1{\sqrt\pi}\int_0^\infty t^{-1/2}P_t\,\dd t$ sobre variables centradas, de la fórmula de Mehler escrita con
+$e^{-t}=\cos\theta$, $\sqrt{1-e^{-2t}}=\sin\theta$, y de la identidad, obtenida derivando en $\theta$ e integrando por
+partes en $W'$,
+\[
+  \frac{\dd}{\dd\theta}\E'\big[F(W\cos\theta+W'\sin\theta)\big]\ \leftrightarrow\ \E'\big[\ip{DF(W\cos\theta+W'\sin\theta)}{\cdot}\,W'\big].
+\]
+El resultado (Pisier) es que $\ip{D(-L)^{-1/2}F}{h}$ se escribe como una integral en valor principal en
+$\theta\in(-\pi/2,\pi/2)$ de $\E'[F(W\cos\theta+W'\sin\theta)W'(h)]$ contra un núcleo explícito que se comporta
+como $1/\theta$ cerca de 0. Rotar $(W,W')\mapsto(W\cos\theta+W'\sin\theta,-W\sin\theta+W'\cos\theta)$ preserva la ley
+conjunta, y el operador resultante es esencialmente la transformada de Hilbert en el círculo,
+acotada en $L^p$ por el teorema de M.~Riesz (en su versión con valores en $L^p(\Omega')$, que es un
+espacio UMD). Combinando con la desigualdad de Khintchine gaussiana para pasar de $W'(h)$ a
+$\norm{\cdot}_\Hf$, se obtiene la primera desigualdad. La segunda se obtiene por dualidad. Véanse \cite[§1.5]{Nualart06}
+y~\cite{Pisier88}.
+\end{proof}
+
+\begin{corolario}[Continuidad de $\delta$]\label{cor:continuidad-delta}
+Para $p>1$, $\D^{1,p}(\Hf)\subset\Dom\delta$ y
+\[
+  \norm{\delta(u)}_p\le C_p\big(\norm{\E u}_\Hf+\norm{Du}_{L^p(\Omega;\Hf\otimes\Hf)}\big).
+\]
+Más en general $\delta$ es continuo de $\D^{k+1,p}(\Hf)$ en $\D^{k,p}$, y $\D^\infty(\Hf)\subset\Dom\delta$ con $\delta(\D^\infty(\Hf))\subset\D^\infty$.
+\end{corolario}
+
+\begin{proof}
+Por dualidad: para $G\in\Sc$ centrada, $\E[G\delta(u)]=\E\ip{DG}{u}$, y se escribe $DG=
+D(-L)^{-1/2}(-L)^{1/2}G$; Meyer controla $\norm{D(-L)^{-1/2}}_{L^q\to L^q(\Hf)}$, y se usa la relación de conmutación
+para pasar una derivada a $u$.
+\end{proof}
+
+\begin{observacion}
+Las desigualdades de Meyer son el ingrediente técnico que hace funcionar la
+integración por partes iterada del Capítulo~\ref{cap:densidades}: allí se necesita que $\delta$ envíe $\D^\infty$ en $\D^\infty$ con cotas
+$L^p$ controladas, para poder aplicar $\delta$ repetidamente.
+\end{observacion}

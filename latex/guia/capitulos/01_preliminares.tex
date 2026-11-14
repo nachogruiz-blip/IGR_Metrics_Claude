@@ -1,0 +1,198 @@
+\chapter{Preliminares de probabilidad}\label{cap:preliminares}
+
+\begin{panorama}
+Fijamos el lenguaje: esperanza condicional, filtraciones, tiempos de parada y martingalas
+en tiempo discreto y continuo. Probamos las desigualdades de Doob y el teorema de parada
+opcional, que se usarán constantemente. Cerramos con vectores y espacios gaussianos, el
+objeto sobre el que se construirá todo el cálculo de Malliavin.
+\end{panorama}
+
+\section{Esperanza condicional}
+Sea $(\Omega,\F,\P)$ un espacio de probabilidad y $\G\subset\F$ una sub-$\sigma$-álgebra.
+
+\begin{teorema}[Existencia y unicidad]\label{teo:esp-cond}
+Para cada $X\in L^1(\Omega,\F,\P)$ existe una variable
+$Y\in L^1(\Omega,\G,\P)$, única salvo igualdad c.s., tal que
+\[
+  \E[X\ind_G]=\E[Y\ind_G]\qquad\text{para todo } G\in\G.
+\]
+Se denota $Y=\cond{X}{\G}$.
+\end{teorema}
+
+\begin{proof}
+\emph{Caso $L^2$.} $L^2(\G)$ es un subespacio cerrado de $L^2(\F)$; sea $Y$ la proyección ortogonal
+de $X$. Entonces $X-Y\perp\ind_G$ para todo $G\in\G$, que es la propiedad pedida.
+
+\emph{Caso $X\ge0$.} Sea $X_n=X\wedge n\in L^2$ e $Y_n$ la proyección. La proyección conserva el orden
+(si $Z\ge0$ y $Y=\cond{Z}{\G}$, tomando $G=\{Y<0\}$ obtenemos $\E[Y\ind_G]=\E[Z\ind_G]\ge0$, luego
+$\P(G)=0$), así que $Y_n$ es creciente; $Y=\lim Y_n$ cumple la propiedad por convergencia monótona
+e $\E Y=\E X<\infty$.
+
+\emph{Caso general.} $X=X^+-X^-$ y linealidad. La unicidad: si $Y,Y'$ cumplen la propiedad, con
+$G=\{Y>Y'\}\in\G$ resulta $\E[(Y-Y')\ind_G]=0$, luego $Y\le Y'$ c.s., y por simetría $Y=Y'$.
+\end{proof}
+
+Las propiedades habituales (linealidad, monotonía, torre $\cond{\cond{X}{\G}}{\mathcal K}=\cond{X}{\mathcal K}$ si $\mathcal K\subset\G$,
+sacar lo conocido $\cond{ZX}{\G}=Z\cond{X}{\G}$ para $Z$ $\G$-medible acotada, Jensen condicional) se
+deducen directamente de la definición. Destacamos que $\cond{\cdot}{\G}$ es una contracción en todo $L^p$,
+$1\le p\le\infty$, por Jensen.
+
+\section{Filtraciones, procesos y tiempos de parada}
+Una \emph{filtración} es una familia creciente $(\F_t)_{t\ge0}$ de sub-$\sigma$-álgebras. Supondremos las \emph{condiciones
+habituales}: $\F_0$ contiene los $\P$-nulos y $\F_t=\F_{t+}:=\bigcap_{s>t}\F_s$. Un proceso $X=(X_t)$ es \emph{adaptado}
+si $X_t$ es $\F_t$-medible para todo $t$, y \emph{progresivamente medible} si para cada $t$ la aplicación $(s,\omega)\mapsto
+X_s(\omega)$ en $[0,t]\times\Omega$ es $\mathcal B([0,t])\otimes\F_t$-medible. Todo proceso adaptado con trayectorias continuas
+por la derecha es progresivo.
+
+\begin{definicion}
+Una variable $\tau:\Omega\to[0,\infty]$ es un \emph{tiempo de parada} si $\{\tau\le t\}\in\F_t$ para
+todo $t$. La $\sigma$-álgebra de los sucesos anteriores a $\tau$ es $\F_\tau=\{A\in\F:\ A\cap\{\tau\le t\}\in\F_t\ \forall t\}$.
+\end{definicion}
+
+Si $X$ es progresivo y $\tau$ es de parada, $X_\tau\ind_{\{\tau<\infty\}}$ es $\F_\tau$-medible y el proceso parado $X^\tau_t=X_{t\wedge\tau}$
+es progresivo. El tiempo de entrada de un proceso continuo adaptado en un cerrado es un
+tiempo de parada; en un abierto, lo es bajo las condiciones habituales.
+
+\section{Martingalas en tiempo discreto}
+
+\begin{definicion}
+Un proceso adaptado e integrable $(M_n)$ es una \emph{martingala} (resp.\ sub-,
+super-) si $\cond{M_{n+1}}{\F_n}=M_n$ (resp.\ $\ge$, $\le$).
+\end{definicion}
+
+\begin{lema}[Transformada de martingala]\label{lem:transformada}
+Si $(M_n)$ es martingala y $(H_n)$ es \textup{predecible} ($H_n$ es
+$\F_{n-1}$-medible) y acotado, entonces $(H\cdot M)_n=\sum_{k=1}^nH_k(M_k-M_{k-1})$ es martingala.
+\end{lema}
+
+\begin{proof}
+$\cond{H_{n+1}(M_{n+1}-M_n)}{\F_n}=H_{n+1}\cond{M_{n+1}-M_n}{\F_n}=0$.
+\end{proof}
+
+Este lema es el embrión de la integral estocástica: ``no se puede ganar a un juego justo con
+una estrategia que no mira al futuro''.
+
+\begin{teorema}[Parada opcional, versión acotada]\label{teo:parada}
+Si $(M_n)$ es martingala y $\sigma\le\tau\le N$ son
+tiempos de parada acotados, entonces $\cond{M_\tau}{\F_\sigma}=M_\sigma$.
+\end{teorema}
+
+\begin{proof}
+Sea $A\in\F_\sigma$ y $H_k=\ind_A\ind_{\{\sigma<k\le\tau\}}$, que es predecible porque $A\cap\{\sigma<k\}\in\F_{k-1}$ y
+$\{k\le\tau\}=\{\tau\le k-1\}^c\in\F_{k-1}$. Por el Lema~\ref{lem:transformada}, $\E[(H\cdot M)_N]=0$, es decir, $\E[\ind_A(M_\tau-M_\sigma)]=0$.
+\end{proof}
+
+\begin{teorema}[Desigualdades de Doob]\label{teo:doob}
+Sea $(M_n)_{n\le N}$ una martingala o una submartingala
+no negativa, y $M_N^*=\max_{n\le N}\abs{M_n}$. Entonces
+\begin{enumerate}[label=(\roman*)]
+  \item $\lambda\,\P(M_N^*\ge\lambda)\le\E\big[\abs{M_N}\ind_{\{M_N^*\ge\lambda\}}\big]\le\E\abs{M_N}$ para $\lambda>0$;
+  \item $\norm{M_N^*}_p\le\frac{p}{p-1}\norm{M_N}_p$ para $1<p<\infty$.
+\end{enumerate}
+\end{teorema}
+
+\begin{proof}
+(i) $X_n=\abs{M_n}$ es submartingala no negativa. Sea $\tau=\min\{n:X_n\ge\lambda\}\wedge N$.
+Por la versión submartingala de la parada opcional, $\E[X_\tau]\le\E[X_N]$. En $\{M_N^*\ge\lambda\}$, $X_\tau\ge\lambda$; en
+el complementario, $\tau=N$. Así $\lambda\P(M_N^*\ge\lambda)+\E[X_N\ind_{\{M^*<\lambda\}}]\le\E X_\tau\le\E X_N$, y despejamos.
+
+(ii) Por Fubini y (i),
+\[
+  \E[(M_N^*)^p]=\int_0^\infty p\lambda^{p-1}\P(M_N^*\ge\lambda)\,\dd\lambda\le\int_0^\infty p\lambda^{p-2}\E[X_N\ind_{\{M_N^*\ge\lambda\}}]\,\dd\lambda=\tfrac{p}{p-1}\E[X_N(M_N^*)^{p-1}].
+\]
+Por Hölder, $\E[X_N(M_N^*)^{p-1}]\le\norm{X_N}_p\norm{M_N^*}_p^{p-1}$. Si $\norm{M_N^*}_p<\infty$ (lo es, al ser un máximo finito
+de variables en $L^p$), dividimos.
+\end{proof}
+
+\begin{teorema}[Convergencia de martingalas]
+Una submartingala $(X_n)$ con $\sup_n\E X_n^+<\infty$
+converge c.s.\ a un límite integrable. Si $(M_n)$ es martingala acotada en $L^p$, $p>1$, converge
+c.s.\ y en $L^p$. Si es uniformemente integrable, converge c.s.\ y en $L^1$, y $M_n=\cond{M_\infty}{\F_n}$.
+\end{teorema}
+
+\begin{proof}[Esbozo]
+La desigualdad de cruces de Doob, $(b-a)\E[U_N(a,b)]\le\E[(X_N-a)^+]$, donde $U_N(a,b)$
+cuenta los cruces ascendentes de $[a,b]$, se prueba con la transformada $H$ que ``compra'' bajo $a$
+y ``vende'' sobre $b$. Si el número de cruces es finito para todo par racional $a<b$, la sucesión
+no puede oscilar, luego converge. La convergencia en $L^p$ se sigue de Doob (ii) y convergencia
+dominada; la de $L^1$ de la integrabilidad uniforme y Vitali.
+\end{proof}
+
+\section{Martingalas en tiempo continuo}
+Sea $(M_t)_{t\ge0}$ una martingala continua por la derecha. Aplicando el Teorema~\ref{teo:doob} en conjuntos
+finitos $D_n\uparrow D=(\mathbb Q\cap[0,T])\cup\{T\}$ y la continuidad por la derecha:
+\[
+  \P\Big(\sup_{t\le T}\abs{M_t}\ge\lambda\Big)\le\frac{\E\abs{M_T}}{\lambda},\qquad
+  \E\Big[\sup_{t\le T}\abs{M_t}^p\Big]\le\Big(\frac{p}{p-1}\Big)^p\E\abs{M_T}^p.
+\]
+La parada opcional (Teorema~\ref{teo:parada}) se extiende a tiempos acotados aproximando $\tau$ por $\tau_n=
+2^{-n}\lceil2^n\tau\rceil$, usando continuidad por la derecha e integrabilidad uniforme de $\{M_{\tau_n}\}$ (que son
+esperanzas condicionales de $M_T$).
+
+\begin{definicion}
+$M$ es una \emph{martingala local} si existen tiempos de parada $\tau_n\uparrow\infty$ tales
+que cada $M^{\tau_n}$ es martingala. Denotamos $\mathcal M^2_c$ al espacio de martingalas continuas con
+$\sup_t\E M_t^2<\infty$ y $M_0=0$.
+\end{definicion}
+
+\begin{proposicion}\label{prop:M2c}
+$\mathcal M^2_c([0,T])$ con la norma $\norm{M}=\norm{M_T}_{L^2}$ es un espacio de Hilbert.
+\end{proposicion}
+
+\begin{proof}
+Si $(M^n)$ es de Cauchy, por Doob $\E\sup_{t\le T}\abs{M^n_t-M^m_t}^2\le4\E\abs{M^n_T-M^m_T}^2$.
+Extrayendo una subsucesión con $\sum_k\norm{M^{n_{k+1}}-M^{n_k}}<\infty$, la serie converge uniformemente en
+$[0,T]$ c.s., luego el límite es continuo; es martingala por convergencia en $L^2$ de las esperanzas
+condicionales.
+\end{proof}
+
+\section{Vectores y espacios gaussianos}
+
+\begin{definicion}
+Un vector $X=(X_1,\dots,X_d)$ es \emph{gaussiano centrado} con covarianza $\Sigma$ si
+$\E e^{i\ip{u}{X}}=e^{-\frac12\ip{u}{\Sigma u}}$. Una familia $(X_i)_{i\in I}$ es \emph{gaussiana} si toda combinación lineal finita es
+gaussiana. Un \emph{espacio gaussiano} es un subespacio cerrado de $L^2(\Omega)$ formado por variables
+gaussianas centradas.
+\end{definicion}
+
+\begin{proposicion}\label{prop:gaussianos}
+En un espacio gaussiano, ortogonalidad equivale a independencia: si
+$(X_1,\dots,X_n,Y_1,\dots,Y_m)$ es gaussiano y $\Cov(X_i,Y_j)=0$ para todo $i,j$, los vectores $X$ e $Y$ son
+independientes. Además, los límites en $L^2$ de variables gaussianas centradas son gaussianos
+centrados, con convergencia en todo $L^p$.
+\end{proposicion}
+
+\begin{proof}
+La función característica conjunta factoriza porque la forma cuadrática
+$\ip{(u,v)}{\Sigma(u,v)}$ no tiene términos cruzados. Para el límite: si $X_n\to X$ en $L^2$ con
+$X_n\sim N(0,\sigma_n^2)$, entonces $\sigma_n\to\sigma=\norm{X}_2$ y $e^{-\sigma_n^2u^2/2}\to\E e^{iuX}$. Los momentos de orden $p$
+de una gaussiana son $c_p\sigma^p$, luego la sucesión está acotada en todo $L^p$ y hay integrabilidad
+uniforme.
+\end{proof}
+
+\begin{lema}[Integración por partes gaussiana, o lema de Stein]\label{lem:stein}
+Si $X\sim N(0,\sigma^2)$ y $f\in C^1$
+con $f'$ de crecimiento polinomial, entonces $\E[Xf(X)]=\sigma^2\E[f'(X)]$. En dimensión $d$, si
+$X\sim N(0,\Sigma)$, $\E[X_if(X)]=\sum_j\Sigma_{ij}\E[\partial_jf(X)]$.
+\end{lema}
+
+\begin{proof}
+Con $\varphi_\sigma(x)=(2\pi\sigma^2)^{-1/2}e^{-x^2/2\sigma^2}$ se tiene $x\varphi_\sigma(x)=-\sigma^2\varphi_\sigma'(x)$; se integra por
+partes. El caso multidimensional es análogo usando $\Sigma^{-1}$ si es invertible, y por aproximación en
+general.
+\end{proof}
+
+\begin{intuicion}
+El Lema~\ref{lem:stein} es, literalmente, el germen del cálculo de Malliavin. Lo que hará Malliavin es
+desarrollar esta fórmula en el espacio de dimensión infinita de las trayectorias brownianas:
+la ``variable gaussiana'' será la integral de Wiener $W(h)$ y la ``derivada'' será la derivada
+de Malliavin. La identidad $\E[Xf(X)]=\E[f'(X)]$ se convertirá en la dualidad $\E[F\,\delta(u)]=
+\E\ip{DF}{u}$, y también en la identidad de Stein que caracteriza la ley normal y que está en
+la base del método de Malliavin--Stein (Capítulo~\ref{cap:malliavin-stein}).
+\end{intuicion}
+
+\begin{ejercicio}
+Prueba la recíproca del Lema~\ref{lem:stein} (caracterización de Stein): si $\E[f'(X)-
+Xf(X)]=0$ para toda $f\in C_b^1$, entonces $X\sim N(0,1)$. (Indicación: toma $f(x)=e^{iux}$ y obtén
+una EDO para la función característica.)
+\end{ejercicio}

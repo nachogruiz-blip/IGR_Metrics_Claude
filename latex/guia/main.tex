@@ -1,0 +1,57 @@
+% Cálculo de Malliavin: de los procesos estocásticos y la integral de Itô al estado del arte.
+% Fuente LaTeX RECONSTRUIDA a partir del PDF (docs/pdf/Calculo_de_Malliavin_corregido.pdf).
+% Compilar:  latexmk -pdf main.tex
+\documentclass[11pt,a4paper,twoside,openany]{book}
+\input{preambulo}
+
+\begin{document}
+\frontmatter
+\input{capitulos/00_portada}
+\input{capitulos/00_prefacio}
+{\hypersetup{linkcolor=black}\tableofcontents}
+
+\mainmatter
+\part{Fundamentos: procesos estocásticos y cálculo de Itô}
+\input{capitulos/01_preliminares}
+\input{capitulos/02_browniano}
+\input{capitulos/03_ito}
+\input{capitulos/04_ede}
+
+\part{El núcleo del cálculo de Malliavin}
+\input{capitulos/05_isonormales}
+\input{capitulos/06_caos}
+\input{capitulos/07_derivada}
+\input{capitulos/08_divergencia}
+\input{capitulos/09_ornstein_uhlenbeck}
+
+\part{Densidades y el teorema de Hörmander}
+\input{capitulos/10_densidades}
+\input{capitulos/11_hormander}
+
+\part{Aplicaciones a las finanzas matemáticas}
+\input{capitulos/12_griegas}
+\input{capitulos/13_cobertura}
+\input{capitulos/14_esperanzas_condicionales}
+
+\part{Ecuaciones en derivadas parciales estocásticas}
+\input{capitulos/15_integracion_edpe}
+\input{capitulos/16_densidades_edpe}
+\input{capitulos/17_anderson}
+
+\part{Extensiones}
+\input{capitulos/18_fraccionario}
+\input{capitulos/19_poisson}
+
+\part{Estado del arte}
+\input{capitulos/20_malliavin_stein}
+\input{capitulos/21_rough_paths}
+\input{capitulos/22_estructuras_regularidad}
+\input{capitulos/23_fronteras}
+
+\appendix
+\input{capitulos/A_formulario}
+\input{capitulos/B_notacion}
+
+\backmatter
+\input{capitulos/bibliografia}
+\end{document}

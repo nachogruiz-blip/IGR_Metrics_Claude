@@ -1,0 +1,213 @@
+\chapter{Existencia y regularidad de densidades}\label{cap:densidades}
+
+\begin{panorama}
+Esta es la aplicación fundacional del cálculo de Malliavin. Dada una variable $F=
+(F^1,\dots,F^d)$ en el espacio de Wiener, queremos saber si su ley tiene densidad y si esta
+es regular. La herramienta clave es la \emph{matriz de Malliavin} $\gamma_F=(\ip{DF^i}{DF^j}_\Hf)_{ij}$: si
+es invertible, la ley de $F$ es absolutamente continua; si además $(\det\gamma_F)^{-1}$ tiene todos
+los momentos y $F\in\D^\infty$, la densidad es $C^\infty$. Probamos ambos resultados, damos una
+fórmula explícita para la densidad y, al final, la fórmula de Nourdin--Viens.
+\end{panorama}
+
+\section{La idea en dimensión uno}
+Sea $F\in\D^{1,2}$ y $\varphi\in C_b^1$. Por la regla de la cadena, $\ip{D\varphi(F)}{DF}=\varphi'(F)\norm{DF}^2$. Si $\norm{DF}>0$,
+podemos despejar
+\[
+  \varphi'(F)=\Big\langle D\varphi(F),\frac{DF}{\norm{DF}^2}\Big\rangle,
+\]
+y tomando esperanzas y usando la dualidad,
+\begin{equation}\label{eq:ibp-1d}
+  \E[\varphi'(F)]=\E\Big[\varphi(F)\,\delta\Big(\frac{DF}{\norm{DF}^2}\Big)\Big].
+\end{equation}
+Hemos \emph{trasladado la derivada de $\varphi$ a un peso}. Con $\varphi(y)=\int_{-\infty}^y\ind_{(a,b]}$, formalmente, $\P(a<F\le
+b)=\E[\varphi'(F)]$ se controla por $\norm{\varphi}_\infty\le b-a$: la ley de $F$ no tiene átomos y, de hecho, tiene
+densidad acotada.
+
+\begin{teorema}[Fórmula de la densidad]\label{teo:densidad}
+Sea $F\in\D^{1,2}$ tal que $\norm{DF}_\Hf>0$ c.s.\ y $u=
+DF/\norm{DF}^2_\Hf\in\Dom\delta$. Entonces $F$ tiene una densidad continua y acotada
+\[
+  p_F(x)=\E\big[\ind_{\{F>x\}}\,\delta(u)\big].
+\]
+\end{teorema}
+
+\begin{proof}
+Sea $\psi\ge0$ continua con soporte compacto y $\varphi(y)=\int_{-\infty}^y\psi(z)\,\dd z$, que es $C^1$ y
+acotada. Por~\eqref{eq:ibp-1d} (válida por aproximación),
+\[
+  \E[\psi(F)]=\E\Big[\delta(u)\int_{-\infty}^F\psi(x)\,\dd x\Big]=\int_\R\psi(x)\,\E\big[\ind_{\{F>x\}}\delta(u)\big]\,\dd x,
+\]
+por Fubini, ya que $\delta(u)\in L^1$. Así la ley de $F$ tiene densidad $x\mapsto\E[\ind_{\{F>x\}}\delta(u)]$, que es continua
+(convergencia dominada, pues $\P(F=x)=0$) y acotada por $\E\abs{\delta(u)}$.
+\end{proof}
+
+\begin{observacion}
+Como $\E\delta(u)=0$, también $p_F(x)=-\E[\ind_{\{F\le x\}}\delta(u)]$. Combinando ambas y
+Hölder se obtienen \emph{cotas de colas}: $p_F(x)\le\norm{\delta(u)}_q\,\P(\abs{F}\ge\abs{x})^{1/p}$.
+\end{observacion}
+
+\section{El criterio de Bouleau--Hirsch}
+La condición $u\in\Dom\delta$ es restrictiva. Sorprendentemente, la mera no degeneración basta para
+la continuidad absoluta.
+
+\begin{teorema}[Bouleau--Hirsch]\label{teo:bouleau-hirsch}
+Sea $F=(F^1,\dots,F^d)$ con $F^i\in\D^{1,2}$ (o incluso $\D^{1,1}_{\mathrm{loc}}$). Si
+la matriz de Malliavin $\gamma_F=\big(\ip{DF^i}{DF^j}_\Hf\big)_{i,j}$ es invertible c.s., entonces la ley de $F$ es
+absolutamente continua respecto a la medida de Lebesgue en $\R^d$.
+\end{teorema}
+
+\begin{proof}[Demostración para $d=1$]
+Hay que ver que si $B$ es boreliano con $\abs{B}=0$, entonces $\P(F\in B)=
+0$. Podemos suponer $B$ acotado. Sea $\varphi(y)=\int_{-\infty}^y\ind_B(z)\,\dd z\equiv0$. Aproximamos $\ind_B$ por funciones
+continuas $\psi_n\ge0$ con $\psi_n\to\ind_B$ en $L^1(\R,\dd x+\P\circ F^{-1})$ y uniformemente acotadas, y sea
+$\varphi_n=\int_{-\infty}^\cdot\psi_n\to\varphi=0$ uniformemente. Por la regla de la cadena, $D\varphi_n(F)=\psi_n(F)DF$. Ahora
+$\varphi_n(F)\to0$ en $L^2$ y $D\varphi_n(F)=\psi_n(F)DF\to\ind_B(F)DF$ en $L^2(\Omega;\Hf)$ (convergencia dominada,
+con $\psi_n(F)\to\ind_B(F)$ en probabilidad). Por cerrabilidad de $D$, $\ind_B(F)DF=D0=0$. Como
+$\norm{DF}>0$ c.s., $\ind_B(F)=0$ c.s.
+\end{proof}
+
+\begin{proof}[Idea para $d\ge2$]
+El argumento anterior no se generaliza directamente, porque en $\R^d$ un conjunto
+nulo no es la imagen de una primitiva. Bouleau y Hirsch usan una \emph{fórmula de la coárea} en
+el espacio de Wiener, o alternativamente se prueba que $\P\circ F^{-1}\ll\mathrm{Leb}$ mediante el criterio:
+para toda $\varphi\in C_b^1$, $\abs{\E[\partial_i\varphi(F)G]}\le C_G\norm{\varphi}_\infty$ para suficientes $G$; se toma $G$ que localiza en
+$\{\abs{\gamma_F^{-1}}\le N\}$ y se usa el resultado de que una medida $\mu$ en $\R^d$ cuyas derivadas distribucionales
+son medidas finitas es absolutamente continua (lema de Malliavin). Véase \cite[§2.1]{Nualart06} y~\cite{BouleauHirsch91}.
+\end{proof}
+
+\section{Integración por partes iterada y densidades regulares}
+
+\begin{definicion}
+Un vector $F\in(\D^\infty)^d$ es \emph{no degenerado} si $\gamma_F$ es invertible c.s.\ y
+$(\det\gamma_F)^{-1}\in\bigcap_{p\ge1}L^p$.
+\end{definicion}
+
+\begin{lema}\label{lem:inversa-malliavin}
+Si $F$ es no degenerado, entonces $(\gamma_F^{-1})_{ij}\in\D^\infty$ y
+\[
+  D(\gamma_F^{-1})_{ij}=-\sum_{k,l}(\gamma_F^{-1})_{ik}(\gamma_F^{-1})_{lj}\,D(\gamma_F)_{kl}.
+\]
+\end{lema}
+
+\begin{proof}
+$\gamma_F\in\D^\infty$ porque $D$ conmuta con productos (Leibniz) y Meyer. La inversa es
+$\operatorname{adj}(\gamma_F)/\det\gamma_F$. Se aproxima $1/\det\gamma_F$ por $(\det\gamma_F+\varepsilon)^{-1}$, que es suave, y se pasa al límite
+usando que $(\det\gamma_F)^{-1}$ tiene todos los momentos. La fórmula es la derivada de la inversa de
+una matriz.
+\end{proof}
+
+\begin{proposicion}[Integración por partes]\label{prop:ibp-iterada}
+Sea $F$ no degenerado y $G\in\D^\infty$. Para cada
+multiíndice $\alpha=(\alpha_1,\dots,\alpha_k)\in\{1,\dots,d\}^k$ existe $H_\alpha(F,G)\in\D^\infty$ tal que, para toda $\varphi\in
+C_p^\infty(\R^d)$,
+\[
+  \E\big[\partial_\alpha\varphi(F)\,G\big]=\E\big[\varphi(F)\,H_\alpha(F,G)\big].
+\]
+Los pesos se definen recursivamente por
+\[
+  H_{(i)}(F,G)=\sum_{j=1}^d\delta\big(G\,(\gamma_F^{-1})_{ij}\,DF^j\big),\qquad H_\alpha(F,G)=H_{(\alpha_k)}\big(F,H_{(\alpha_1,\dots,\alpha_{k-1})}(F,G)\big),
+\]
+y satisfacen $\norm{H_\alpha(F,G)}_p\le C\norm{\det\gamma_F^{-1}}_q^a\norm{DF}_{k,r}^b\norm{G}_{k,s}$ para exponentes adecuados.
+\end{proposicion}
+
+\begin{proof}
+Por la regla de la cadena, $\ip{D\varphi(F)}{DF^j}=\sum_l\partial_l\varphi(F)(\gamma_F)_{lj}$. Invirtiendo,
+$\partial_i\varphi(F)=\sum_j\ip{D\varphi(F)}{DF^j}(\gamma_F^{-1})_{ji}$. Multiplicando por $G$ y tomando esperanzas,
+\[
+  \E[\partial_i\varphi(F)G]=\E\Big\langle D\varphi(F),\sum_jG(\gamma_F^{-1})_{ij}DF^j\Big\rangle=\E\big[\varphi(F)H_{(i)}(F,G)\big],
+\]
+usando la simetría de $\gamma_F$ y la dualidad; el integrando está en $\D^\infty(\Hf)\subset\Dom\delta$ por el Lema~\ref{lem:inversa-malliavin},
+y $\delta$ preserva $\D^\infty$ (Corolario~\ref{cor:continuidad-delta}). La recursión y las cotas siguen por inducción, usando Meyer
+y Hölder.
+\end{proof}
+
+\begin{teorema}[Malliavin]\label{teo:malliavin-densidad}
+Si $F$ es no degenerado, la ley de $F$ tiene una densidad $p_F\in\mathcal S(\R^d)$
+(de Schwartz). Además
+\[
+  p_F(x)=\E\big[\ind_{\{F>x\}}\,H_{(1,2,\dots,d)}(F,1)\big],
+\]
+donde $\{F>x\}=\{F^i>x_i\ \forall i\}$, y para todo multiíndice $\beta$, $\partial_\beta p_F(x)=
+(-1)^{\abs\beta}\E[\ind_{\{F>x\}}H_{(1,\dots,d,\beta)}(F,1)]$.
+\end{teorema}
+
+\begin{proof}
+Sea $\psi\in C_c^\infty(\R^d)$ y $\varphi(y)=\int_{-\infty}^{y_1}\cdots\int_{-\infty}^{y_d}\psi(z)\,\dd z$, de modo que $\partial_{1\cdots d}\varphi=\psi$. Por
+la Proposición~\ref{prop:ibp-iterada} y Fubini,
+\[
+  \E\psi(F)=\E[\varphi(F)H_{(1,\dots,d)}(F,1)]=\int_{\R^d}\psi(x)\E\big[\ind_{\{F>x\}}H_{(1,\dots,d)}(F,1)\big]\,\dd x.
+\]
+Para las derivadas, la transformada de Fourier: con $\varphi=e^{i\ip{\xi}{\cdot}}$, $\abs{\xi^\alpha}\abs{\hat\mu_F(\xi)}=\abs{\E[\partial_\alpha\varphi(F)]}\le
+\E\abs{H_\alpha(F,1)}<\infty$, luego $\hat\mu_F$ decrece más rápido que cualquier polinomio y $p_F\in C^\infty$. El decrecimiento
+de $p_F$ y sus derivadas en el infinito sale de la fórmula con $\ind_{\{F>x\}}$ (o su complemento) y
+Hölder, usando $\P(\abs{F}>\abs{x})\le C_N\abs{x}^{-N}$.
+\end{proof}
+
+\begin{intuicion}
+El esquema de la prueba es el de las ``integraciones por partes iteradas'': cada derivada de
+$\varphi$ se transfiere a un peso, pagando con una potencia de $\gamma_F^{-1}$ y una derivada de Malliavin
+más. La no degeneración es exactamente lo que hace que todos esos pesos sean integrables.
+En el Capítulo~\ref{cap:hormander} veremos que, para soluciones de EDEs, la condición de corchetes de
+Hörmander implica la no degeneración. En el Capítulo~\ref{cap:griegas}, que los \emph{mismos pesos $H_\alpha$} dan
+las griegas en finanzas.
+\end{intuicion}
+
+\section{Densidades locales y positividad}
+A menudo $\gamma_F$ solo es no degenerada en un abierto. Si $F\in(\D^\infty)^d$ y $\gamma_F$ es no degenerada \emph{en
+un abierto} $U\subset\R^d$ (es decir, $\E[\ind_{\{F\in U\}}(\det\gamma_F)^{-p}]<\infty$ para todo $p$, con localización suave), la
+restricción de la ley a $U$ tiene densidad $C^\infty$. Esto se prueba multiplicando por $G=\chi(F)$ con
+$\chi\in C_c^\infty(U)$. Véase también~\cite{BallyCaramellino11}, que obtiene estos criterios con transformadas de Riesz.
+
+\begin{teorema}[Fang; Hirsch--Song]
+Si $F\in\D^{1,p}$, $p>1$, el soporte de la ley de $F$ es conexo.
+En particular, si $F\in\D^{1,2}$ es real, el soporte es un intervalo cerrado.
+\end{teorema}
+
+La \emph{positividad estricta} de la densidad es un problema más delicado; un criterio general es el
+de Bally--Pardoux, basado en la fórmula de Cameron--Martin: si para algún $h\in H$ el funcional
+trasladado $F(\omega+h)$ cae en un entorno de $y$ con matriz de Malliavin no degenerada, entonces
+$p_F(y)>0$. Lo usaremos en el Capítulo~\ref{cap:densidades-edpe} para la ecuación del calor.
+
+\section{La fórmula de Nourdin--Viens}
+Un enfoque distinto, más reciente, evita invertir la matriz de Malliavin usando el operador $L^{-1}$.
+
+\begin{teorema}[Nourdin--Viens, 2009]\label{teo:nourdin-viens}
+Sea $F\in\D^{1,2}$ con $\E F=0$, y sea
+\[
+  g_F(x)=\E\big[\ip{DF}{-DL^{-1}F}_\Hf\mid F=x\big].
+\]
+Entonces $g_F\ge0$ c.s.\ sobre el soporte de la ley. Además, $F$ tiene densidad si y solo si
+$g_F(F)>0$ c.s., y en ese caso el soporte es un intervalo $[\alpha,\beta]\ni0$ y, para $x\in(\alpha,\beta)$,
+\[
+  p_F(x)=\frac{\E\abs{F}}{2g_F(x)}\exp\Big(-\int_0^x\frac{y\,\dd y}{g_F(y)}\Big).
+\]
+\end{teorema}
+
+\begin{proof}[Demostración de la fórmula]
+Sea $\varphi\in C_b^1$ con primitiva $\Phi$. Por la Proposición~\ref{prop:covarianzas} con $G=F$,
+$\E[F\varphi(F)]=\E[\varphi'(F)\ip{DF}{-DL^{-1}F}]=\E[\varphi'(F)g_F(F)]$. Si $F$ tiene densidad $\rho$, esto dice que,
+distribucionalmente,
+\[
+  \int x\varphi(x)\rho(x)\,\dd x=\int\varphi'(x)g_F(x)\rho(x)\,\dd x\quad\Longrightarrow\quad(g_F\rho)'=-x\rho.
+\]
+Así $g_F(x)\rho(x)=\int_x^\infty y\rho(y)\,\dd y$, que es $>0$ en el interior del soporte; en particular
+$g_F\ge0$. Llamando $\Psi(x)=\int_x^\infty y\rho(y)\,\dd y$, la relación $\Psi'=-x\rho=-x\Psi/g_F$ da
+$\Psi(x)=\Psi(0)\exp(-\int_0^xy/g_F(y)\,\dd y)$ con $\Psi(0)=\E[F^+]=\frac12\E\abs{F}$. Dividiendo por $g_F$ se
+obtiene la fórmula. La equivalencia con la existencia de densidad requiere un argumento
+adicional; véase~\cite{NourdinViens09}.
+\end{proof}
+
+\begin{corolario}[Cotas gaussianas]
+Si $0<\sigma^2_{\min}\le g_F(F)\le\sigma^2_{\max}$ c.s., entonces
+\[
+  \frac{\E\abs{F}}{2\sigma^2_{\max}}e^{-x^2/2\sigma^2_{\min}}\le p_F(x)\le\frac{\E\abs{F}}{2\sigma^2_{\min}}e^{-x^2/2\sigma^2_{\max}}.
+\]
+\end{corolario}
+
+\begin{ejemplo}
+En el primer caos, $F=W(h)$, $-DL^{-1}F=h$ y $g_F\equiv\norm{h}^2$: se recupera la
+densidad gaussiana. Para el supremo $M$ del browniano, centrado, se tiene $g_{M-\E M}\le1$ (porque
+$\norm{DM}\le1$ y $\norm{P_tDM}\le1$ en la representación integral de $-DL^{-1}$); combinado con una cota
+inferior de $g$ en una región, se obtienen cotas gaussianas explícitas para la densidad allí. El
+método se ha aplicado con éxito a soluciones de EDPEs y a polímeros dirigidos.
+\end{ejemplo}

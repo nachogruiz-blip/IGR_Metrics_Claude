@@ -13,3 +13,10 @@ latex/*.fls
 latex/*.fdb_latexmk
 latex/*.synctex.gz
 latex/capitulos/*.aux
+latex/guia/*.aux
+latex/guia/*.log
+latex/guia/*.out
+latex/guia/*.toc
+latex/guia/*.fls
+latex/guia/*.fdb_latexmk
+latex/guia/capitulos/*.aux
