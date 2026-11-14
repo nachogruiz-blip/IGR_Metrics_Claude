@@ -1,0 +1,156 @@
+\chapter{Caos de Wiener}\label{cap:caos}
+
+\begin{panorama}
+Descomponemos $L^2(\Omega)$ en suma ortogonal de \emph{caos}: $L^2(\Omega)=\bigoplus_{n\ge0}\Hc_n$. El caos $n$-ésimo
+está formado por los polinomios de Hermite de grado $n$ en variables gaussianas, o
+equivalentemente por las integrales múltiples de Itô $I_n(f)$. Es el análogo gaussiano del
+desarrollo en serie de Fourier, y todos los operadores de Malliavin ($D$, $\delta$, $L$) actúan de
+forma diagonal o casi diagonal en esta descomposición.
+\end{panorama}
+
+\section{Polinomios de Hermite}
+
+\begin{definicion}
+Los \emph{polinomios de Hermite} (probabilísticos) $H_n$ se definen por la función
+generatriz
+\[
+  e^{tx-\frac{t^2}{2}}=\sum_{n=0}^\infty\frac{t^n}{n!}H_n(x).
+\]
+Así $H_0=1$, $H_1=x$, $H_2=x^2-1$, $H_3=x^3-3x$, $H_4=x^4-6x^2+3$.
+\end{definicion}
+
+\begin{proposicion}\label{prop:hermite}
+\begin{enumerate}[label=(\roman*)]
+  \item $H_n(x)=(-1)^ne^{x^2/2}\frac{\dd^n}{\dd x^n}e^{-x^2/2}$.
+  \item $H_n'=nH_{n-1}$ y $H_{n+1}(x)=xH_n(x)-H_n'(x)$.
+  \item Si $(X,Y)$ es gaussiano centrado con $\E X^2=\E Y^2=1$, entonces $\E[H_n(X)H_m(Y)]=
+  \delta_{nm}\,n!\,(\E XY)^n$.
+  \item $\{H_n/\sqrt{n!}\}$ es una base ortonormal de $L^2(\R,\gamma)$, con $\gamma=N(0,1)$.
+\end{enumerate}
+\end{proposicion}
+
+\begin{proof}
+(i) $e^{tx-t^2/2}=e^{x^2/2}e^{-(x-t)^2/2}$, y el coeficiente de Taylor en $t=0$ es
+$e^{x^2/2}\frac{\dd^n}{\dd t^n}e^{-(x-t)^2/2}|_{t=0}=(-1)^ne^{x^2/2}\frac{\dd^n}{\dd x^n}e^{-x^2/2}$. (ii) Derivando la función generatriz en $x$ y
+en $t$. (iii) $\E[e^{sX-s^2/2}e^{tY-t^2/2}]=e^{st\E XY}$; se identifican coeficientes de $s^nt^m/(n!m!)$. (iv) La
+ortonormalidad es (iii) con $X=Y$; la completitud es el Lema~\ref{lem:densidad-suaves} en dimensión 1, ya que los
+$H_n$ generan los polinomios.
+\end{proof}
+
+\section{Descomposición en caos}
+
+\begin{definicion}
+El \emph{$n$-ésimo caos de Wiener} $\Hc_n$ es el subespacio cerrado de $L^2(\Omega)$ generado
+por $\{H_n(W(h)):\ h\in\Hf,\ \norm{h}=1\}$. $\Hc_0$ son las constantes.
+\end{definicion}
+
+\begin{teorema}[Wiener, Itô]\label{teo:caos}
+$L^2(\Omega,\F,\P)=\bigoplus_{n=0}^\infty\Hc_n$ \textup{(}suma ortogonal\textup{)}.
+\end{teorema}
+
+\begin{proof}
+La ortogonalidad $\Hc_n\perp\Hc_m$ para $n\ne m$ es la Proposición~\ref{prop:hermite}(iii).
+Para la completitud: si $G\perp\Hc_n$ para todo $n$, entonces, para $\norm{h}=1$, $\E[Ge^{tW(h)}]=
+e^{t^2/2}\sum_n\frac{t^n}{n!}\E[GH_n(W(h))]=0$ (el intercambio de suma y esperanza se justifica porque
+$\sum_n\frac{\abs{t}^n}{n!}\norm{H_n(W(h))}_2=\sum_n\abs{t}^n/\sqrt{n!}<\infty$). Por el Lema~\ref{lem:densidad-suaves}, $G=0$.
+\end{proof}
+
+Denotamos por $J_n$ la proyección ortogonal sobre $\Hc_n$, de modo que $F=\sum_nJ_nF$ para
+$F\in L^2$.
+
+\section{Integrales múltiples}
+Sea $\Hf^{\otimes n}$ el producto tensorial hilbertiano y $\Hf^{\odot n}$ su subespacio simétrico, con la simetrización
+$\tilde f$. Cuando $\Hf=L^2(T,\mu)$ con $\mu$ sin átomos, $\Hf^{\odot n}=L^2_s(T^n)$ son las funciones simétricas.
+
+\begin{proposicion}\label{prop:integrales-multiples}
+Existe una única aplicación lineal $I_n:\Hf^{\odot n}\to\Hc_n$ tal que $I_n(h^{\otimes n})=
+H_n(W(h))$ para $\norm{h}=1$, y satisface
+\[
+  \E[I_n(f)I_m(g)]=\delta_{nm}\,n!\,\ip{f}{g}_{\Hf^{\otimes n}}.
+\]
+Así $\sqrt{n!}^{-1}I_n$ es una isometría de $\Hf^{\odot n}$ sobre $\Hc_n$. Extendemos $I_n(f):=I_n(\tilde f)$ a $f\in\Hf^{\otimes n}$.
+\end{proposicion}
+
+\begin{proof}
+Por la Proposición~\ref{prop:hermite}(iii), $\E[H_n(W(h))H_n(W(g))]=n!\ip{h}{g}^n=n!\ip{h^{\otimes n}}{g^{\otimes n}}$.
+Los tensores $h^{\otimes n}$ generan un subespacio denso de $\Hf^{\odot n}$ (por polarización), y la aplicación es
+isométrica salvo el factor $n!$ en ese generador, luego se extiende. Es sobreyectiva sobre $\Hc_n$ por
+definición de este.
+\end{proof}
+
+\begin{teorema}[Representación como integrales iteradas]\label{teo:iteradas}
+Si $\Hf=L^2([0,T])$ y $W$ es el
+browniano, para $f\in L^2_s([0,T]^n)$,
+\[
+  I_n(f)=n!\int_0^T\int_0^{t_n}\cdots\int_0^{t_2}f(t_1,\dots,t_n)\,\dd W_{t_1}\cdots\dd W_{t_n}.
+\]
+\end{teorema}
+
+\begin{proof}
+Ambos lados son isometrías (salvo el factor $n!$) de $L^2_s$ en $L^2(\Omega)$, por aplicación
+iterada de la isometría de Itô, y coinciden en $f=h^{\otimes n}$: denotando $M_t=\int_0^th\,\dd W$ y $\langle M\rangle_t=\int_0^th^2$,
+el proceso $\langle M\rangle_t^{n/2}H_n(M_t/\langle M\rangle_t^{1/2})$ satisface, por Itô y la identidad $H_n'=nH_{n-1}$, la relación
+$\dd(\,\cdot\,)_n=n(\,\cdot\,)_{n-1}h_t\,\dd W_t$, que es exactamente la recursión de las integrales iteradas.
+\end{proof}
+
+\begin{corolario}[Descomposición en caos de Itô]\label{cor:caos-ito}
+Toda $F\in L^2(\Omega,\F,\P)$ se escribe de forma
+única como $F=\sum_{n=0}^\infty I_n(f_n)$, con $f_n\in\Hf^{\odot n}$, $f_0=\E F$, y
+\[
+  \E F^2=\sum_{n=0}^\infty n!\norm{f_n}^2_{\Hf^{\otimes n}}.
+\]
+\end{corolario}
+
+\begin{ejemplo}\label{ej:exponencial-caos}
+$e^{W(h)-\frac12\norm{h}^2}=\sum_n\frac1{n!}I_n(h^{\otimes n})$. En efecto, para $\norm{h}=1$ es la función generatriz
+de Hermite con $t=\norm{h}$.
+\end{ejemplo}
+
+\section{Contracciones y fórmula del producto}
+Para $f\in\Hf^{\odot p}$, $g\in\Hf^{\odot q}$ y $r\le p\wedge q$, la \emph{contracción de orden $r$} $f\otimes_rg\in\Hf^{\otimes(p+q-2r)}$ se define, si
+$\{e_i\}$ es una base ortonormal, por
+\[
+  f\otimes_rg=\sum_{i_1,\dots,i_r}\ip{f}{e_{i_1}\otimes\dots\otimes e_{i_r}}\otimes\ip{g}{e_{i_1}\otimes\dots\otimes e_{i_r}}.
+\]
+En $L^2(T)$: $(f\otimes_rg)(t,s)=\int_{T^r}f(t,u)g(s,u)\mu^r(\dd u)$, con $t\in T^{p-r}$, $s\in T^{q-r}$.
+
+\begin{teorema}[Fórmula del producto]\label{teo:producto}
+Para $f\in\Hf^{\odot p}$, $g\in\Hf^{\odot q}$,
+\[
+  I_p(f)I_q(g)=\sum_{r=0}^{p\wedge q}r!\binom pr\binom qrI_{p+q-2r}(f\otimes_rg).
+\]
+\end{teorema}
+
+\begin{proof}[Esbozo]
+Por bilinealidad y densidad basta tomar $f=h^{\otimes p}$, $g=k^{\otimes q}$. Se compara el coeficiente
+de $s^pt^q$ en
+\[
+  e^{sW(h)-\frac{s^2}{2}\norm{h}^2}e^{tW(k)-\frac{t^2}{2}\norm{k}^2}=e^{W(sh+tk)-\frac12\norm{sh+tk}^2}e^{st\ip{h}{k}},
+\]
+expandiendo cada exponencial estocástica en caos (ejemplo anterior) y $e^{st\ip{h}{k}}=\sum_r\frac{(st)^r}{r!}\ip{h}{k}^r$.
+La contracción $h^{\otimes p}\otimes_rk^{\otimes q}=\ip{h}{k}^rh^{\otimes(p-r)}\otimes k^{\otimes(q-r)}$, lo que produce los coeficientes combinatorios.
+\end{proof}
+
+\begin{ejemplo}
+$I_1(h)^2=I_2(h\otimes h)+\norm{h}^2$, coherente con $H_2(x)=x^2-1$.
+\end{ejemplo}
+
+\begin{intuicion}
+Las contracciones miden ``cuánta estructura comparten'' $f$ y $g$. Veremos en el Capítulo~\ref{cap:malliavin-stein}
+que una sucesión $F_n=I_q(f_n)$ con varianza 1 converge a $N(0,1)$ si y solo si $\norm{f_n\otimes_rf_n}\to0$
+para $r=1,\dots,q-1$: las contracciones controlan la gaussianidad. Es el \emph{teorema del
+cuarto momento}.
+\end{intuicion}
+
+\section{Equivalencia de normas dentro de un caos}
+
+\begin{teorema}\label{teo:normas-caos}
+Para cada $n$ y $p\ge2$, en el caos $\Hc_n$ todas las normas $L^p$ son equivalentes:
+\[
+  \norm{F}_p\le(p-1)^{n/2}\norm{F}_2,\qquad F\in\Hc_n.
+\]
+\end{teorema}
+
+Esto es consecuencia inmediata de la hipercontractividad de Nelson (Teorema~\ref{teo:hipercontractividad}), que
+probaremos en el Capítulo~\ref{cap:ou}. Implica que la convergencia en $L^2$ dentro de un caos fijo arrastra
+la convergencia de todos los momentos, hecho crucial para los teoremas límite.

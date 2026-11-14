@@ -1,0 +1,215 @@
+\chapter{El método de Malliavin--Stein}\label{cap:malliavin-stein}
+
+\begin{panorama}
+En 2005, Nualart y Peccati~\cite{NualartPeccati05} hallaron un fenómeno sorprendente: una sucesión de
+variables en un caos de Wiener fijo, normalizada, converge a la normal \emph{si y solo si su
+cuarto momento converge a} 3. Poco después, Nourdin y Peccati (2009) mostraron que
+combinando el cálculo de Malliavin con el método de Stein se obtienen cotas \emph{cuantitativas}
+explícitas. El ``método de Malliavin--Stein'' es hoy una de las áreas más activas del cálculo
+de Malliavin, con aplicaciones a la estadística de procesos de memoria larga, la geometría
+aleatoria, las EDPEs (Capítulo~\ref{cap:anderson}), las ondas aleatorias y las redes neuronales anchas.
+\end{panorama}
+
+\section{El método de Stein}
+
+\begin{lema}[Stein]\label{lem:stein-ecuacion}
+Sea $N\sim N(0,1)$ y $h:\R\to\R$ medible acotada. La ecuación de Stein
+\[
+  f'(x)-xf(x)=h(x)-\E h(N)
+\]
+tiene una solución acotada $f_h(x)=e^{x^2/2}\int_{-\infty}^x(h(y)-\E h(N))e^{-y^2/2}\,\dd y$. Si $h=\ind_A$ con $A$
+boreliano, entonces $\norm{f_h}_\infty\le\sqrt{\pi/2}$ y $\norm{f_h'}_\infty\le2$. Si $h$ es 1-Lipschitz, $\norm{f_h'}_\infty\le\sqrt{2/\pi}$ y
+$\norm{f_h''}_\infty\le2$. En consecuencia, para toda variable $X$,
+\[
+  d_{TV}(X,N)=\sup_A\abs{\P(X\in A)-\P(N\in A)}\le\sup_{f\in\F_{TV}}\abs{\E[f'(X)-Xf(X)]},
+\]
+con $\F_{TV}=\{f\in C^1:\ \norm f_\infty\le\sqrt{\pi/2},\ \norm{f'}_\infty\le2\}$, y análogamente para la distancia de
+Wasserstein $d_W$, con $\F_W=\{\norm{f'}_\infty\le\sqrt{2/\pi}\}$.
+\end{lema}
+
+\begin{proof}[Esbozo]
+Que $f_h$ resuelve la ecuación es una verificación directa: $(e^{-x^2/2}f_h)'=(h-\E h(N))e^{-x^2/2}$.
+Las cotas se obtienen con las estimaciones de Mills, $\int_x^\infty e^{-y^2/2}\,\dd y\le\min(\sqrt{\pi/2},1/x)e^{-x^2/2}$,
+usando que $\int_\R(h-\E h(N))e^{-y^2/2}=0$ para escribir $f_h$ con la cola izquierda o la derecha según
+el signo de $x$. Para $h$ indicador no continuo, $f_h$ es solo Lipschitz; se aproxima. Finalmente,
+evaluando la ecuación en $X$ y tomando esperanzas, $\P(X\in A)-\P(N\in A)=\E[f_h'(X)-
+Xf_h(X)]$.
+\end{proof}
+
+\begin{intuicion}
+El método de Stein convierte la pregunta ``¿está $X$ cerca de $N$?'' en ``¿satisface $X$
+aproximadamente la identidad $\E[Xf(X)]=\E[f'(X)]$?''. Y el cálculo de Malliavin es
+precisamente una máquina para calcular $\E[Xf(X)]$: por la representación de covarianzas,
+\[
+  \E[Xf(X)]=\E\big[f'(X)\ip{DX}{-DL^{-1}X}_\Hf\big].
+\]
+Así, $X$ es casi normal si $\ip{DX}{-DL^{-1}X}\approx1$. Los dos métodos encajan como una llave
+en su cerradura.
+\end{intuicion}
+
+\section{La cota fundamental}
+
+\begin{teorema}[Nourdin--Peccati, 2009]\label{teo:nourdin-peccati}
+Sea $F\in\D^{1,2}$ con $\E F=0$ y $\E F^2=1$. Entonces
+\[
+  d_{TV}(F,N)\le2\,\E\Big|1-\ip{DF}{-DL^{-1}F}_\Hf\Big|\le2\sqrt{\Var\big(\ip{DF}{-DL^{-1}F}_\Hf\big)}.
+\]
+\end{teorema}
+
+\begin{proof}
+Para $f\in\F_{TV}$, por la Proposición~\ref{prop:covarianzas} y la regla de la cadena,
+\[
+  \E[Ff(F)]=\E\ip{Df(F)}{-DL^{-1}F}=\E\big[f'(F)\ip{DF}{-DL^{-1}F}\big].
+\]
+Así $\abs{\E[f'(F)-Ff(F)]}=\abs{\E[f'(F)(1-\ip{DF}{-DL^{-1}F})]}\le2\E\abs{1-\ip{DF}{-DL^{-1}F}}$. La segunda
+desigualdad es Cauchy--Schwarz, pues $\E\ip{DF}{-DL^{-1}F}=\E F^2=1$. (Estrictamente, la
+regla de la cadena se aplica a $f$ Lipschitz con la versión de la Proposición~\ref{prop:cadena}, lo que requiere
+que $F$ tenga densidad, o un argumento de aproximación.)
+\end{proof}
+
+\section{El teorema del cuarto momento}
+Si $F=I_q(f)$, entonces $L^{-1}F=-\frac1qF$, y por tanto $\ip{DF}{-DL^{-1}F}=\frac1q\norm{DF}^2_\Hf$.
+
+\begin{lema}\label{lem:cuarto-momento}
+Sea $F=I_q(f)$ con $f\in\Hf^{\odot q}$, $q\ge2$, y $\E F^2=q!\norm f^2=1$. Entonces
+\begin{align*}
+  \Var\Big(\frac1q\norm{DF}^2_\Hf\Big)&=\frac1{q^2}\sum_{r=1}^{q-1}r^2(r!)^2\binom qr^4(2q-2r)!\,\norm{f\tilde\otimes_rf}^2,\\
+  \E F^4-3&=\frac3q\sum_{r=1}^{q-1}r\,(r!)^2\binom qr^4(2q-2r)!\,\norm{f\tilde\otimes_rf}^2.
+\end{align*}
+En consecuencia,
+\[
+  \Var\Big(\frac1q\norm{DF}^2_\Hf\Big)\le\frac{q-1}{3q}\big(\E F^4-3\big).
+\]
+\end{lema}
+
+\begin{proof}[Esbozo]
+Por el Teorema~\ref{teo:derivada-caos}, $D_tF=qI_{q-1}(f(\cdot,t))$. Por la fórmula del producto (Teorema~\ref{teo:producto})
+aplicada a $I_{q-1}(f(\cdot,t))^2$ e integrando en $t$ (lo que añade una contracción),
+\[
+  \frac1q\norm{DF}^2=q\sum_{r=1}^q(r-1)!\binom{q-1}{r-1}^2I_{2q-2r}(f\tilde\otimes_rf).
+\]
+El término $r=q$ es la constante $q!\norm f^2=1$, y la varianza se calcula con la isometría;
+reescribiendo $q(r-1)!\binom{q-1}{r-1}^2=\frac rq\cdot r!\binom qr^2$ se obtiene la primera fórmula. Para el cuarto momento,
+$\E F^4=\E[F\cdot F^3]=3\E[F^2\cdot\frac1q\norm{DF}^2]$ (dualidad y regla de la cadena: $\E[F\cdot F^3]=
+\E\ip{D(F^3)}{-DL^{-1}F}=3\E[F^2\frac1q\norm{DF}^2]$), y se desarrolla $F^2$ con la fórmula del producto; el
+resultado es la segunda fórmula. Comparando término a término, el cociente entre el coeficiente
+de $\norm{f\tilde\otimes_rf}^2$ en la varianza y en $\E F^4-3$ es $\frac{r^2/q^2}{3r/q}=\frac r{3q}\le\frac{q-1}{3q}$, lo que da la desigualdad.
+\end{proof}
+
+\begin{teorema}[Teorema del cuarto momento]\label{teo:cuarto-momento}
+Sea $q\ge2$ y $F_n=I_q(f_n)$ con $\E F_n^2\to1$. Son
+equivalentes:
+\begin{enumerate}[label=(\roman*)]
+  \item $F_n\tolaw N(0,1)$;
+  \item $\E F_n^4\to3$;
+  \item $\norm{f_n\otimes_rf_n}_{\Hf^{\otimes(2q-2r)}}\to0$ para $r=1,\dots,q-1$;
+  \item $\norm{DF_n}^2_\Hf\to q$ en $L^2(\Omega)$.
+\end{enumerate}
+Además, si $\E F^2=1$, se tiene la cota cuantitativa
+\[
+  d_{TV}(F,N)\le2\sqrt{\frac{q-1}{3q}\big(\E F^4-3\big)}.
+\]
+\end{teorema}
+
+\begin{proof}
+La cota es el Teorema~\ref{teo:nourdin-peccati} combinado con el Lema~\ref{lem:cuarto-momento}; da (ii)$\Rightarrow$(i). (i)$\Rightarrow$(ii): por
+el Teorema~\ref{teo:normas-caos} (hipercontractividad), $\sup_n\E\abs{F_n}^p<\infty$ para todo $p$, luego hay integrabilidad
+uniforme de $F_n^4$ y $\E F_n^4\to\E N^4=3$. (ii)$\Leftrightarrow$(iii): por la fórmula del cuarto cumulante del
+Lema~\ref{lem:cuarto-momento}, y porque $\norm{f\tilde\otimes_rf}$ y $\norm{f\otimes_rf}$ son comparables (identidad combinatoria). (iii)$\Leftrightarrow$(iv):
+por la fórmula de la varianza (véase también~\cite{NualartOrtizLatorre08}).
+\end{proof}
+
+\begin{intuicion}
+En el caos $q\ge2$, el cuarto cumulante $\kappa_4(F)=\E F^4-3(\E F^2)^2$ es siempre $\ge0$ (Lema~\ref{lem:cuarto-momento}):
+las variables de caos tienen colas más pesadas que la normal. La normal es el único
+``mínimo'' posible, y alcanzarlo asintóticamente solo es posible si el núcleo $f_n$ se ``dispersa'',
+es decir, si sus contracciones se anulan. Es un \emph{principio de rigidez}. Notablemente, la
+condición (iv) dice que la ``varianza local'' $\frac1q\norm{DF}^2$ se vuelve determinista.
+\end{intuicion}
+
+\begin{teorema}[Peccati--Tudor~\cite{PeccatiTudor05}]
+Sea $F_n=(F^1_n,\dots,F^d_n)$ con $F^i_n=I_{q_i}(f^i_n)$ y $\E[F^i_nF^j_n]\to
+C_{ij}$. Entonces $F_n\tolaw N(0,C)$ si y solo si cada componente converge a su marginal
+gaussiana.
+\end{teorema}
+
+Es decir: en el caos de Wiener, \emph{la convergencia componente a componente implica la
+convergencia conjunta}. Esto falla para variables generales.
+
+\section{Aplicación: variación cuadrática del browniano fraccionario}
+Sea $B^H$ un fBm y $X_k=n^H(B^H_{(k+1)/n}-B^H_{k/n})$, $k=0,\dots,n-1$, que forman una sucesión
+gaussiana estacionaria con $\E X_k^2=1$ y covarianza
+\[
+  \rho(k)=\tfrac12\big(\abs{k+1}^{2H}-2\abs k^{2H}+\abs{k-1}^{2H}\big)\sim H(2H-1)\abs k^{2H-2}.
+\]
+Sea $V_n=\frac1{\sqrt n}\sum_{k<n}(X_k^2-1)=\frac1{\sqrt n}\sum_kH_2(X_k)$, que vive en el segundo caos.
+
+\begin{teorema}[Breuer--Major; Nourdin--Peccati]
+Si $H<3/4$, $V_n\tolaw N(0,\sigma_H^2)$ con
+$\sigma_H^2=2\sum_{k\in\Z}\rho(k)^2$, y
+\[
+  d_{TV}\Big(\frac{V_n}{\sqrt{\Var V_n}},N\Big)\le C\cdot
+  \begin{cases}
+    n^{-1/2}, & H\in(0,\frac58),\\
+    n^{-1/2}\log^{3/2}n, & H=\frac58,\\
+    n^{4H-3}, & H\in(\frac58,\frac34).
+  \end{cases}
+\]
+Si $H>3/4$, $n^{1-2H}V_n$ converge a una variable de \textup{Rosenblatt} (no gaussiana, en el segundo
+caos).
+\end{teorema}
+
+\begin{proof}[Esbozo]
+$V_n=I_2(f_n)$ con $f_n=\frac1{\sqrt n}\sum_ke_k\otimes e_k$, donde $e_k\in\Hf$ con $\ip{e_k}{e_l}=\rho(k-l)$. Entonces
+$\Var V_n=\frac2n\sum_{k,l<n}\rho(k-l)^2\to\sigma_H^2$, finito si y solo si $\sum\rho^2<\infty$, es decir, $H<3/4$. Además
+\[
+  \norm{f_n\otimes_1f_n}^2=\frac1{n^2}\sum_{i,j,k,l<n}\rho(i-j)\rho(j-k)\rho(k-l)\rho(l-i)\le\frac Cn\Big(\sum_{\abs k<n}\abs{\rho(k)}^{4/3}\Big)^3
+\]
+por la desigualdad de Young para convoluciones. Con $\rho(k)\sim k^{2H-2}$, la suma es acotada si
+$H<5/8$, crece como $\log n$ si $H=5/8$ y como $n^{(8H-5)/3}$ si $H>5/8$. Por el Teorema~\ref{teo:cuarto-momento} (en
+$q=2$, $\kappa_4=48\norm{f\otimes_1f}^2$ y la cota de distancia es $\propto\sqrt{\kappa_4}$) se obtienen las tasas. Para $H>3/4$,
+la renormalización $n^{1-2H}V_n$ hace que $f_n$ converja en $\Hf^{\otimes2}$ a un núcleo no nulo, cuya integral
+doble es la variable de Rosenblatt.
+\end{proof}
+
+Este resultado tiene una consecuencia estadística inmediata: el estimador de $H$ basado en
+la variación cuadrática es asintóticamente normal si y solo si $H<3/4$.
+
+\section{Refinamientos}
+
+\paragraph{Tasas óptimas.} Nourdin y Peccati (2015) probaron que, para $F_n$ en un caos fijo, $d_{TV}(F_n,N)\asymp
+\max\{\abs{\E F_n^3},\ \E F_n^4-3\}$: la cota $\sqrt{\kappa_4}$ del Teorema~\ref{teo:cuarto-momento} no es óptima, y la tasa correcta es lineal
+en los cumulantes.
+
+\paragraph{Entropía.} Nourdin, Peccati y Swan (2014) mostraron que el teorema del cuarto momento
+vale también en \emph{entropía relativa}, una noción de convergencia más fuerte, y con ello en total
+variación de las densidades.
+
+\paragraph{Desigualdades de Poincaré de segundo orden.} Para $F$ general (no en un caos fijo),
+Nourdin, Peccati y Reinert~\cite{NourdinPeccatiReinert09} probaron
+\[
+  d_{TV}(F,N)\le\frac{\sqrt{10}}{2\sigma^2}\Big(\E\norm{D^2F}^4_{\mathrm{op}}\Big)^{1/4}\Big(\E\norm{DF}^4_\Hf\Big)^{1/4},
+\]
+donde $\norm{D^2F}_{\mathrm{op}}$ es la norma de operador de la segunda derivada como forma bilineal en $\Hf$. Esta
+cota solo requiere estimar $DF$ y $D^2F$, y es la herramienta estándar para funcionales no lineales
+(EDPEs, redes neuronales con anchura grande, estadísticos de campos gaussianos).
+
+\paragraph{Universalidad.} Nourdin, Peccati y Reinert (2010) probaron que el caos de Wiener es \emph{universal}:
+si una sucesión de sumas homogéneas multilineales $Q_n(\mathbf G)=\sum f_n(i_1,\dots,i_q)G_{i_1}\cdots G_{i_q}$ en
+gaussianas satisface un TCL, entonces lo satisface $Q_n(\mathbf X)$ para cualesquiera $X_i$ independientes
+centradas de varianza unidad (bajo una condición de influencia pequeña). La prueba combina
+el teorema del cuarto momento con un principio de Lindeberg.
+
+\paragraph{Más allá de la normal.} El método se extiende a aproximaciones por la ley Gamma (segundo
+caos), por leyes en el segundo caos en general (Azmoodeh, Peccati, Poly), y al marco de \emph{triples
+de Markov} (Ledoux; Azmoodeh, Campese, Poly), donde el operador $L$ es el generador de un
+semigrupo de difusión con espectro discreto (por ejemplo, los polinomios de Jacobi o Laguerre),
+lo que produce teoremas del cuarto momento para ``caos'' de otras medidas. Existe también un
+teorema del cuarto momento en \emph{probabilidad libre} (Kemp, Nourdin, Peccati, Speicher, 2012),
+con la ley semicircular como límite. Véase la reseña~\cite{AzmoodehPeccatiYang21}.
+
+\paragraph{Geometría aleatoria.} El método de Malliavin--Stein ha sido decisivo en el estudio de los
+conjuntos nodales de ondas aleatorias (longitud de las líneas nodales de las ondas planas de
+Berry, autofunciones aleatorias en la esfera y el toro): Marinucci, Peccati, Rossi y Wigman
+obtuvieron TCLs y descubrieron la \emph{cancelación de Berry}, en la que la proyección en el segundo
+caos se anula y el comportamiento lo dicta el cuarto caos.

@@ -1,0 +1,223 @@
+\chapter{EDEs y el teorema de Hörmander}\label{cap:hormander}
+
+\begin{panorama}
+Calculamos la derivada de Malliavin de la solución de una EDE y probamos que $X_t\in\D^\infty$.
+Expresamos la matriz de Malliavin con el proceso tangente, tratamos el caso elíptico
+y demostramos el teorema que motivó la teoría: bajo la condición de corchetes de
+Hörmander, $X_t$ tiene densidad $C^\infty$. La prueba que presentamos sigue a Norris~\cite{Norris86} y
+Hairer~\cite{Hairer11}.
+\end{panorama}
+
+Consideramos la EDE de Stratonovich en $\R^d$
+\begin{equation}\label{eq:ede-strat}
+  \dd X_t=V_0(X_t)\,\dd t+\sum_{k=1}^mV_k(X_t)\circ\dd W^k_t,\qquad X_0=x,
+\end{equation}
+con campos $V_k\in C_b^\infty$ (derivadas de orden $\ge1$ acotadas). Sean $Y_t=\nabla_xX_t$ y $Z_t=Y_t^{-1}$
+(Teorema~\ref{teo:kunita}). En notación de Stratonovich,
+\[
+  \dd Y_t=\nabla V_0(X_t)Y_t\,\dd t+\sum_k\nabla V_k(X_t)Y_t\circ\dd W^k_t,\qquad\dd Z_t=-Z_t\nabla V_0(X_t)\,\dd t-\sum_kZ_t\nabla V_k(X_t)\circ\dd W^k_t.
+\]
+
+\section{La derivada de Malliavin de la solución}
+
+\begin{teorema}\label{teo:derivada-ede}
+Para todo $t$, $X_t\in(\D^\infty)^d$, y para $r\le t$,
+\[
+  D^k_rX_t=Y_tZ_rV_k(X_r),\qquad k=1,\dots,m,
+\]
+mientras que $D_rX_t=0$ si $r>t$. Además, $\sup_{r\le t}\E\norm{D_rX_t}^p<\infty$ para todo $p$, y lo mismo
+para las derivadas de orden superior.
+\end{teorema}
+
+\begin{proof}
+Escribimos la ecuación en forma de Itô, $\dd X=b(X)\,\dd t+\sigma_k(X)\,\dd W^k$. Las
+iteraciones de Picard $X^{(n)}$ están en $\D^{1,2}$ (por el Corolario~\ref{cor:derivada-ito} y la regla de la cadena), y
+derivando formalmente:
+\[
+  D^k_rX_t=\sigma_k(X_r)+\int_r^t\nabla b(X_s)D^k_rX_s\,\dd s+\sum_l\int_r^t\nabla\sigma_l(X_s)D^k_rX_s\,\dd W^l_s,\qquad r\le t.
+\]
+Las estimaciones BDG--Gronwall del Teorema~\ref{teo:existencia-ede} muestran que $\sup_n\E\sup_t\norm{DX^{(n)}_t}^p_\Hf<\infty$;
+como $X^{(n)}\to X$ en $L^p$, por cerrabilidad (con un argumento de compacidad débil), $X_t\in\D^{1,p}$
+y $DX$ satisface la ecuación lineal anterior. Pero esta ecuación, como función de $t\ge r$, es la
+ecuación de primera variación~\eqref{eq:primera-variacion} con dato inicial $\sigma_k(X_r)$ en el instante $r$. Por unicidad y la
+propiedad de flujo, su solución es $Y_tY_r^{-1}\sigma_k(X_r)=Y_tZ_rV_k(X_r)$ (recordemos que $\sigma_k=V_k$). Las
+derivadas superiores se tratan por inducción: satisfacen ecuaciones lineales con términos fuente
+polinomiales en derivadas de orden inferior.
+\end{proof}
+
+\begin{intuicion}
+Un impulso en la $k$-ésima coordenada del ruido en el instante $r$ desplaza el estado en la
+dirección $V_k(X_r)$; ese desplazamiento infinitesimal se transporta hasta $t$ por el linealizado
+del flujo, $Y_tZ_r=\nabla_{X_r}X_{r\to t}$. Es exactamente lo que uno esperaría.
+\end{intuicion}
+
+\begin{corolario}[Matriz de Malliavin]\label{cor:matriz-malliavin}
+La matriz de Malliavin de $X_t$ es
+\[
+  \gamma_{X_t}=\sum_{k=1}^m\int_0^tD^k_rX_t\,(D^k_rX_t)^\top\,\dd r=Y_t\,C_t\,Y_t^\top,\qquad C_t=\sum_{k=1}^m\int_0^tZ_rV_k(X_r)V_k(X_r)^\top Z_r^\top\,\dd r.
+\]
+$C_t$ es la \textup{matriz de Malliavin reducida}. Como $Y_t$ es invertible con inversa en todo $L^p$, $X_t$ es no
+degenerado si y solo si $(\det C_t)^{-1}\in\bigcap_pL^p$.
+\end{corolario}
+
+\section{El caso elíptico}
+
+\begin{teorema}
+Si $\sigma\sigma^\top(x)\ge\lambda I$ con $\lambda>0$ para todo $x$, entonces para todo $t>0$, $X_t$ tiene
+densidad $C^\infty$.
+\end{teorema}
+
+\begin{proof}
+Para $\xi\in S^{d-1}$, $\xi^\top C_t\xi=\int_0^t\xi^\top Z_r\sigma\sigma^\top(X_r)Z_r^\top\xi\,\dd r\ge\lambda\int_0^t\abs{Z_r^\top\xi}^2\,\dd r\ge
+\lambda\int_0^t\abs{Y_r}^{-2}\,\dd r$, ya que $\abs{\xi}\le\abs{Y_r^\top}\abs{Z_r^\top\xi}$. Así $\det C_t\ge(\lambda\int_0^t\abs{Y_r}^{-2}\,\dd r)^d$, y por Jensen,
+$\big(\frac1t\int_0^t\abs{Y_r}^{-2}\,\dd r\big)^{-1}\le\frac1t\int_0^t\abs{Y_r}^2\,\dd r$, que tiene todos los momentos. Se concluye con el
+Teorema~\ref{teo:malliavin-densidad}.
+\end{proof}
+
+\section{La condición de Hörmander}
+En el caso degenerado, el ruido actúa solo en algunas direcciones, pero la deriva y la no
+conmutatividad de los campos pueden ``propagarlo'' a todas. Recordemos el corchete de Lie
+$[V,U]=\nabla U\,V-\nabla V\,U$, es decir, $[V,U]f=V(Uf)-U(Vf)$.
+
+\begin{definicion}
+Sea $\mathcal V_0=\{V_1,\dots,V_m\}$ y, recursivamente, $\mathcal V_{n+1}=\mathcal V_n\cup\{[U,V_j]:\ U\in
+\mathcal V_n,\ j=0,\dots,m\}$. Se dice que se satisface la \emph{condición de Hörmander (parabólica)} en $x$ si
+\[
+  \operatorname{span}\{U(x):\ U\in\textstyle\bigcup_n\mathcal V_n\}=\R^d.
+\]
+\end{definicion}
+
+Notemos que $V_0$ \emph{no} está en $\mathcal V_0$: la deriva sola no genera aleatoriedad, solo la transporta.
+
+\begin{teorema}[Hörmander, 1967; Malliavin, 1976~\cite{Malliavin78}]\label{teo:hormander}
+Si los campos $V_0,\dots,V_m\in C_b^\infty$
+satisfacen la condición de Hörmander en $x$, entonces para todo $t>0$, $X_t^x$ es no degenerado
+y su ley tiene densidad $p_t(x,\cdot)\in\mathcal S(\R^d)$.
+\end{teorema}
+
+\begin{ejemplo}[Kolmogorov]
+$\dd X=V\,\dd t$, $\dd V=\dd W$ en $\R^2$. $V_0=(v,0)=v\partial_x$, $V_1=\partial_v$.
+$[V_1,V_0]=\partial_x$. Los campos $V_1,[V_1,V_0]$ generan $\R^2$. Así $(X_t,V_t)=(\int_0^tW,W_t)$ tiene densidad
+regular (de hecho gaussiana no degenerada, con covarianza $\big(\begin{smallmatrix}t^3/3&t^2/2\\t^2/2&t\end{smallmatrix}\big)$). Notemos la escala: la
+dirección $\partial_x$, obtenida con un corchete, se ``llena'' en tiempo $t^{3/2}$ frente a $t^{1/2}$.
+\end{ejemplo}
+
+\begin{ejemplo}[Opción asiática]
+$\dd S=\sigma S\,\dd W$ (Stratonovich: $V_1=\sigma s\partial_s$, $V_0=-\frac{\sigma^2}{2}s\partial_s$) y
+$\dd A=S\,\dd t$. En $\R^2$ con $V_0=-\frac{\sigma^2}{2}s\partial_s+s\partial_a$ se tiene $[V_1,V_0]=\sigma s\partial_a$, y la condición se cumple en
+$\{s>0\}$. Por tanto $(S_t,\int_0^tS_u\,\dd u)$ tiene densidad regular, lo que justifica las fórmulas de griegas
+para opciones asiáticas del Capítulo~\ref{cap:griegas}.
+\end{ejemplo}
+
+\begin{ejemplo}[Área de Lévy]
+$\dd X^1=\dd W^1$, $\dd X^2=\dd W^2$, $\dd X^3=\frac12(X^1\,\dd W^2-X^2\,\dd W^1)$.
+$V_1=\partial_1-\frac{x_2}{2}\partial_3$, $V_2=\partial_2+\frac{x_1}{2}\partial_3$, $[V_1,V_2]=\partial_3$. Es el browniano en el grupo de Heisenberg, el
+prototipo de la geometría sub-riemanniana.
+\end{ejemplo}
+
+\section{Demostración del teorema de Hörmander}
+Por el Corolario~\ref{cor:matriz-malliavin} y el Teorema~\ref{teo:malliavin-densidad}, basta probar:
+\begin{equation}\label{eq:hormander-objetivo}
+  \text{para todo }p\ge1\text{ existe }C_p:\qquad\sup_{\abs\xi=1}\P\big(\xi^\top C_t\xi<\varepsilon\big)\le C_p\varepsilon^p\quad\text{para }\varepsilon\in(0,1].
+\end{equation}
+En efecto, un argumento de recubrimiento estándar de la esfera (usando que $\xi\mapsto\xi^\top C_t\xi$ es Lipschitz
+con constante $2\abs{C_t}$, que tiene todos los momentos) promueve esta cota a $\P(\inf_{\abs\xi=1}\xi^\top C_t\xi<
+\varepsilon)\le C_p'\varepsilon^p$, y esto da $\E(\det C_t)^{-p}\le\E(\lambda_{\min}(C_t))^{-dp}<\infty$.
+
+\paragraph{Paso 1: la dinámica de $Z_tU(X_t)$.} Para un campo $U$ suave, por la regla de Stratonovich,
+\begin{equation}\label{eq:dinamica-ZU}
+  \dd\big(Z_tU(X_t)\big)=Z_t[V_0,U](X_t)\,\dd t+\sum_{k=1}^mZ_t[V_k,U](X_t)\circ\dd W^k_t.
+\end{equation}
+En efecto, $\dd(U(X_t))=\nabla U(X_t)\circ\dd X_t=\nabla U\,V_0\,\dd t+\sum_k\nabla U\,V_k\circ\dd W^k$, y $\dd Z_t\,U=-Z\nabla V_0\,U\,\dd t-
+\sum Z\nabla V_k\,U\circ\dd W^k$; sumando, aparecen $\nabla U\,V_j-\nabla V_j\,U=[V_j,U]$.
+
+\paragraph{Paso 2: el lema de Norris.} Es la herramienta probabilística clave: una semimartingala no
+puede ser pequeña sin que lo sean su parte de variación finita y su parte martingala.
+
+\begin{lema}[Norris]\label{lem:norris}
+Sean $a,y$ procesos de Itô reales, $u=(u^k)$ adaptado, con
+\[
+  Y_t=y+\int_0^ta_s\,\dd s+\sum_k\int_0^tu^k_s\,\dd W^k_s,\qquad a_t=\alpha+\int_0^t\beta_s\,\dd s+\sum_k\int_0^t\gamma^k_s\,\dd W^k_s.
+\]
+Supongamos que $\E\sup_{t\le T}(\abs{\beta_t}+\abs{\gamma_t}+\abs{a_t}+\abs{u_t})^p<\infty$ para todo $p$. Entonces, para todo $q>8$
+y $r<\frac{q-8}{18}$, existe $C$ tal que, para $\varepsilon\in(0,1]$,
+\[
+  \P\Big(\int_0^TY_t^2\,\dd t<\varepsilon^q,\ \int_0^T\big(a_t^2+\abs{u_t}^2\big)\,\dd t\ge\varepsilon\Big)\le C\varepsilon^r\quad\text{(con }C=C_{q,r}).
+\]
+\end{lema}
+
+\begin{proof}[Idea de la prueba]
+Se usa repetidamente la \emph{desigualdad exponencial de martingalas}: si $M$ es
+martingala continua, $\P(\sup_{t\le T}\abs{M_t}\ge\delta,\ \langle M\rangle_T<\rho)\le2e^{-\delta^2/2\rho}$. (1) Si $\int Y^2$ es pequeño,
+entonces $\int Y\,\dd Y$, que es el término $\frac12(Y_T^2-Y_0^2)$ salvo la variación cuadrática, controla $\int\abs{u}^2$: por
+Itô, $Y_T^2=y^2+2\int Ya\,\dd t+2\int Yu\,\dd W+\int\abs{u}^2\,\dd t$; la integral estocástica $\int Yu\,\dd W$ tiene variación
+cuadrática $\int Y^2\abs{u}^2$, pequeña, luego es pequeña salvo un suceso de probabilidad $O(e^{-1/\varepsilon^c})$; y
+$\int Ya$ es pequeño por Cauchy--Schwarz. Así $\int\abs{u}^2$ es pequeño. (2) Si $Y$ es pequeño en $L^2$ y $u$
+también, entonces la parte de variación acotada $\int a$ es pequeña en sup (interpolación entre $L^2$ y
+la regularidad Hölder que da la cota de $\beta,\gamma$), y aplicando el mismo argumento a $a$ en lugar de
+$Y$, $\int a^2$ es pequeño. Ambos pasos pierden una potencia de $\varepsilon$, lo que explica las restricciones
+$q>8$, $r<(q-8)/18$. Véase~\cite{Norris86} o~\cite[Lemma~2.3.2]{Nualart06}.
+\end{proof}
+
+\paragraph{Paso 3: iteración por corchetes.} Fijamos $\xi\in S^{d-1}$ y, para un campo $U$, escribimos
+$Y^U_t=\xi^\top Z_tU(X_t)$. Entonces
+\[
+  \xi^\top C_t\xi=\sum_{k=1}^m\int_0^t\big(Y^{V_k}_s\big)^2\,\dd s.
+\]
+Por~\eqref{eq:dinamica-ZU}, en forma de Itô, $Y^U$ es un proceso de Itô con deriva $\xi^\top Z([V_0,U]+
+\frac12\sum_k[V_k,[V_k,U]])(X)$ y coeficientes de martingala $Y^{[V_k,U]}$. Aplicando el Lema~\ref{lem:norris} con
+$Y=Y^U$: si $\int_0^t(Y^U)^2<\varepsilon^q$, entonces, salvo un suceso de probabilidad $O(\varepsilon^p)$,
+\[
+  \int_0^t\big(Y^{[V_k,U]}_s\big)^2\,\dd s<\varepsilon,\quad k=1,\dots,m,\qquad\int_0^t\Big(Y_s^{[V_0,U]+\frac12\sum_k[V_k,[V_k,U]]}\Big)^2\,\dd s<\varepsilon.
+\]
+Combinando estas dos (el término $[V_k,[V_k,U]]$ ya es pequeño por la aplicación previa del lema
+a $[V_k,U]$), $\int(Y^{[V_0,U]})^2$ es también pequeño, con una pérdida de exponente.
+
+Partiendo de $U\in\mathcal V_0$ y repitiendo $N$ veces, obtenemos: existen $q_N$ y, para todo $p$, $C$ tales
+que
+\[
+  \P\Big(\xi^\top C_t\xi<\varepsilon^{q_N},\ \sum_{U\in\mathcal V_N}\int_0^t\big(Y^U_s\big)^2\,\dd s\ge\varepsilon\Big)\le C\varepsilon^p.
+\]
+
+\paragraph{Paso 4: conclusión.} Por la condición de Hörmander en $x$ y la compacidad de la esfera,
+existe $N$ y $c>0$ tales que $\sum_{U\in\mathcal V_N}(\xi^\top U(x))^2\ge c$ para todo $\abs\xi=1$. Como $Z_0=I$, $X_0=x$ y
+las trayectorias son continuas, el suceso
+\[
+  \Big\{\sum_{U\in\mathcal V_N}\int_0^t\big(Y^U_s\big)^2\,\dd s<\varepsilon\Big\}
+\]
+implica que $s\mapsto\sum_U(Y^U_s)^2$, que vale al menos $c$ en $s=0$, debe caer por debajo de $c/2$ antes
+del tiempo $2\varepsilon/c$. La probabilidad de esto es $\le\P(\sup_{s\le2\varepsilon/c}\abs{Z_sU(X_s)-U(x)}\ge c')\le C_p\varepsilon^p$
+por las cotas de momentos de los incrementos (Kolmogorov). Combinando con el Paso~3,
+$\P(\xi^\top C_t\xi<\varepsilon^{q_N})\le C\varepsilon^p$, que es~\eqref{eq:hormander-objetivo} tras reparametrizar $\varepsilon$.
+\qed
+
+\begin{corolario}[Hipoelipticidad]
+Bajo la condición de Hörmander en todo punto, el operador
+$\partial_t-\mathcal L$, con $\mathcal L=V_0+\frac12\sum V_k^2$, es hipoelíptico en $(0,\infty)\times\R^d$: su núcleo de calor $p_t(x,y)$ es $C^\infty$
+en $(t,x,y)$.
+\end{corolario}
+
+\begin{proof}[Esbozo]
+La regularidad en $y$ es el Teorema~\ref{teo:hormander}, con cotas uniformes en $x$ en compactos. La
+regularidad en $x$ sale de diferenciar $\E[\varphi(X_t^x)]$ en $x$, usando el flujo $Y_t$ y las mismas integraciones
+por partes, y en $t$, de la ecuación de Kolmogorov. El argumento de Hörmander para $\partial_t-\mathcal L$
+como operador en $(t,x)$ requiere además aplicar el resultado al adjunto.
+\end{proof}
+
+\section{Comentarios y extensiones}
+\begin{itemize}
+  \item \textbf{Cotas cuantitativas.} Kusuoka y Stroock~\cite{KusuokaStroock} obtuvieron cotas gaussianas para $p_t(x,y)$
+  y sus derivadas, con escala $t^{-\text{grado}/2}$ en cada dirección según el número de corchetes
+  necesarios para generarla, en consonancia con el ejemplo de Kolmogorov.
+  \item \textbf{Enfoque de Bismut.} Bismut~\cite{Bismut81} dio una prueba alternativa basada en Girsanov:
+  perturbar el ruido en direcciones de Cameron--Martin y diferenciar la fórmula de Girsanov
+  produce directamente las fórmulas de integración por partes. Es la base de la fórmula de
+  Bismut--Elworthy--Li, que usaremos en finanzas.
+  \item \textbf{Dimensión infinita.} Hairer y Mattingly~\cite{HairerMattingly11} extendieron el programa a EDPEs semilineales
+  (Navier--Stokes 2D con ruido degenerado), probando ergodicidad única. Ahí la
+  matriz de Malliavin es un operador en dimensión infinita y nunca es invertible; se prueba
+  una no degeneración en un subespacio de dimensión finita.
+  \item \textbf{Rough paths.} Cass y Friz~\cite{CassFriz10} probaron que la condición de Hörmander también da
+  densidades para EDRs dirigidas por procesos gaussianos rugosos (browniano fraccionario
+  con $H>1/4$); véase el Capítulo~\ref{cap:rough-paths}.
+\end{itemize}

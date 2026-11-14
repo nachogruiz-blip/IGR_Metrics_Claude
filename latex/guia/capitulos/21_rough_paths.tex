@@ -1,0 +1,138 @@
+\chapter{Cálculo de Malliavin y rough paths}\label{cap:rough-paths}
+
+\begin{panorama}
+La teoría de rough paths de Lyons (1998) resuelve ecuaciones diferenciales dirigidas por
+señales irregulares \emph{trayectoria a trayectoria}, sin martingalas. Para procesos gaussianos, la
+solución es entonces un funcional continuo de un \emph{levantamiento} del ruido, y el cálculo
+de Malliavin se puede hacer en sentido fuerte: la solución es Fréchet-diferenciable en las
+direcciones de Cameron--Martin. Presentamos los ingredientes básicos, el teorema de
+Hörmander para EDRs gaussianas (Cass--Friz, Cass--Hairer--Litterer--Tindel) y algunos
+desarrollos recientes.
+\end{panorama}
+
+\section{Rough paths en pocas palabras}
+Sea $\alpha\in(\frac13,\frac12]$. Un \emph{rough path} $\alpha$-Hölder en $\R^m$ es un par $\mathbf X=(X,\mathbb X)$ con $X:[0,T]\to\R^m$ y
+$\mathbb X:[0,T]^2\to\R^{m\times m}$ tales que
+\[
+  \abs{X_t-X_s}\le C\abs{t-s}^\alpha,\qquad\abs{\mathbb X_{s,t}}\le C\abs{t-s}^{2\alpha},\qquad\mathbb X_{s,t}-\mathbb X_{s,u}-\mathbb X_{u,t}=X_{s,u}\otimes X_{u,t}
+\]
+(\emph{relación de Chen}), con $X_{s,t}=X_t-X_s$. Heurísticamente, $\mathbb X_{s,t}=\int_s^tX_{s,r}\otimes\dd X_r$: es la información
+de segundo orden que la trayectoria por sí sola no determina cuando $\alpha\le\frac12$.
+
+\begin{lema}[Lema de cosido, \textup{sewing lemma}]\label{lem:sewing}
+Sea $\Xi_{s,t}$ una función de dos parámetros con
+$\abs{\Xi_{s,t}-\Xi_{s,u}-\Xi_{u,t}}\le C\abs{t-s}^\theta$ para $s\le u\le t$, con $\theta>1$. Entonces existe una única función
+aditiva $\mathcal I_t$ con $\abs{\mathcal I_t-\mathcal I_s-\Xi_{s,t}}\le C'\abs{t-s}^\theta$, dada por $\mathcal I_t-\mathcal I_s=\lim_{\abs\pi\to0}\sum_{[u,v]\in\pi}\Xi_{u,v}$.
+\end{lema}
+
+\begin{proof}[Esbozo]
+Para particiones diádicas, quitar un punto de una partición de $n$ intervalos cambia
+la suma en a lo sumo $C(\frac{2\abs{t-s}}{n})^\theta$. Eliminando puntos sucesivamente hasta llegar a $\{s,t\}$, la
+diferencia total está acotada por $C\abs{t-s}^\theta\sum_nn^{-\theta}<\infty$, porque $\theta>1$. Esto da existencia del
+límite y la estimación; la unicidad se sigue de que una función aditiva con $\abs{f_{s,t}}\le C\abs{t-s}^\theta$,
+$\theta>1$, es nula.
+\end{proof}
+
+Con $\Xi_{s,t}=Y_sX_{s,t}+Y_s'\mathbb X_{s,t}$, para $Y$ \emph{controlado} por $X$ (es decir, $Y_{s,t}=Y_s'X_{s,t}+O(\abs{t-s}^{2\alpha})$),
+se tiene $\theta=3\alpha>1$ y el lema define la \emph{integral rugosa} $\int Y\,\dd\mathbf X$. Esto permite resolver
+\begin{equation}\label{eq:edr}
+  \dd Y_t=V_0(Y_t)\,\dd t+V(Y_t)\,\dd\mathbf X_t
+\end{equation}
+por punto fijo, y la solución depende de manera \emph{localmente Lipschitz} de $\mathbf X$ en la métrica de
+rough paths (\emph{teorema de continuidad de Lyons}, o teorema del límite universal).
+
+\begin{ejemplo}[Browniano]
+$\mathbb X^{\text{Itô}}_{s,t}=\int_s^tW_{s,r}\otimes\dd W_r$ y $\mathbb X^{\text{Strat}}_{s,t}=\mathbb X^{\text{Itô}}_{s,t}+\frac12(t-s)I$ son dos rough
+paths distintos sobre la misma trayectoria; con el primero,~\eqref{eq:edr} es la EDE de Itô y, con el
+segundo, la de Stratonovich. Ambos existen c.s.\ (por Kolmogorov en dos parámetros) para todo
+$\alpha<\frac12$.
+\end{ejemplo}
+
+\section{Levantamientos gaussianos}
+
+\begin{teorema}[Friz--Victoir]
+Sea $X=(X^1,\dots,X^m)$ un proceso gaussiano centrado
+continuo con componentes independientes, cuya covarianza tiene $\rho$-variación bidimensional
+finita con $\rho<2$. Entonces $X$ se levanta canónicamente a un rough path geométrico $\mathbf X$ (límite
+de los levantamientos de aproximaciones lineales a trozos) de $p$-variación finita para todo
+$p>2\rho$. Para el browniano fraccionario, $\rho=\frac1{2H}$, de modo que la condición es $H>\frac14$.
+\end{teorema}
+
+Para $H\le1/4$, las aproximaciones lineales a trozos de $\int B^{H,1}\,\dd B^{H,2}$ divergen (la varianza del
+área de Lévy explota), en consonancia con la fórmula de Itô para la divergencia del Capítulo~\ref{cap:fraccionario}.
+
+\section{Diferenciabilidad de Malliavin trayectorial}
+
+\begin{teorema}
+Sea $X$ gaussiano como antes, con espacio de Cameron--Martin $\Hc$, y
+supongamos que $\Hc$ se inyecta en el espacio de trayectorias de $q$-variación finita con $\frac1p+\frac1q>1$
+\textup{(}regularidad complementaria de Young\textup{)}. Sea $Y=\Psi(\mathbf X)$ la solución de~\eqref{eq:edr} con $V\in C_b^\infty$.
+Entonces, para cada trayectoria, $h\mapsto\Psi(T_h\mathbf X)$ es Fréchet-diferenciable en $\Hc$, donde $T_h\mathbf X$ es
+el rough path trasladado, y
+\[
+  \ip{DY_t}{h}_\Hc=\int_0^tJ_{t\leftarrow s}V(Y_s)\,\dd h_s,
+\]
+con $J_{t\leftarrow s}$ el jacobiano del flujo, solución de la ecuación linealizada. En particular, $Y_t\in\D^{1,2}_{\mathrm{loc}}$
+y, si $X$ es el fBm con $H>1/4$, la condición de Young complementaria se satisface.
+\end{teorema}
+
+Es la misma fórmula que en el Teorema~\ref{teo:derivada-ede}, pero ahora con una integral de Young respecto
+a $h$ y válida $\omega$ a $\omega$. Para el fBm, $\Hc\subset C^{q\text{-var}}$ para todo $q>(H+\frac12)^{-1}$, y $\frac1p+\frac1q>1$ se reduce a
+$H>\frac14$.
+
+\section{El teorema de Hörmander para EDRs gaussianas}
+
+\begin{teorema}[Cass--Friz 2010; Cass--Hairer--Litterer--Tindel 2015]
+Sea $X$ un proceso
+gaussiano que satisface las hipótesis anteriores más una condición de no degeneración \textup{(}no
+determinismo local\textup{)}, por ejemplo el fBm con $H\in(\frac14,\frac12]$. Si los campos $V_0,V_1,\dots,V_m$
+satisfacen la condición de Hörmander en $y_0$, entonces para todo $t>0$:
+\begin{enumerate}[label=(\roman*)]
+  \item la ley de $Y_t$ es absolutamente continua (Cass--Friz~\cite{CassFriz10});
+  \item su densidad es $C^\infty$ (Cass--Hairer--Litterer--Tindel~\cite{CassHairerLittererTindel15}).
+\end{enumerate}
+\end{teorema}
+
+\begin{proof}[Ideas de la prueba]
+Hay tres obstáculos respecto al caso browniano, y cada uno requirió una
+idea nueva.
+
+\emph{(a) Sustituto del lema de Norris.} No hay martingalas, así que el argumento probabilístico
+del Lema~\ref{lem:norris} no sirve. Se sustituye por un \emph{lema de Norris determinista} basado en la \emph{rugosidad
+verdadera} (Hairer--Pillai): una trayectoria $X$ es $\theta$-rugosa si, en todo intervalo y en toda dirección,
+no puede ser ``demasiado regular''. Para trayectorias rugosas, si $\int\phi\,\dd X+\int\psi\,\dd t$ es pequeño,
+entonces $\phi$ y $\psi$ son pequeños (unicidad cuantitativa de la descomposición tipo Doob--Meyer).
+La rugosidad se verifica c.s.\ para procesos gaussianos con no determinismo local.
+
+\emph{(b) Integrabilidad del jacobiano.} Para una EDE, $J$ tiene todos los momentos por BDG--Gronwall.
+Para una EDR, la cota natural es $\abs J\le\exp(C\norm{\mathbf X}^p_{p\text{-var}})$, y $\norm{\mathbf X}^p$ con $p>2$ \emph{no}
+tiene colas gaussianas: la exponencial no es integrable. Cass, Litterer y Lyons resolvieron este
+problema con las \emph{particiones voraces}: el jacobiano está controlado por $\exp(CN(\mathbf X))$, donde $N$
+es el número de intervalos en que la $p$-variación del rough path supera un umbral, y $N$ sí tiene
+colas gaussianas por el teorema de Borell aplicado a la traslación de Cameron--Martin.
+
+\emph{(c) La matriz de Malliavin.} La norma de $\Hc$ no es local en tiempo, de modo que $\ip{DY}{DY}_\Hc$
+no se escribe como una integral en $t$. Se necesitan \emph{desigualdades de interpolación} que acoten
+inferiormente $\norm f_\Hc$ en términos de normas locales de $f$; para el fBm con $H<1/2$, $\norm f_\Hc\gtrsim\norm f_{L^2}$
+en cierto sentido, lo que permite reducir al argumento de los corchetes.
+\end{proof}
+
+\section{Desarrollos recientes}
+\begin{itemize}
+  \item \textbf{Ecuaciones diferenciales estocásticas rugosas.} Friz, Hocquet y Lê (2021) desarrollaron
+  una teoría para ecuaciones dirigidas simultáneamente por un browniano (tratado
+  con Itô) y un rough path (tratado trayectorialmente), $\dd Y=b\,\dd t+\sigma\,\dd W+f\,\dd\mathbf X$. Son
+  el lenguaje natural para filtrado no lineal robusto, volatilidad local-estocástica y control
+  estocástico con ruido común. Su análisis de Malliavin combina ambos mundos.
+  \item \textbf{TCL trayectoriales y desviaciones moderadas.} Se han obtenido TCLs y principios
+  de desviaciones moderadas para EDPEs con ruido multiplicativo vía rough paths, donde
+  el cálculo de Malliavin pathwise permite linealizar alrededor del límite determinista.
+  \item \textbf{Densidades en régimen rugoso.} Inahama~\cite{Inahama14} y otros estudiaron la diferenciabilidad
+  de Malliavin y los desarrollos asintóticos (Laplace, Watanabe) de soluciones de EDRs, con
+  aplicaciones a núcleos de calor en geometría sub-riemanniana.
+  \item \textbf{Signaturas.} La signatura de un rough path, la sucesión de todas sus integrales iteradas,
+  determina la trayectoria salvo reparametrizaciones (Hambly--Lyons; Boedihardjo, Geng,
+  Lyons, Yang). Es la base de métodos de aprendizaje automático para series temporales, y
+  su esperanza bajo la medida de Wiener se calcula con las mismas herramientas de caos de
+  Wiener del Capítulo~\ref{cap:caos}.
+\end{itemize}

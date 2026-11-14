@@ -8,7 +8,7 @@ $\operatorname{Dom}\dive$ si $|\E\ip{\D F}{u}|\le c\norm{F}_{L^2}$ para toda $F\
 \end{equation}
 \end{definicion}
 
-\begin{proposicion}
+\begin{proposicion}[\guia{Proposición 8.2, Teorema 8.4}]
 \begin{enumerate}
   \item Si $h$ es determinista, $\dive(h)=W(h)$.
   \item Si $u$ es adaptado y de cuadrado integrable, $\dive(u)=\int_0^Tu_t\dd W_t$ (Itô).
@@ -24,7 +24,7 @@ Con $u_t=W_T$ (no adaptado), por (3): $\dive(W_T)=W_TW_T-\ip{\ind}{\ind}=W_T^2-T
 Tomando $F=W_T^2$ en \eqref{eq:ibp}: $\E[2W_T\cdot W_T\cdot T]=2T^2=\E[W_T^2(W_T^2-T)]$.
 \end{ejemplo}
 
-\paragraph{Lema clave para finanzas.} Si $\ip{\D F}{u}\neq0$ c.s., aplicando
+\paragraph{Lema clave para finanzas \guia{Proposición 12.1}.} Si $\ip{\D F}{u}\neq0$ c.s., aplicando
 \eqref{eq:ibp} a $\varphi(F)$ con integrando $u/\ip{\D F}{u}$:
 \begin{equation}\label{eq:peso}
   \E[\varphi'(F)G]=\E\Big[\varphi(F)\,\dive\Big(\frac{G\,u}{\ip{\D F}{u}}\Big)\Big].

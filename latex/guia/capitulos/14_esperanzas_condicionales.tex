@@ -1,0 +1,204 @@
+\chapter{Esperanzas condicionales, opciones americanas y volatilidad estocástica}\label{cap:esperanzas-condicionales}
+
+\begin{panorama}
+Tres aplicaciones financieras más avanzadas. (1) Una representación de las esperanzas
+condicionales $\E[\Phi(G)\mid F=x]$ como cociente de esperanzas \emph{no condicionales}, que permite
+valorar opciones americanas por Monte Carlo (Fournié et al., Lions--Regnier, Bally--Caramellino--Zanette).
+(2) La fórmula de descomposición de Alòs, que generaliza la
+fórmula de Hull--White a volatilidad correlacionada mediante el cálculo anticipativo. (3)
+Su consecuencia más célebre: el comportamiento en tiempo corto del \emph{skew} de volatilidad
+implícita, que conecta con la volatilidad rugosa.
+\end{panorama}
+
+\section{Esperanzas condicionales por integración por partes}
+Formalmente, $\E[\Phi(G)\mid F=x]=\E[\Phi(G)\delta_x(F)]/\E[\delta_x(F)]$. El cálculo de Malliavin permite
+reescribir $\E[\Phi(G)\delta_x(F)]$ sustituyendo la delta de Dirac por un indicador y un peso.
+
+\begin{teorema}\label{teo:esp-cond-malliavin}
+Sea $F\in\D^{1,2}$ real, $G\in\D^{1,2}$ (posiblemente vectorial), y $u\in L^2(\Omega;\Hf)$ tal que
+\[
+  \ip{DF}{u}_\Hf=1\quad\text{y}\quad\ip{DG}{u}_\Hf=0\qquad\text{c.s.},
+\]
+con $u\in\Dom\delta$. Entonces, para $\Phi$ con crecimiento polinomial y $x$ en el interior del soporte
+de $F$ donde $p_F(x)>0$,
+\[
+  \E[\Phi(G)\mid F=x]=\frac{\E\big[\Phi(G)\,\ind_{\{F>x\}}\,\delta(u)\big]}{\E\big[\ind_{\{F>x\}}\,\delta(u)\big]}.
+\]
+\end{teorema}
+
+\begin{proof}
+Sea $\psi_\varepsilon$ una aproximación de $\delta_x$ y $\Psi_\varepsilon(y)=\int_{-\infty}^y\psi_\varepsilon$. Para $\Phi$ suave, la condición
+$\ip{DG}{u}=0$ da $\ip{D(\Phi(G)\Psi_\varepsilon(F))}{u}=\Phi(G)\psi_\varepsilon(F)\ip{DF}{u}=\Phi(G)\psi_\varepsilon(F)$. Por dualidad,
+\[
+  \E[\Phi(G)\psi_\varepsilon(F)]=\E[\Phi(G)\Psi_\varepsilon(F)\delta(u)].
+\]
+Cuando $\varepsilon\to0$, el lado izquierdo tiende a $\E[\Phi(G)\mid F=x]p_F(x)$ y el derecho a
+$\E[\Phi(G)\ind_{\{F>x\}}\delta(u)]$. Con $\Phi\equiv1$ se obtiene el denominador: $p_F(x)=\E[\ind_{\{F>x\}}\delta(u)]$
+(Teorema~\ref{teo:densidad}). Se extiende a $\Phi$ general por densidad.
+\end{proof}
+
+\begin{ejemplo}[Black--Scholes]\label{ej:esp-cond-bs}
+Sean $0<s<t$, $F=S_s$, $G=S_t$. Buscamos $u$ con $\ip{DS_t}{u}=0$
+y $\ip{DS_s}{u}\ne0$. Como $D_rS_s=\sigma S_s\ind_{[0,s]}(r)$ y $D_rS_t=\sigma S_t\ind_{[0,t]}(r)$, la elección
+\[
+  a_r=\frac1s\ind_{[0,s]}(r)-\frac1{t-s}\ind_{(s,t]}(r)
+\]
+da $\ip{DS_t}{a}=0$ y $\ip{DS_s}{a}=\sigma S_s$. Con $u=a/(\sigma S_s)$ y la Proposición~\ref{prop:reglas-delta}(ii),
+\[
+  \delta(u)=\frac1{\sigma S_s}\Big(\frac{W_s}{s}-\frac{W_t-W_s}{t-s}\Big)+\frac1{S_s}=\frac1{\sigma S_s}\Big(\frac{tW_s-sW_t}{s(t-s)}+\sigma\Big).
+\]
+Por tanto
+\[
+  \E[\Phi(S_t)\mid S_s=x]=\frac{\E\Big[\Phi(S_t)\ind_{\{S_s>x\}}\frac1{S_s}\Big(\frac{tW_s-sW_t}{s(t-s)}+\sigma\Big)\Big]}{\E\Big[\ind_{\{S_s>x\}}\frac1{S_s}\Big(\frac{tW_s-sW_t}{s(t-s)}+\sigma\Big)\Big]}.
+\]
+\end{ejemplo}
+
+\begin{intuicion}
+La dirección $a$ perturba el ruido en $[0,s]$ hacia arriba y en $(s,t]$ hacia abajo de modo
+que $S_t$ no se mueve: es una ``variación con extremo final fijo''. El peso resultante es un
+estimador de $\delta_x(S_s)$ que no requiere que las trayectorias pasen exactamente por $x$, lo que
+haría el estimador ingenuo inviable.
+\end{intuicion}
+
+\paragraph{Localización.} La varianza de estos estimadores es alta cuando $x$ está lejos de la masa de $F$.
+Para cualquier densidad $\psi$ en $\R$ con primitiva $\Psi$, se tiene la identidad, válida para todo $\psi$,
+\[
+  \E[\Phi(G)\delta_x(F)]=\E\big[\Phi(G)\psi(F-x)\big]+\E\big[\Phi(G)\big(\ind_{\{F>x\}}-\Psi(F-x)\big)\delta(u)\big],
+\]
+que se obtiene aplicando el Teorema~\ref{teo:esp-cond-malliavin} a la diferencia $\delta_x-\psi(\cdot-x)$. Bouchard, Ekeland
+y Touzi probaron que, en la familia $\psi(z)=\frac\eta2e^{-\eta\abs z}$, el parámetro que minimiza la varianza
+integrada es explícito: $\eta^2=\E[\Phi(G)^2\delta(u)^2]/\E[\Phi(G)^2]$.
+
+\section{Opciones americanas por Monte Carlo}
+Una put americana (o bermuda, en una rejilla $0=t_0<\dots<t_n=T$) tiene precio dado por el
+principio de programación dinámica:
+\[
+  V_{t_n}=\Phi(S_{t_n}),\qquad V_{t_k}=\max\Big\{\Phi(S_{t_k}),\ e^{-r\Delta t}\,\E\big[V_{t_{k+1}}\mid S_{t_k}\big]\Big\}.
+\]
+El problema es la esperanza condicional, que debe evaluarse en cada punto de cada trayectoria
+simulada. Hay tres familias de métodos:
+\begin{enumerate}
+  \item \textbf{Regresión (Longstaff--Schwartz, Tsitsiklis--Van Roy):} se proyecta $V_{t_{k+1}}$ sobre una
+  base de funciones de $S_{t_k}$. Es el estándar industrial, pero requiere elegir la base.
+  \item \textbf{Malliavin (Lions--Regnier, Bouchard--Touzi, Bally--Caramellino--Zanette~\cite{BallyCaramellinoZanette05}):}
+  se usa el Teorema~\ref{teo:esp-cond-malliavin}, con $G=S_{t_{k+1}}$ y $F=S_{t_k}$, y los pesos del Ejemplo~\ref{ej:esp-cond-bs}. Es no
+  paramétrico: no requiere base.
+  \item \textbf{Núcleos:} se aproxima $\delta_x$ por un núcleo; la versión localizada de Malliavin puede verse
+  como un núcleo corregido.
+\end{enumerate}
+
+\paragraph{Delta de una americana.} En la región de continuación, la delta es la derivada en $x$ del
+cociente $\E[\Phi(G)\ind_{\{F>x\}}\delta(u)]/\E[\ind_{\{F>x\}}\delta(u)]$. Derivar un indicador vuelve a producir una delta
+de Dirac, que se elimina con una segunda integración por partes; el resultado es otro cociente
+de esperanzas no condicionales con pesos de segundo orden (iterados de $\delta$), explícitos en
+Black--Scholes~\cite{BallyCaramellinoZanette05}. Así, el método de Malliavin produce precio y cobertura con las mismas
+trayectorias.
+
+La convergencia del método es del orden $N^{-1/2}$ por fecha, con constantes que crecen con el
+número de fechas de ejercicio; en dimensión alta (cestas) la ventaja de no necesitar una base es
+significativa, aunque la varianza del peso crece con la dimensión.
+
+\section{La fórmula de descomposición de Alòs}
+Consideramos un modelo de volatilidad estocástica para el log-precio $X_t=\log S_t$ bajo la medida
+de riesgo neutro:
+\[
+  \dd X_t=\Big(r-\frac{\sigma_t^2}{2}\Big)\dd t+\sigma_t\Big(\rho\,\dd W_t+\sqrt{1-\rho^2}\,\dd B_t\Big),
+\]
+con $W,B$ brownianos independientes, $\rho\in(-1,1)$, y $\sigma_t$ un proceso positivo, adaptado a la
+filtración de $W$, con $\sigma\in\D^{1,2}_W$ (derivada de Malliavin respecto a $W$). Sea $BS(t,x,\sigma)$ el precio
+de Black--Scholes de una call con log-subyacente $x$ y volatilidad $\sigma$, y $V_t$ el precio en el modelo.
+
+\begin{definicion}
+La \emph{volatilidad media futura} es $v_t=\Big(\frac1{T-t}\int_t^T\sigma_s^2\,\dd s\Big)^{1/2}$. No es adaptada:
+anticipa el futuro.
+\end{definicion}
+
+\begin{teorema}[Hull--White, 1987]
+Si $\rho=0$, $V_t=\E_t\big[BS(t,X_t,v_t)\big]$.
+\end{teorema}
+
+\begin{proof}
+Condicionando a toda la trayectoria de $\sigma$ (es decir, a $\F^W_T$), $X_T$ es gaussiana
+con varianza $\int_t^T\sigma^2=(T-t)v_t^2$, y el precio condicional es exactamente $BS(t,X_t,v_t)$.
+\end{proof}
+
+Cuando $\rho\ne0$ el argumento falla, porque la trayectoria de $\sigma$ y la del subyacente están
+correlacionadas. Alòs~\cite{Alos06} encontró la corrección exacta.
+
+\begin{teorema}[Alòs, 2006]\label{teo:alos}
+Bajo condiciones de integrabilidad,
+\[
+  V_t=\E_t\big[BS(t,X_t,v_t)\big]+\frac\rho2\,\E_t\Big[\int_t^Te^{-r(s-t)}H(s,X_s,v_s)\,\Lambda_s\,\dd s\Big],
+\]
+donde $H=(\partial_x^3-\partial_x^2)BS$ y
+\[
+  \Lambda_s=\sigma_s\int_s^TD^W_s\big(\sigma_r^2\big)\,\dd r.
+\]
+\end{teorema}
+
+\begin{proof}[Esbozo]
+Se aplica una \emph{fórmula de Itô anticipativa} al proceso $e^{-rs}BS(s,X_s,v_s)$ en $[t,T]$. Como
+$v_s$ no es adaptado, $\int\cdot\,\dd W$ se entiende como integral de Skorokhod, y la fórmula de Itô para
+integrales de Skorokhod (Nualart--Pardoux) contiene un término adicional: si $Y_s=\int_s^T\sigma_r^2\,\dd r$,
+que es $\F_T$-medible, el término de corrección es $\frac12\partial^2_{xY}(\cdot)\,\dd\langle X,Y\rangle$ ``anticipativo'', que se escribe
+$\rho\,\sigma_s\,(D^W_sY_s)\,\partial_x\partial_Y(\cdot)\,\dd s$. Usando que $BS$ satisface la EDP de Black--Scholes y la relación
+$\partial_\sigma BS=\sigma(T-t)(\partial_x^2-\partial_x)BS$ (propia de la gaussiana), los términos sin $\rho$ se cancelan, la integral
+de Skorokhod tiene esperanza cero, y queda exactamente $\frac\rho2\int H\Lambda\,\dd s$. Como $BS(T,X_T,v_T)=
+(e^{X_T}-K)^+$, se obtiene la fórmula. Véase~\cite{Alos06,AlosGarciaLorite21}.
+\end{proof}
+
+\begin{intuicion}
+El primer término es el precio de Hull--White: ``Black--Scholes con la volatilidad media
+futura''. El segundo corrige por la correlación: $\Lambda_s$ mide cuánto cambia la volatilidad
+futura ante un choque en el browniano del subyacente en el instante $s$. Si $\rho<0$ (efecto
+apalancamiento: cuando el precio baja, la volatilidad sube), la corrección hace las puts
+fuera del dinero más caras, lo que se traduce en un \emph{skew} negativo de volatilidad implícita.
+\end{intuicion}
+
+\section{El skew de volatilidad implícita en tiempo corto}
+Sea $I(t,k)$ la volatilidad implícita para log-strike $k$ y $k_t^*=X_t+r(T-t)$ el strike forward en el
+dinero. La fórmula de Alòs permite desarrollar $I$ en torno a $k^*$ cuando $T\to t$.
+
+\begin{teorema}[Alòs--León--Vives~\cite{AlosLeonVives07}, forma heurística]\label{teo:skew}
+Bajo condiciones de regularidad,
+cuando $T-t\to0$, la pendiente en el dinero satisface, a primer orden,
+\[
+  \partial_kI(t,k_t^*)\approx\frac{\rho}{\sigma_t\,(T-t)^2}\int_t^T\int_s^T\E_t\big[D^W_s\sigma_r\big]\,\dd r\,\dd s.
+\]
+En particular:
+\begin{enumerate}[label=(\alph*)]
+  \item si $\E_t[D^W_s\sigma_r]\to c_t$ cuando $r,s\downarrow t$ (volatilidad dirigida por una difusión, como Heston o
+  SABR), el skew converge a una constante, $\frac{\rho c_t}{2\sigma_t}$;
+  \item si $\E_t[D^W_s\sigma_r]\sim c\,(r-s)^{H-1/2}$ con $H\in(0,1/2)$, entonces $\partial_kI(t,k^*)\sim C\rho\,(T-t)^{H-1/2}$,
+  que explota cuando $T\to t$.
+\end{enumerate}
+\end{teorema}
+
+Empíricamente, el skew en el dinero de los índices bursátiles se comporta como $(T-t)^{-\alpha}$
+con $\alpha\approx0{,}4$ para vencimientos cortos, algo que ningún modelo de difusión clásico reproduce
+(por (a)). El caso (b) es exactamente el que producen los modelos de \textbf{volatilidad rugosa}.
+
+\begin{ejemplo}[Bergomi rugoso~\cite{BayerFrizGatheral16}]
+Sea $\hat W^H_t=\int_0^tK(t,s)\,\dd W_s$ con $K(t,s)=\sqrt{2H}(t-s)^{H-1/2}$
+(proceso de Riemann--Liouville), y
+\[
+  \sigma_t^2=\xi_0(t)\exp\Big(\eta\hat W^H_t-\frac{\eta^2}{2}t^{2H}\Big).
+\]
+Por la regla de la cadena, $D^W_s\sigma_r^2=\eta\,\sigma_r^2K(r,s)=\eta\sqrt{2H}\,\sigma_r^2\,(r-s)^{H-1/2}$ para $s<r$, de modo
+que $D^W_s\sigma_r=\frac\eta2\sqrt{2H}\,\sigma_r(r-s)^{H-1/2}$. Sustituyendo en el Teorema~\ref{teo:skew},
+\[
+  \int_t^T\int_s^T(r-s)^{H-1/2}\,\dd r\,\dd s=\frac{(T-t)^{H+3/2}}{(H+\frac12)(H+\frac32)},
+\]
+y el skew se comporta como $(T-t)^{H-1/2}$. Con $H\approx0{,}1$, como estiman Gatheral, Jaisson y
+Rosenbaum~\cite{GatheralJaissonRosenbaum18} a partir de series de volatilidad realizada, se obtiene $\alpha\approx0{,}4$.
+\end{ejemplo}
+
+\begin{observacion}
+La fórmula de Alòs y sus desarrollos se han convertido en una herramienta
+estándar para obtener aproximaciones de precios y volatilidades implícitas en modelos rugosos,
+donde no hay EDP de valoración (el modelo no es markoviano) y la simulación es costosa. La
+monografía de Alòs y García-Lorite~\cite{AlosGarciaLorite21} recoge el estado de la cuestión, incluidas fórmulas para la
+curvatura de la sonrisa y para la volatilidad implícita del VIX. El modelo de Heston rugoso de
+El Euch y Rosenbaum~\cite{ElEuchRosenbaum19} tiene función característica semiexplícita vía ecuaciones de Riccati
+fraccionarias, lo que permite comparar con los desarrollos de Malliavin.
+\end{observacion}

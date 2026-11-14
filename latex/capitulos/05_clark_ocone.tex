@@ -1,6 +1,6 @@
 \chapter{Fórmula de Clark--Ocone y cobertura}\label{cap:clark-ocone}
 
-\begin{teorema}[Clark--Ocone]
+\begin{teorema}[Clark--Ocone, \guia{Teorema 8.9}]
 Si $F\in\Dom$ es $\F_T$-medible,
 \[
   F=\E[F]+\int_0^T\E[\D_tF\mid\F_t]\dd W_t.
@@ -21,7 +21,9 @@ $F=e^{-rT}\Phi(S_T)$, Clark--Ocone da
 \]
 Para la call, $\D_tF=e^{-rT}\ind_{\{S_T>K\}}\sigma S_T$ y
 $\E[\D_tF\mid\F_t]=\sigma\tilde S_t\,N(d_1(t))$: se recupera la delta de
-Black--Scholes, $\Delta_t=N(d_1(t))$. La ventaja del enfoque es que se generaliza a
+Black--Scholes, $\Delta_t=N(d_1(t))$ \guia{Ejemplo 13.2}. Para la digital
+\guia{Ejemplo 13.3}, $\Delta_t=e^{-r(T-t)}\varphi(d_2)/(\sigma S_t\sqrt{T-t})$ para $t<T$
+(\codigo{clark\_ocone.integrand\_digital}). La ventaja del enfoque es que se generaliza a
 pagos dependientes de la trayectoria y a modelos sin EDP explícita
 \cite{oconekaratzas1991,dinunno2009}.
 

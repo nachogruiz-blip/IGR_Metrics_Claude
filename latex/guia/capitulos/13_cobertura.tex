@@ -1,0 +1,170 @@
+\chapter{Cobertura y Clark--Ocone en finanzas}\label{cap:cobertura}
+
+\begin{panorama}
+En un mercado completo, todo derivado se replica con una cartera autofinanciada. El
+teorema de representación de martingalas garantiza su existencia; la fórmula de Clark--Ocone
+la \emph{calcula}. Desarrollamos el marco, obtenemos las carteras de cobertura de opciones
+europeas, digitales, asiáticas y lookback, y resolvemos con la fórmula generalizada de
+Ocone--Karatzas el problema de inversión óptima de Merton con coeficientes aleatorios,
+donde aparece la \emph{demanda de cobertura intertemporal} como derivada de Malliavin del
+precio de mercado del riesgo.
+\end{panorama}
+
+\section{El marco de mercado}
+Sea $(\Omega,\F,(\F_t),\P)$ con $\F_t$ la filtración de un browniano $W$. El mercado tiene un activo sin
+riesgo $B_t=e^{\int_0^tr_s\,\dd s}$ y un activo con riesgo
+\[
+  \dd S_t=S_t(\mu_t\,\dd t+\sigma_t\,\dd W_t),
+\]
+con $r,\mu,\sigma$ progresivos y acotados, $\sigma_t\ge\sigma_0>0$. El \emph{precio de mercado del riesgo} es $\theta_t=
+(\mu_t-r_t)/\sigma_t$. Por Girsanov (Teorema~\ref{teo:girsanov}), bajo $\dd\Q=\mathcal E(-\theta)_T\,\dd\P$ el proceso $\tilde W_t=W_t+\int_0^t\theta_s\,\dd s$
+es browniano y los precios descontados $\tilde S=S/B$ son martingalas: $\dd\tilde S_t=\sigma_t\tilde S_t\,\dd\tilde W_t$.
+
+Una \emph{cartera autofinanciada} es un proceso $\phi_t$ (número de acciones) tal que el valor $V_t=
+\phi_tS_t+\psi_tB_t$ satisface $\dd V_t=\phi_t\,\dd S_t+\psi_t\,\dd B_t$. Equivalentemente, el valor descontado $\tilde V=V/B$
+satisface
+\[
+  \dd\tilde V_t=\phi_t\,\dd\tilde S_t=\phi_t\sigma_t\tilde S_t\,\dd\tilde W_t.
+\]
+
+\begin{teorema}[Cobertura de Clark--Ocone]\label{teo:cobertura}
+Sea $H\ge0$ un pago $\F_T$-medible con $\tilde H=
+H/B_T\in L^2(\Q)$.
+\begin{enumerate}[label=(\roman*)]
+  \item \textup{(Coeficientes deterministas.)} Si $r,\sigma$ son deterministas, la filtración de $\tilde W$ coincide con
+  $(\F_t)$ y, si $\tilde H\in\D^{1,2}$ respecto a $\tilde W$, la cartera
+  \[
+    \phi_t=\frac{\E_\Q\big[\tilde D_t\tilde H\,\big|\,\F_t\big]}{\sigma_t\tilde S_t}
+  \]
+  replica $H$, donde $\tilde D$ es la derivada de Malliavin respecto a $\tilde W$. El precio es $V_0=\E_\Q\tilde H$.
+  \item \textup{(Coeficientes aleatorios.)} En general, con $D$ la derivada respecto a $W$,
+  \[
+    \phi_t=\frac1{\sigma_t\tilde S_t}\,\E_\Q\Big[D_t\tilde H-\tilde H\int_t^TD_t\theta_s\,\dd\tilde W_s\,\Big|\,\F_t\Big].
+  \]
+\end{enumerate}
+\end{teorema}
+
+\begin{proof}
+(i) Por Clark--Ocone (Teorema~\ref{teo:clark-ocone}) bajo $\Q$ para el browniano $\tilde W$: $\tilde H=\E_\Q\tilde H+
+\int_0^T\E_\Q[\tilde D_t\tilde H\mid\F_t]\,\dd\tilde W_t$. Comparando con $\tilde V_T=V_0+\int_0^T\phi_t\sigma_t\tilde S_t\,\dd\tilde W_t$ se obtiene $\phi$. (ii) Es el
+Teorema~\ref{teo:clark-ocone-generalizado}.
+\end{proof}
+
+\begin{intuicion}
+La cobertura es \emph{la sensibilidad esperada del pago a un impulso del ruido}, dividida por la
+sensibilidad del activo al mismo impulso ($\sigma_t\tilde S_t$). Es una ``regla de tres'' en el espacio de
+trayectorias. Cuando el pago es $\Phi(S_T)$ esto se reduce al delta de la EDP de Black--Scholes,
+pero la fórmula funciona sin EDP para pagos que dependen de toda la trayectoria.
+\end{intuicion}
+
+\section{Ejemplos en Black--Scholes}
+Tomamos $r,\sigma$ constantes. Entonces $\tilde D_tS_T=\sigma S_T$ para $t\le T$, y escribimos $\tau=T-t$.
+
+\begin{ejemplo}[Call europea]
+$H=(S_T-K)^+$. Por la regla de la cadena (Lipschitz),
+$\tilde D_tH=\ind_{\{S_T>K\}}\sigma S_T$. Así
+\[
+  \phi_t=\frac{e^{-rT}\sigma\E_\Q[S_T\ind_{\{S_T>K\}}\mid\F_t]}{\sigma e^{-rt}S_t}=\frac{e^{-r\tau}}{S_t}\E_\Q[S_T\ind_{\{S_T>K\}}\mid\F_t]=N(d_1),
+\]
+con $d_1=\frac{\log(S_t/K)+(r+\sigma^2/2)\tau}{\sigma\sqrt\tau}$, usando que bajo la medida $\dd\Q^S/\dd\Q=S_Te^{-rT}/S_0$ el suceso tiene
+probabilidad $N(d_1)$. Es la delta clásica.
+\end{ejemplo}
+
+\begin{ejemplo}[Digital]
+$H=\ind_{\{S_T>K\}}\notin\D^{1,2}$. Sin embargo, aproximando por $H_n=\Phi_n(S_T)$
+suaves, las carteras $\phi^n_t=e^{-r\tau}\E_\Q[\Phi_n'(S_T)S_T\mid\F_t]/S_t$ convergen para $t<T$, porque la ley
+condicional de $S_T$ dado $\F_t$ tiene densidad regular. El límite es
+\[
+  \phi_t=\frac{e^{-r\tau}\,\varphi(d_2)}{\sigma S_t\sqrt\tau},\qquad t<T.
+\]
+Formalmente, $\tilde D_t\ind_{\{S_T>K\}}=\delta_K(S_T)\sigma S_T$ es una \emph{distribución de Watanabe}: el cálculo de Malliavin
+se extiende a $\D^{-\infty}$, el dual de $\D^\infty$, y Clark--Ocone vale ahí para $t<T$.
+\end{ejemplo}
+
+\begin{ejemplo}[Asiática]
+$H=(\bar A-K)^+$, con $\bar A=\frac1T\int_0^TS_u\,\dd u$. Como $\tilde D_t\bar A=\frac\sigma T\int_t^TS_u\,\dd u$,
+\[
+  \phi_t=\frac{e^{-r\tau}}{S_t}\,\E_\Q\Big[\ind_{\{\bar A>K\}}\frac1T\int_t^TS_u\,\dd u\,\Big|\,\F_t\Big].
+\]
+Esta expresión se evalúa por Monte Carlo anidado o, mejor, se reduce a una función de
+$(t,S_t,\int_0^tS)$ por la propiedad de Markov del par.
+\end{ejemplo}
+
+\begin{ejemplo}[Lookback flotante]
+$H=M_T-S_T$, con $M_T=\max_{u\le T}S_u$. Sea $\tau^*$ el instante
+del máximo. Por la Proposición~\ref{prop:supremo}, $\tilde D_tM_T=\sigma M_T\ind_{\{t\le\tau^*\}}$, luego
+\[
+  \phi_t=\frac{e^{-r\tau}}{S_t}\Big(\E_\Q\big[M_T\ind_{\{\tau^*\ge t\}}\mid\F_t\big]-\E_\Q[S_T\mid\F_t]\Big).
+\]
+El primer término es la parte de la cartera que cubre la posibilidad de que el máximo aún no se
+haya alcanzado; se calcula con el principio de reflexión para el browniano con deriva.
+\end{ejemplo}
+
+\section{Inversión óptima: Merton con coeficientes aleatorios}
+Un inversor con riqueza inicial $x$ elige la fracción $\pi_t$ de su riqueza invertida en $S$ para maximizar
+$\E[U(X_T)]$, con $U(x)=\frac{x^{1-\gamma}}{1-\gamma}$ (aversión relativa al riesgo $\gamma>0$; $\gamma=1$ es log). Para simplificar,
+$r\equiv0$. La riqueza satisface $\dd X_t=\pi_tX_t\sigma_t(\dd W_t+\theta_t\,\dd t)=\pi_tX_t\sigma_t\,\dd\tilde W_t$.
+
+\paragraph{Método de martingala.} En mercado completo, el problema dinámico equivale al estático
+\[
+  \max\ \E[U(X_T)]\quad\text{s.a.}\quad\E[\xi_TX_T]=x,\qquad\xi_T=\mathcal E(-\theta)_T=\frac{\dd\Q}{\dd\P}.
+\]
+La condición de primer orden $U'(X_T)=y\xi_T$ da $X_T^*=(y\xi_T)^{-1/\gamma}$, con $y$ fijado por la restricción
+presupuestaria. Queda por \emph{encontrar la estrategia} que replica $X_T^*$: es un problema de cobertura.
+
+\begin{teorema}[Ocone--Karatzas]\label{teo:ocone-karatzas}
+Bajo condiciones de integrabilidad y $\theta_s\in\D^{1,2}$, la cartera
+óptima es
+\[
+  \pi_t^*=\underbrace{\frac{\theta_t}{\gamma\sigma_t}}_{\text{miope}}\ +\ \underbrace{\Big(\frac1\gamma-1\Big)\frac1{\sigma_t}\frac{\E_\Q\big[X_T^*\int_t^TD_t\theta_s\,\dd\tilde W_s\mid\F_t\big]}{\E_\Q[X_T^*\mid\F_t]}}_{\text{demanda de cobertura intertemporal}}.
+\]
+\end{teorema}
+
+\begin{proof}
+La riqueza óptima es $X_t=\E_\Q[X_T^*\mid\F_t]$ y $\dd X_t=\pi_tX_t\sigma_t\,\dd\tilde W_t$. Por el Teorema~\ref{teo:clark-ocone-generalizado}
+aplicado a $F=X_T^*$,
+\[
+  \pi_tX_t\sigma_t=\E_\Q\Big[D_tX_T^*-X_T^*\int_t^TD_t\theta_s\,\dd\tilde W_s\,\Big|\,\F_t\Big].
+\]
+Ahora $\log X_T^*=-\frac1\gamma\log(y\xi_T)$ y $\log\xi_T=-\int_0^T\theta\,\dd W-\frac12\int_0^T\theta^2\,\dd s$. Por el Corolario~\ref{cor:derivada-ito},
+\[
+  D_t\log\xi_T=-\theta_t-\int_t^TD_t\theta_s\,\dd W_s-\int_t^T\theta_sD_t\theta_s\,\dd s=-\theta_t-\int_t^TD_t\theta_s\,\dd\tilde W_s.
+\]
+Así $D_tX_T^*=\frac1\gamma X_T^*\big(\theta_t+\int_t^TD_t\theta_s\,\dd\tilde W_s\big)$. Sustituyendo,
+\[
+  \pi_tX_t\sigma_t=\frac{\theta_t}{\gamma}X_t+\Big(\frac1\gamma-1\Big)\E_\Q\Big[X_T^*\int_t^TD_t\theta_s\,\dd\tilde W_s\,\Big|\,\F_t\Big],
+\]
+y se divide por $X_t\sigma_t$.
+\end{proof}
+
+\begin{observacion}
+\begin{itemize}
+  \item Con utilidad logarítmica ($\gamma=1$) la demanda de cobertura desaparece:
+  el inversor log es miope.
+  \item Si $\theta$ es determinista, $D\theta=0$ y la cartera es miope para toda $\gamma$: la solución clásica de
+  Merton $\pi=\frac{\mu-r}{\gamma\sigma^2}$.
+  \item Si $\theta$ depende de un factor estocástico correlacionado con $W$ (predecibilidad de rentabilidades,
+  volatilidad estocástica), $D_t\theta_s$ mide cómo un choque hoy cambia las oportunidades
+  de inversión futuras, y el inversor con $\gamma>1$ se cubre contra su deterioro. La fórmula es
+  la base de los métodos de simulación de Detemple, García y Rindisbacher para carteras
+  óptimas en alta dimensión.
+\end{itemize}
+\end{observacion}
+
+\section{Información privilegiada}
+¿Cuánto vale saber algo sobre el futuro? Supongamos que un inversor conoce desde $t=0$ una
+variable $G$ (por ejemplo, $G=W_T$ o $G=\ind_{\{S_T>K\}}$). Su filtración es $\G_t=\F_t\vee\sigma(G)$. Bajo la
+\emph{hipótesis de Jacod} (la ley condicional de $G$ dado $\F_t$ tiene densidad $p_t(\cdot)$ respecto a la ley de $G$),
+$W$ es una $\G$-semimartingala:
+\[
+  W_t=\hat W_t+\int_0^t\frac{\dd\langle p_\cdot(x),W\rangle_s}{p_s(x)}\Big|_{x=G}\qquad\text{con }\hat W\text{ un }\G\text{-browniano}.
+\]
+Imkeller~\cite{Imkeller03} observó que el término de deriva, la ``ventaja informativa'' $\mu^G_s$, se expresa con
+la derivada de Malliavin de la densidad condicional: $\dd\langle p_\cdot(x),W\rangle_s=\cond{D_s\,\delta_x(G)}{\F_s}\,\dd s$ por
+Clark--Ocone. La utilidad logarítmica adicional del insider es
+\[
+  \E\big[\log X^\G_T\big]-\E\big[\log X^\F_T\big]=\frac12\E\int_0^T(\mu^G_s)^2\,\dd s,
+\]
+que coincide con la información mutua entre $G$ y la trayectoria $W$. Si $G=W_T$, $\mu^G_s=\frac{W_T-W_s}{T-s}$ y
+la utilidad adicional es infinita: hay arbitraje. El enfoque anticipativo alternativo usa integrales
+de Skorokhod o de tipo ``forward'' para definir la riqueza del insider sin pasar por $\G$.

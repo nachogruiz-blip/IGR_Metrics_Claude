@@ -1,0 +1,89 @@
+% Preámbulo reconstruido a partir del PDF compilado (pdfTeX, TeX Live 2023, Latin Modern).
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[spanish,es-minimal,es-lcroman]{babel}
+\usepackage{amsmath,amssymb,amsthm,mathtools,bm}
+\usepackage{geometry}
+\geometry{a4paper,margin=2.6cm,headheight=14pt}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{fancyhdr}
+\usepackage{xcolor}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,decorations.pathmorphing}
+\usepackage[most]{tcolorbox}
+\usepackage[colorlinks=true,linkcolor=blue!60!black,citecolor=blue!60!black,urlcolor=blue!60!black]{hyperref}
+
+\addto\captionsspanish{\renewcommand{\contentsname}{Índice}}
+
+% ---- Cabeceras ----
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[LE]{\small\leftmark}
+\fancyhead[RO]{\small\rightmark}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\thepage}\renewcommand{\headrulewidth}{0pt}}
+
+% ---- Teoremas ----
+\theoremstyle{plain}
+\newtheorem{teorema}{Teorema}[chapter]
+\newtheorem{proposicion}[teorema]{Proposición}
+\newtheorem{lema}[teorema]{Lema}
+\newtheorem{corolario}[teorema]{Corolario}
+\theoremstyle{definition}
+\newtheorem{definicion}[teorema]{Definición}
+\newtheorem{ejemplo}[teorema]{Ejemplo}
+\newtheorem{ejercicio}[teorema]{Ejercicio}
+\theoremstyle{remark}
+\newtheorem{observacion}[teorema]{Observación}
+
+\definecolor{teoremaborde}{RGB}{60,60,140}
+\definecolor{teoremafondo}{RGB}{246,246,252}
+\definecolor{defborde}{RGB}{160,160,160}
+\definecolor{deffondo}{RGB}{245,245,245}
+\definecolor{panoramaborde}{RGB}{0,100,0}
+\definecolor{panoramafondo}{RGB}{245,252,245}
+\definecolor{intuicionborde}{RGB}{150,75,0}
+\definecolor{intuicionfondo}{RGB}{255,250,240}
+
+\tcolorboxenvironment{teorema}{enhanced,breakable,colback=teoremafondo,colframe=teoremaborde,
+  boxrule=0.6pt,arc=1pt,left=4pt,right=4pt,top=2pt,bottom=2pt,before skip=8pt,after skip=8pt}
+\tcolorboxenvironment{definicion}{enhanced,breakable,colback=deffondo,colframe=defborde,
+  boxrule=0.4pt,arc=1pt,left=4pt,right=4pt,top=2pt,bottom=2pt,before skip=8pt,after skip=8pt}
+
+\newtcolorbox{panorama}{enhanced,colback=panoramafondo,colframe=panoramaborde,boxrule=0.6pt,arc=1pt,
+  title={Panorama del capítulo},fonttitle=\bfseries\small,left=6pt,right=6pt,before skip=10pt,after skip=12pt}
+\newtcolorbox{intuicion}{enhanced,breakable,colback=intuicionfondo,colframe=intuicionborde,boxrule=0.6pt,arc=1pt,
+  title={Intuición},fonttitle=\bfseries\small,left=6pt,right=6pt,before skip=10pt,after skip=10pt}
+
+% ---- Notación ----
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\E}{\mathbb{E}}
+\renewcommand{\P}{\mathbb{P}}
+\newcommand{\Q}{\mathbb{Q}}
+\newcommand{\F}{\mathcal{F}}
+\newcommand{\G}{\mathcal{G}}
+\newcommand{\Hf}{\mathfrak{H}}
+\newcommand{\Hc}{\mathcal{H}}
+\newcommand{\Sc}{\mathcal{S}}
+\newcommand{\D}{\mathbb{D}}
+\newcommand{\ind}{\mathbf{1}}
+\newcommand{\dd}{\mathrm{d}}
+\newcommand{\Dom}{\operatorname{Dom}}
+\newcommand{\Var}{\operatorname{Var}}
+\newcommand{\Cov}{\operatorname{Cov}}
+\newcommand{\Ent}{\operatorname{Ent}}
+\newcommand{\tr}{\operatorname{tr}}
+\newcommand{\sgn}{\operatorname{sgn}}
+\newcommand{\Lip}{\operatorname{Lip}}
+\newcommand{\ip}[2]{\left\langle #1, #2\right\rangle}
+\newcommand{\norm}[1]{\left\lVert #1\right\rVert}
+\newcommand{\abs}[1]{\left\lvert #1\right\rvert}
+\newcommand{\cond}[2]{\E\left[#1\,\middle|\,#2\right]}
+\newcommand{\law}{\overset{d}{=}}
+\newcommand{\tolaw}{\xrightarrow{\ \mathrm{ley}\ }}

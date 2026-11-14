@@ -1,0 +1,133 @@
+\chapter{Ecuaciones diferenciales estocásticas}\label{cap:ede}
+
+\begin{panorama}
+Probamos existencia y unicidad fuerte bajo condiciones de Lipschitz, estimaciones de
+momentos, la propiedad de Markov y la relación con el generador infinitesimal (Feynman--Kac).
+Introducimos el \emph{proceso tangente} o primera variación $Y_t=\partial X_t/\partial x$, que reaparecerá
+en la derivada de Malliavin de la solución (Capítulo~\ref{cap:hormander}). Usaremos indistintamente las
+formulaciones de Itô y Stratonovich.
+\end{panorama}
+
+Sea $W=(W^1,\dots,W^m)$ un browniano $m$-dimensional, $b:\R^d\to\R^d$ y $\sigma=(\sigma_1,\dots,\sigma_m):
+\R^d\to\R^{d\times m}$. Consideramos
+\begin{equation}\label{eq:ede}
+  X_t=x+\int_0^tb(X_s)\,\dd s+\sum_{k=1}^m\int_0^t\sigma_k(X_s)\,\dd W^k_s.
+\end{equation}
+
+\section{Existencia y unicidad}
+
+\begin{teorema}\label{teo:existencia-ede}
+Si $b,\sigma$ son globalmente Lipschitz, $\abs{b(x)-b(y)}+\abs{\sigma(x)-\sigma(y)}\le K\abs{x-y}$,
+la ecuación~\eqref{eq:ede} tiene una única solución fuerte continua y adaptada. Además, para todo
+$p\ge2$,
+\[
+  \E\Big[\sup_{t\le T}\abs{X_t}^p\Big]\le C(1+\abs{x}^p),\qquad\E\abs{X_t-X_s}^p\le C\abs{t-s}^{p/2}.
+\]
+\end{teorema}
+
+\begin{proof}
+Sea $\mathcal S^p$ el espacio de procesos continuos adaptados con $\norm{X}_{\mathcal S^p}^p=\E\sup_{t\le T}\abs{X_t}^p<
+\infty$, y $\Phi(X)_t=x+\int_0^tb(X)\,\dd s+\int_0^t\sigma(X)\,\dd W$. Por Hölder y BDG (Teorema~\ref{teo:bdg}),
+\[
+  \E\sup_{s\le t}\abs{\Phi(X)_s-\Phi(Y)_s}^p\le C_{p,T}K^p\int_0^t\E\sup_{r\le s}\abs{X_r-Y_r}^p\,\dd s.
+\]
+Iterando, $\norm{\Phi^n(X)-\Phi^n(Y)}_{\mathcal S^p}^p\le\frac{(CT)^n}{n!}\norm{X-Y}_{\mathcal S^p}^p$, luego alguna iterada de $\Phi$ es contractiva y
+hay un único punto fijo (iteración de Picard). Las cotas de momentos se obtienen con la misma
+desigualdad aplicada a $\Phi(X)-\Phi(0)$ y el lema de Gronwall.
+\end{proof}
+
+\begin{lema}[Gronwall]
+Si $\phi\ge0$ es acotada y $\phi(t)\le a+b\int_0^t\phi(s)\,\dd s$, entonces $\phi(t)\le ae^{bt}$.
+\end{lema}
+
+\section{Flujos y diferenciabilidad respecto al dato inicial}
+Sea $X_t^x$ la solución que parte de $x$. Por el Teorema~\ref{teo:kolmogorov} aplicado en $(t,x)$, existe una versión
+continua en $(t,x)$. Si $b,\sigma\in C^1_b$, formalmente $Y_t=\nabla_xX_t^x$ ($d\times d$) satisface la \emph{ecuación de primera
+variación}
+\begin{equation}\label{eq:primera-variacion}
+  Y_t=I+\int_0^t\nabla b(X_s)Y_s\,\dd s+\sum_k\int_0^t\nabla\sigma_k(X_s)Y_s\,\dd W^k_s.
+\end{equation}
+
+\begin{teorema}[Kunita]\label{teo:kunita}
+Si $b,\sigma\in C^\infty_b$ (derivadas de todo orden acotadas, la propia función
+con crecimiento lineal), existe una versión de $(t,x)\mapsto X_t^x$ que es, c.s., un flujo de
+difeomorfismos $C^\infty$ de $\R^d$. Su jacobiano $Y_t$ satisface~\eqref{eq:primera-variacion}, es invertible, y $Z_t=Y_t^{-1}$ satisface
+\[
+  Z_t=I-\int_0^tZ_s\Big(\nabla b-\sum_k(\nabla\sigma_k)^2\Big)(X_s)\,\dd s-\sum_k\int_0^tZ_s\nabla\sigma_k(X_s)\,\dd W^k_s.
+\]
+Además $\sup_{t\le T}(\abs{Y_t}+\abs{Z_t})\in L^p$ para todo $p$.
+\end{teorema}
+
+\begin{proof}[Comprobación de la ecuación de $Z$]
+Por Itô, $\dd(Z_tY_t)=\dd Z\,Y+Z\,\dd Y+\dd\langle Z,Y\rangle$. Sustituyendo,
+los términos en $\dd W^k$ se cancelan, $-Z\nabla\sigma_kY+Z\nabla\sigma_kY=0$, y los términos en $\dd t$ son $-Z(\nabla b-
+\sum_k(\nabla\sigma_k)^2)Y+Z\nabla bY-\sum_kZ(\nabla\sigma_k)^2Y=0$. Así $ZY\equiv I$. La diferenciabilidad y la propiedad
+de flujo se prueban derivando en $L^p$ la ecuación respecto a $x$ y aplicando Kolmogorov; véase
+\cite{Kunita90}.
+\end{proof}
+
+\section{Formulación de Stratonovich}
+La integral de Stratonovich $\int H\circ\dd W=\int H\,\dd W+\frac12\langle H,W\rangle$ obedece la regla de la cadena
+clásica. La ecuación~\eqref{eq:ede} se reescribe
+\[
+  \dd X_t=V_0(X_t)\,\dd t+\sum_{k=1}^mV_k(X_t)\circ\dd W^k_t,\qquad V_k=\sigma_k,\quad V_0=b-\frac12\sum_k(\nabla\sigma_k)\sigma_k.
+\]
+Escribiremos los campos vectoriales como operadores diferenciales de primer orden, $V=\sum_iV^i\partial_i$.
+El generador es entonces
+\[
+  \mathcal L=V_0+\frac12\sum_{k=1}^mV_k^2,
+\]
+forma de ``suma de cuadrados'' de Hörmander, fundamental en el Capítulo~\ref{cap:hormander}.
+
+\section{Propiedad de Markov, generador y Feynman--Kac}
+
+\begin{teorema}
+La solución es un proceso de Markov fuerte con semigrupo $P_tf(x)=\E f(X_t^x)$,
+y para $f\in C_b^2$,
+\[
+  \frac{\dd}{\dd t}P_tf\Big|_{t=0}=\mathcal Lf=\sum_ib^i\partial_if+\frac12\sum_{i,j}(\sigma\sigma^\top)^{ij}\partial_{ij}f.
+\]
+\end{teorema}
+
+\begin{teorema}[Feynman--Kac]
+Sea $u\in C^{1,2}([0,T)\times\R^d)\cap C([0,T]\times\R^d)$ de crecimiento
+polinomial solución de
+\[
+  \partial_tu+\mathcal Lu-ru=0,\qquad u(T,\cdot)=g,
+\]
+con $r\ge0$ continua y acotada. Entonces $u(t,x)=\E\big[e^{-\int_t^Tr(X_s)\,\dd s}g(X_T)\,\big|\,X_t=x\big]$.
+\end{teorema}
+
+\begin{proof}
+Sea $R_s=e^{-\int_t^sr(X)}$. Por Itô, $\dd(R_su(s,X_s))=R_s(\partial_su+\mathcal Lu-ru)\,\dd s+
+R_s\nabla u\,\sigma\,\dd W_s=R_s\nabla u\,\sigma\,\dd W_s$. Integrando de $t$ a $T-\varepsilon$, localizando, tomando esperanzas y
+haciendo $\varepsilon\to0$ (convergencia dominada, usando el crecimiento polinomial y las cotas de
+momentos) se concluye.
+\end{proof}
+
+\begin{intuicion}
+Si $g$ no es regular, por ejemplo $g=\ind_{[K,\infty)}$ (una opción digital), ¿es $u$ regular para
+$t<T$? Analíticamente, la respuesta depende de propiedades de regularización de
+$\partial_t+\mathcal L$: elipticidad o, más generalmente, hipoelipticidad. Probabilísticamente, $u(t,x)=
+\int g(y)p_{T-t}(x,y)\,\dd y$, y la pregunta es si $X_T$ tiene una \emph{densidad regular}. El cálculo de
+Malliavin responde a la segunda pregunta directamente, sin pasar por las EDPs, y \emph{además}
+permite derivar $u$ en $x$ sin derivar $g$: esto son las fórmulas de griegas de los Capítulos~\ref{cap:griegas}
+y siguientes.
+\end{intuicion}
+
+\section{Ejemplos fundamentales}
+
+\begin{ejemplo}[Ornstein--Uhlenbeck]
+$\dd X=-\lambda X\,\dd t+\sigma\,\dd W$ tiene solución $X_t=e^{-\lambda t}x+
+\sigma\int_0^te^{-\lambda(t-s)}\,\dd W_s$, gaussiana con varianza $\frac{\sigma^2}{2\lambda}(1-e^{-2\lambda t})$. Con $\lambda=1$, $\sigma=\sqrt2$, su ley invariante
+es $N(0,1)$ y su semigrupo es la \emph{fórmula de Mehler}
+\[
+  P_tf(x)=\E f\big(e^{-t}x+\sqrt{1-e^{-2t}}\,\xi\big),\qquad\xi\sim N(0,1),
+\]
+que reaparecerá en dimensión infinita en el Capítulo~\ref{cap:ou}.
+\end{ejemplo}
+
+\begin{ejemplo}[Black--Scholes]
+$\dd S_t=rS_t\,\dd t+\sigma S_t\,\dd W_t$ (bajo la medida de riesgo neutro) tiene
+solución $S_t=S_0\exp((r-\frac{\sigma^2}{2})t+\sigma W_t)$, y $Y_t=\partial S_t/\partial S_0=S_t/S_0$.
+\end{ejemplo}

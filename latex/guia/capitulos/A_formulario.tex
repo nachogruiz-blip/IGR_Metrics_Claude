@@ -1,0 +1,62 @@
+\chapter{Formulario}\label{ap:formulario}
+
+\section*{Operadores básicos}
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{p{4.2cm}p{9.5cm}}
+\toprule
+Objeto & Fórmula\\
+\midrule
+Proceso isonormal & $\E[W(h)W(g)]=\ip{h}{g}_\Hf$\\
+Derivada (suaves) & $Df(W(h_1),\dots,W(h_n))=\sum_i\partial_if(\cdot)h_i$\\
+Dualidad & $\E[F\delta(u)]=\E\ip{DF}{u}_\Hf$\\
+Divergencia de $Fh$ & $\delta(Fh)=FW(h)-\ip{DF}{h}$\\
+Producto & $\delta(Fu)=F\delta(u)-\ip{DF}{u}$\\
+Heisenberg & $D_t\delta(u)=u_t+\delta(D_tu)$\\
+Isometría de Skorokhod & $\E\delta(u)^2=\E\norm u^2+\E\iint D_su_tD_tu_s$\\
+Ornstein--Uhlenbeck & $L=-\delta D=-\sum_nnJ_n$, $P_t=\sum_ne^{-nt}J_n$\\
+Mehler & $P_tF=\E'[F(e^{-t}W+\sqrt{1-e^{-2t}}W')]$\\
+Conmutación & $DP_t=e^{-t}P_tD$\\
+Covarianza & $\Cov(F,G)=\E\ip{DF}{-DL^{-1}G}$\\
+Poincaré & $\Var F\le\E\norm{DF}^2$\\
+Log-Sobolev & $\Ent(F^2)\le2\E\norm{DF}^2$\\
+Hipercontractividad & $\norm{P_tF}_q\le\norm F_p$ si $e^{2t}\ge\frac{q-1}{p-1}$\\
+Clark--Ocone & $F=\E F+\int_0^T\cond{D_tF}{\F_t}\,\dd W_t$\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\section*{Caos de Wiener}
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{p{4.2cm}p{9.5cm}}
+\toprule
+Hermite & $e^{tx-t^2/2}=\sum_n\frac{t^n}{n!}H_n(x)$, $H_n'=nH_{n-1}$\\
+Integrales múltiples & $I_n(h^{\otimes n})=H_n(W(h))$, $\norm h=1$\\
+Isometría & $\E[I_n(f)I_m(g)]=\delta_{nm}\,n!\,\ip{\tilde f}{\tilde g}$\\
+Derivada & $D_tI_n(f)=nI_{n-1}(f(\cdot,t))$\\
+Divergencia & $\delta(I_n(f(\cdot,t)))=I_{n+1}(\tilde f)$\\
+Stroock & $f_n=\frac1{n!}\E[D^nF]$\\
+Producto & $I_p(f)I_q(g)=\sum_rr!\binom pr\binom qrI_{p+q-2r}(f\otimes_rg)$\\
+Momentos en un caos & $\norm F_p\le(p-1)^{n/2}\norm F_2$, $F\in\Hc_n$\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\section*{Densidades y finanzas}
+\begin{center}
+\renewcommand{\arraystretch}{1.35}
+\begin{tabular}{p{4.2cm}p{9.5cm}}
+\toprule
+Densidad, $d=1$ & $p_F(x)=\E\big[\ind_{\{F>x\}}\delta(DF/\norm{DF}^2)\big]$\\
+Nourdin--Viens & $p_F(x)=\frac{\E\abs F}{2g_F(x)}\exp(-\int_0^x\frac{y}{g_F(y)}\,\dd y)$\\
+Derivada de una EDE & $D_rX_t=Y_tZ_r\sigma(X_r)$\\
+Matriz de Malliavin & $\gamma_{X_t}=Y_tC_tY_t^\top$, $C_t=\int_0^tZ_r\sigma\sigma^\top(X_r)Z_r^\top\,\dd r$\\
+Delta BS & $\frac{e^{-rT}}{S_0\sigma T}\E[\Phi(S_T)W_T]$\\
+Vega BS & $e^{-rT}\E[\Phi(S_T)(\frac{W_T^2}{\sigma T}-W_T-\frac1\sigma)]$\\
+Bismut--Elworthy--Li & $\nabla\E\Phi(X_T^x)=\E[\Phi(X_T)\frac1T\int_0^T(\sigma^{-1}(X_t)Y_t)^\top\,\dd W_t]$\\
+Cobertura & $\phi_t=\E_\Q[\tilde D_t\tilde H\mid\F_t]/(\sigma_t\tilde S_t)$\\
+Alòs & $V_t=\E_t[BS(t,X_t,v_t)]+\frac\rho2\E_t\int_t^Te^{-r(s-t)}H\Lambda_s\,\dd s$\\
+\bottomrule
+\end{tabular}
+\end{center}

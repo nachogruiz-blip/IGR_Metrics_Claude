@@ -1,0 +1,175 @@
+\chapter{El modelo parabólico de Anderson y teoremas límite espaciales}\label{cap:anderson}
+
+\begin{panorama}
+El modelo parabólico de Anderson (PAM) es la ecuación del calor con ruido multiplicativo
+lineal, $\sigma(u)=u$. Es exactamente resoluble por caos de Wiener y por una fórmula
+de Feynman--Kac, y exhibe \emph{intermitencia}: sus momentos crecen a tasas exponenciales
+distintas, lo que indica picos raros y altísimos. Su logaritmo es la solución de Cole--Hopf
+de la ecuación KPZ. En la segunda mitad del capítulo presentamos uno de los avances
+recientes más elegantes del cálculo de Malliavin aplicado: los \emph{teoremas centrales del
+límite cuantitativos para promedios espaciales} de soluciones de EDPEs (Huang, Nualart,
+Viitasaari y Zheng, 2020).
+\end{panorama}
+
+\section{El modelo y su desarrollo en caos}
+Consideramos, en $\R_+\times\R$ con ruido blanco,
+\begin{equation}\label{eq:pam}
+  \partial_tu=\tfrac12\partial_{xx}u+u\,\dot W,\qquad u(0,\cdot)\equiv1.
+\end{equation}
+
+\begin{teorema}
+La solución mild de~\eqref{eq:pam} admite el desarrollo en caos
+\[
+  u(t,x)=1+\sum_{n=1}^\infty I_n\big(f_n(\cdot;t,x)\big),
+\]
+con
+\[
+  f_n(s_1,y_1,\dots,s_n,y_n;t,x)=\frac1{n!}\prod_{j=1}^nG\big(s_{\pi(j+1)}-s_{\pi(j)},y_{\pi(j+1)}-y_{\pi(j)}\big),
+\]
+donde $\pi$ es la permutación que ordena $s_{\pi(1)}<\dots<s_{\pi(n)}$ y $(s_{\pi(n+1)},y_{\pi(n+1)})=(t,x)$.
+Equivalentemente, $n!f_n$ es la simetrización de $\prod_jG(s_{j+1}-s_j,y_{j+1}-y_j)\ind_{\{0<s_1<\dots<s_n<t\}}$.
+\end{teorema}
+
+\begin{proof}
+Iterando la ecuación mild, $u(t,x)=1+\int_0^t\int G(t-s,x-y)u(s,y)W(\dd s,\dd y)$, $n$
+veces, se obtiene una suma de integrales iteradas de Walsh de núcleos deterministas más un
+resto. Por el Teorema~\ref{teo:iteradas}, la integral iterada $n$-ésima es $I_n$ del núcleo simetrizado. El resto
+tiende a cero en $L^2$ porque, con $\norm{f_n}^2$ calculado abajo, $\sum_nn!\norm{f_n}^2<\infty$. Por unicidad de la
+descomposición en caos, se concluye.
+\end{proof}
+
+\begin{proposicion}
+$\E[u(t,x)^2]=\sum_{n\ge0}n!\norm{f_n}^2=\E\exp\Big(\int_0^t\delta_0(B_s-\tilde B_s)\,\dd s\Big)$, donde $B,\tilde B$ son
+brownianos independientes y la integral es el tiempo local en 0 de $B-\tilde B$ (respecto a la medida
+de Lebesgue). En particular, $\E[u(t,x)^2]=2e^{t/4}\Phi\big(\sqrt{t/2}\big)$.
+\end{proposicion}
+
+\begin{proof}
+Usando la representación de $G$ como densidad de transición browniana y el
+teorema de Fubini, $n!\norm{f_n}^2$ es el $n$-ésimo término $\frac1{n!}\E[(\int_0^t\delta_0(B_s-\tilde B_s)\,\dd s)^n]$ del desarrollo de la
+exponencial. Ahora $B-\tilde B=\sqrt2\beta$ con $\beta$ browniano estándar, y $\int_0^t\delta_0(\sqrt2\beta_s)\,\dd s=\frac1{\sqrt2}L^0_t(\beta)$. Por
+el teorema de Lévy, $L^0_t(\beta)\law\abs{\beta_t}\law\sqrt t\abs N$. Así, con $a=\sqrt{t/2}$, $\E[u^2]=\E e^{a\abs N}=2e^{a^2/2}\Phi(a)=
+2e^{t/4}\Phi(\sqrt{t/2})$.
+\end{proof}
+
+\section{Intermitencia}
+
+\begin{teorema}[Bertini--Cancrini, 1995]
+Para todo entero $p\ge2$, la \textup{función de Lyapunov}
+$\lambda(p)=\lim_{t\to\infty}\frac1t\log\E[u(t,x)^p]$ existe y vale
+\[
+  \lambda(p)=\frac{p(p^2-1)}{24}.
+\]
+\end{teorema}
+
+\begin{proof}[Idea]
+La fórmula de Feynman--Kac para momentos da $\E[u(t,x)^p]=\E\exp\big(\sum_{1\le i<j\le p}L^0_t(B^i-
+B^j)\big)$, con $B^1,\dots,B^p$ brownianos independientes desde $x$. El límite $\frac1t\log$ es el autovalor principal
+del operador $\frac12\Delta+\sum_{i<j}\delta(x_i-x_j)$ en $\R^p$, que es el hamiltoniano de Lieb--Liniger de $p$ bosones
+con interacción atractiva delta, y se calcula exactamente por el ansatz de Bethe.
+\end{proof}
+
+\begin{intuicion}
+La función $p\mapsto\lambda(p)/p$ es estrictamente creciente: es la definición de \emph{intermitencia}.
+Implica que $u(t,x)$ está típicamente muy por debajo de su media $\E u=1$ (de hecho
+$\frac1t\log u(t,x)\to-\frac1{24}$ c.s.), mientras que los momentos están dominados por sucesos raros
+en que $u$ es exponencialmente grande. Espacialmente, la solución se organiza en ``islas''
+aisladas de masa muy concentrada.
+\end{intuicion}
+
+\paragraph{Conexión con KPZ.} Formalmente, $h=\log u$ resuelve la ecuación de Kardar--Parisi--Zhang
+$\partial_th=\frac12\partial_{xx}h+\frac12(\partial_xh)^2+\dot W-\infty$, donde ``$-\infty$'' es una constante de renormalización (Itô). La
+\emph{solución de Cole--Hopf} se \emph{define} como $\log u$; es la que seleccionan las aproximaciones discretas y
+la que reconstruye la teoría de estructuras de regularidad de Hairer (Capítulo~\ref{cap:estructuras}). Que $u>0$
+(Mueller) es imprescindible para esta definición.
+
+\section{Promedios espaciales y estacionariedad}
+Si $u_0\equiv1$, por la invariancia del ruido blanco bajo traslaciones espaciales, el proceso $x\mapsto u(t,x)$
+es \emph{estacionario}. Más aún, es \emph{ergódico} (Chen, Khoshnevisan, Nualart, Pu~\cite{ChenKhoshnevisanNualartPu21}, vía una desigualdad
+tipo Poincaré), de modo que
+\[
+  \frac1{2R}\int_{-R}^Ru(t,x)\,\dd x\xrightarrow[R\to\infty]{\text{c.s.}}\E u(t,0)=1.
+\]
+Las fluctuaciones son la pregunta natural: ¿cómo se comporta
+\[
+  F_R(t)=\int_{-R}^R\big(u(t,x)-1\big)\,\dd x
+\]
+cuando $R\to\infty$? Para el PAM, cada $u(t,x)$ tiene infinitos caos y las correlaciones espaciales no
+son finitas en rango, así que los TCLs clásicos para campos mixing no se aplican directamente.
+El método de Malliavin--Stein (Capítulo~\ref{cap:malliavin-stein}) sí.
+
+\section{El TCL cuantitativo de Huang--Nualart--Viitasaari}
+El punto de partida es una cota de Stein para variables que \emph{son divergencias}.
+
+\begin{proposicion}\label{prop:stein-divergencia}
+Sea $F=\delta(v)$ con $v\in\Dom\delta$, $F\in\D^{1,2}$, y $\sigma^2=\E F^2>0$. Entonces
+\[
+  d_{TV}\Big(\frac F\sigma,N(0,1)\Big)\le\frac2{\sigma^2}\sqrt{\Var\big(\ip{DF}{v}_\Hf\big)}.
+\]
+\end{proposicion}
+
+\begin{proof}
+Por el lema de Stein (Lema~\ref{lem:stein-ecuacion} del Capítulo~\ref{cap:malliavin-stein}), $d_{TV}(X,N)\le
+\sup_f\abs{\E[f'(X)-Xf(X)]}$ sobre funciones $f\in C^1$ con $\norm f_\infty\le\sqrt{\pi/2}$, $\norm{f'}_\infty\le2$. Con
+$X=F/\sigma$ y la dualidad,
+\[
+  \E[Xf(X)]=\frac1\sigma\E[\delta(v)f(X)]=\frac1\sigma\E\ip{Df(X)}{v}=\frac1{\sigma^2}\E\big[f'(X)\ip{DF}{v}\big].
+\]
+Así $\E[f'(X)-Xf(X)]=\frac1{\sigma^2}\E\big[f'(X)(\sigma^2-\ip{DF}{v})\big]$. Como $\E\ip{DF}{v}=\E[F\delta(v)]=\sigma^2$, Cauchy--Schwarz
+da la cota.
+\end{proof}
+
+\begin{teorema}[Huang--Nualart--Viitasaari~\cite{HuangNualartViitasaari20}, 2020]\label{teo:hnv}
+Sea $u$ la solución de~\eqref{eq:calor-estocastica} con $b=0$,
+$u_0\equiv1$, $d=1$, ruido blanco, $\sigma$ Lipschitz con $\sigma(1)\ne0$. Para $t>0$ fijo, $\sigma_R^2=\Var F_R(t)$
+satisface $\sigma_R^2\sim\kappa_tR$ con
+\[
+  \kappa_t=2\int_0^t\E\big[\sigma(u(s,0))^2\big]\,\dd s>0\quad\text{(en el caso }\E\sigma(u)^2\text{ estacionario)},
+\]
+y existe $C=C_t$ tal que
+\[
+  d_{TV}\Big(\frac{F_R(t)}{\sigma_R},N(0,1)\Big)\le\frac C{\sqrt R}.
+\]
+Además, el proceso $\big(R^{-1/2}F_R(t)\big)_{t\in[0,T]}$ converge en $C([0,T])$ a un proceso gaussiano centrado.
+\end{teorema}
+
+\begin{proof}[Estructura de la prueba]
+\emph{Paso 1: $F_R$ es una divergencia.} Integrando la ecuación mild en
+$x\in[-R,R]$ y usando Fubini estocástico,
+\[
+  F_R(t)=\int_0^t\int_\R\varphi_R(s,y)\sigma(u(s,y))W(\dd s,\dd y)=\delta(v_R),\qquad\varphi_R(s,y)=\int_{-R}^RG(t-s,x-y)\,\dd x,
+\]
+con $v_R(s,y)=\varphi_R(s,y)\sigma(u(s,y))$, adaptado.
+
+\emph{Paso 2: la varianza.} Por la isometría, $\sigma_R^2=\int_0^t\int\varphi_R(s,y)^2\E[\sigma(u(s,y))^2]\,\dd y\,\dd s$, y como
+$\varphi_R\approx\ind_{[-R,R]}$ salvo en una capa de anchura $O(\sqrt t)$, $\sigma_R^2\sim R\cdot\text{const}$.
+
+\emph{Paso 3: la derivada.} Por la Proposición~\ref{prop:heisenberg} (versión Walsh) y la ecuación~\eqref{eq:derivada-edpe},
+\[
+  D_{r,z}F_R=\varphi_R(r,z)\sigma(u(r,z))+\int_r^t\!\!\int\varphi_R(s,y)\sigma'(u(s,y))D_{r,z}u(s,y)W(\dd s,\dd y).
+\]
+Por tanto $\ip{DF_R}{v_R}_\Hf=\int_0^t\int\varphi_R^2\sigma(u)^2\,\dd z\,\dd r+\text{(término de ruido)}$.
+
+\emph{Paso 4: la varianza de $\ip{DF_R}{v_R}$.} Es la parte técnica. Se acota $\Var$ de cada término
+mediante la desigualdad de Poincaré (Teorema~\ref{teo:poincare}) y la clave es la \emph{cota de la derivada}
+\[
+  \norm{D_{r,z}u(t,x)}_p\le C\,G(t-r,x-z),
+\]
+que dice que la sensibilidad de $u(t,x)$ al ruido en $(r,z)$ decae como el núcleo del calor
+(se prueba por iteración de~\eqref{eq:derivada-edpe} y un lema de Gronwall con núcleo). Con ella, las covarianzas
+$\Cov(\sigma(u(s,y))^2,\sigma(u(s,y'))^2)$ decaen lo bastante rápido en $\abs{y-y'}$ como para que
+$\Var\ip{DF_R}{v_R}=O(R)$. Por la Proposición~\ref{prop:stein-divergencia}, $d_{TV}\le\frac CR\sqrt R=\frac C{\sqrt R}$.
+
+\emph{Paso 5: TCL funcional.} Convergencia de las distribuciones finito-dimensionales por la
+versión multivariante, y tensión por Kolmogorov usando momentos de los incrementos en $t$.
+\end{proof}
+
+\begin{observacion}
+La tasa $R^{-1/2}$ es la del teorema de Berry--Esseen para sumas de variables
+independientes: en la escala espacial, la solución se comporta como si tuviera dependencia
+de corto alcance. El resultado se ha extendido en múltiples direcciones: ruido coloreado de
+tipo Riesz, con tasas $R^{-\beta/2}$ y escalas $R^{d-\beta/2}$ (\cite{HuangNualartViitasaariZheng20}); la ecuación de ondas; ruido fraccionario
+en tiempo; dato inicial de Dirac (el PAM con $u_0=\delta_0$, relevante para polímeros); y versiones
+cuasi-casi seguras. La herramienta de \emph{promedio de funcionales gaussianos} de Nualart y Zheng
+\cite{NualartZheng20} sistematiza el método.
+\end{observacion}

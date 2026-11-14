@@ -118,3 +118,88 @@ def asian_delta_fd(
     A_up = _asian_average(gbm_from_brownian(W, grid, S0 + hs, r, sigma))
     A_dn = _asian_average(gbm_from_brownian(W, grid, S0 - hs, r, sigma))
     return mc(np.exp(-r * T) * (payoff(A_up) - payoff(A_dn)) / (2 * hs))
+
+
+# --- Localización (PDF §12.6–12.7) -----------------------------------------
+
+def sigmoid_regularization(K: float, width: float = 5.0) -> tuple[Payoff, Payoff]:
+    """Φ_reg(S) = (1 + e^{-(S-K)/width})^{-1} y su derivada (PDF §12.7, width = 5)."""
+    def reg(s):
+        return 1.0 / (1.0 + np.exp(-(s - K) / width))
+
+    def reg_prime(s):
+        g = reg(s)
+        return g * (1.0 - g) / width
+
+    return reg, reg_prime
+
+
+def localized_delta(
+    payoff: Payoff, payoff_reg: Payoff, payoff_reg_prime: Payoff,
+    WT: np.ndarray, S0: float, T: float, r: float, sigma: float,
+) -> MCEstimate:
+    """Δ = E[e^{-rT} Φ'_reg(S_T) S_T/S_0] + E[e^{-rT} Φ_sing(S_T) π_Δ],  Φ_sing = Φ − Φ_reg.
+
+    Parte regular por el método pathwise, parte singular con el peso de Malliavin
+    (Fournié et al. 1999, 2001; PDF §12.6).
+    """
+    ST = S0 * np.exp((r - 0.5 * sigma**2) * T + sigma * WT)
+    disc = np.exp(-r * T)
+    pathwise = payoff_reg_prime(ST) * ST / S0
+    weight = (payoff(ST) - payoff_reg(ST)) * WT / (S0 * sigma * T)
+    return mc(disc * (pathwise + weight))
+
+
+# --- Bismut–Elworthy–Li (PDF §12.4) ----------------------------------------
+
+def diffusion_with_tangent(
+    b: Callable, db: Callable, sig: Callable, dsig: Callable,
+    x0: float, grid: TimeGrid, dW: np.ndarray,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Euler para dX = b(X)dt + σ(X)dW y su proceso tangente Y = ∂X/∂x0:
+
+        dY = b'(X) Y dt + σ'(X) Y dW,   Y_0 = 1.
+
+    Devuelve (X, Y) con forma (n_paths, n_steps+1).
+    """
+    n_paths, n_steps = dW.shape
+    X = np.empty((n_paths, n_steps + 1))
+    Y = np.empty_like(X)
+    X[:, 0], Y[:, 0] = x0, 1.0
+    dt = grid.dt
+    for k in range(n_steps):  # bucle temporal (vectorizado en trayectorias)
+        x, y = X[:, k], Y[:, k]
+        X[:, k + 1] = x + b(x) * dt + sig(x) * dW[:, k]
+        Y[:, k + 1] = y + db(x) * y * dt + dsig(x) * y * dW[:, k]
+    return X, Y
+
+
+def bel_weight(X: np.ndarray, Y: np.ndarray, sig: Callable, dW: np.ndarray, T: float) -> np.ndarray:
+    """Peso de Bismut–Elworthy–Li: (1/T) ∫_0^T σ^{-1}(X_t) Y_t dW_t (integral de Itô)."""
+    return np.sum(Y[:, :-1] / sig(X[:, :-1]) * dW, axis=1) / T
+
+
+def bel_delta(
+    payoff: Payoff, b: Callable, db: Callable, sig: Callable, dsig: Callable,
+    x0: float, T: float, r: float, grid: TimeGrid, n_paths: int, seed: int | None = None,
+) -> MCEstimate:
+    """∂_{x0} e^{-rT} E[Φ(X_T)] = e^{-rT} E[Φ(X_T) (1/T)∫ σ^{-1}(X_t) Y_t dW_t]  (Teorema 12.3 del PDF)."""
+    from .brownian import brownian_increments
+
+    dW = brownian_increments(grid, n_paths, rng(seed))
+    X, Y = diffusion_with_tangent(b, db, sig, dsig, x0, grid, dW)
+    return mc(np.exp(-r * T) * payoff(X[:, -1]) * bel_weight(X, Y, sig, dW, T))
+
+
+def euler_fd_delta(
+    payoff: Payoff, b: Callable, sig: Callable, x0: float, T: float, r: float,
+    grid: TimeGrid, n_paths: int, seed: int | None = None, h: float = 1e-2,
+) -> MCEstimate:
+    """Diferencias finitas centradas con números aleatorios comunes sobre el esquema de Euler."""
+    from .brownian import brownian_increments
+
+    dW = brownian_increments(grid, n_paths, rng(seed))
+    one = lambda v: v * 0.0 + 1.0  # derivadas irrelevantes para X
+    up, _ = diffusion_with_tangent(b, one, sig, one, x0 * (1 + h), grid, dW)
+    dn, _ = diffusion_with_tangent(b, one, sig, one, x0 * (1 - h), grid, dW)
+    return mc(np.exp(-r * T) * (payoff(up[:, -1]) - payoff(dn[:, -1])) / (2 * h * x0))
