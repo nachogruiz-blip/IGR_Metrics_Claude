@@ -1,0 +1,36 @@
+\chapter{Esperanzas condicionales y opciones bermudas}
+
+\section{Representación \guia{Teorema 14.1}}
+Si $\ip{\D F}{u}=1$ y $\ip{\D G}{u}=0$,
+\[
+  \E[\Phi(G)\mid F=x]=\frac{\E[\Phi(G)\ind_{\{F>x\}}\dive(u)]}{\E[\ind_{\{F>x\}}\dive(u)]}.
+\]
+En Black--Scholes con $F=S_s$, $G=S_t$, $0<s<t$ \guia{Ejemplo 14.2}:
+\[
+  \dive(u)=\frac{1}{\sigma S_s}\Big(\frac{tW_s-sW_t}{s(t-s)}+\sigma\Big).
+\]
+
+\paragraph{Localización.} Con $\psi(z)=\tfrac\eta2e^{-\eta|z|}$ y primitiva $\Psi$,
+\[
+  \E[\Phi(G)\delta_x(F)]=\E[\Phi(G)\psi(F-x)]+\E\big[\Phi(G)(\ind_{\{F>x\}}-\Psi(F-x))\dive(u)\big],
+  \qquad \eta^2=\frac{\E[\Phi(G)^2\dive(u)^2]}{\E[\Phi(G)^2]}.
+\]
+
+\section{Put bermuda por Monte Carlo \guia{§14.2}}
+Programación dinámica en $0=t_0<\dots<t_n=T$:
+$V_{t_n}=\Phi(S_{t_n})$, $V_{t_k}=\max\{\Phi(S_{t_k}),e^{-r\Delta t}\E[V_{t_{k+1}}\mid S_{t_k}]\}$,
+evaluando la esperanza condicional en cada trayectoria con el cociente anterior
+(coste $O(N^2)$ por fecha). Referencia: árbol binomial con ejercicio en las mismas fechas.
+
+\begin{observacion}
+Al usar el valor estimado (y no el flujo de la regla de parada) el estimador tiene un
+pequeño sesgo al alza; con $N=2000$ y 10 fechas se obtiene $6{,}15\pm0{,}08$ frente a
+$6{,}033$ del árbol.
+\end{observacion}
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=\linewidth]{08_esperanza_condicional_bermudas}
+  \caption{Esperanza condicional sin regresión y precio de una put bermuda
+  (\codigo{examples/08\_esperanza\_condicional\_bermudas.py}).}
+\end{figure}

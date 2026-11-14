@@ -1,0 +1,44 @@
+\chapter{Localización y Bismut--Elworthy--Li}
+
+\section{Pesos óptimos y localización \guia{§12.6}}
+Todos los pesos $\pi$ con $\E[\Phi'(F)G]=\E[\Phi(F)\pi]$ difieren en variables con
+$\E[\pi\mid F]=0$; el de varianza mínima es $\pi^*=\E[\pi_0\mid F]$ \cite{benhamou2003}.
+En Black--Scholes $\pi_\Delta=W_T/(S_0\sigma T)$ es función de $S_T$ y ya es óptimo.
+
+La \emph{localización} \cite{fournie1999,fournie2001} separa
+$\Phi=\Phi_{\mathrm{reg}}+\Phi_{\mathrm{sing}}$ y aplica el método pathwise a la parte regular
+y el peso sólo a la singular:
+\[
+  \Delta=e^{-rT}\E\Big[\Phi_{\mathrm{reg}}'(S_T)\frac{S_T}{S_0}\Big]
+        +e^{-rT}\E\big[\Phi_{\mathrm{sing}}(S_T)\,\pi_\Delta\big],
+  \qquad \Phi_{\mathrm{reg}}(S)=\big(1+e^{-(S-K)/5}\big)^{-1}.
+\]
+
+\paragraph{Reproducción de la tabla de \guia{§12.7}.} Digital con $S_0=K=100$, $r=0{,}05$,
+$\sigma=0{,}2$, $T=1$, $\Delta=0{,}018762$; 50 repeticiones de $N=10^5$
+(\codigo{examples/07\_localizacion\_y\_bel.py}):
+\begin{center}
+\begin{tabular}{lcc}
+  Estimador & Desv.\ típica (guía) & Desv.\ típica (este código)\\\hline
+  Diferencias finitas, $h=1$   & $2{,}8\times10^{-4}$ & $2{,}3\times10^{-4}$\\
+  Diferencias finitas, $h=0{,}1$ & $9{,}6\times10^{-4}$ & $1{,}0\times10^{-3}$\\
+  Malliavin                    & $9{,}0\times10^{-5}$ & $8{,}4\times10^{-5}$\\
+  Malliavin localizado         & $5{,}4\times10^{-5}$ & $5{,}1\times10^{-5}$\\
+\end{tabular}
+\end{center}
+
+\section{Difusiones generales: Bismut--Elworthy--Li \guia{Teorema 12.3}}
+Para $\dd X=b(X)\dd t+\sigma(X)\dd W$ con proceso tangente $Y_t=\partial_xX_t$,
+$\dd Y=b'(X)Y\dd t+\sigma'(X)Y\dd W$, $Y_0=1$:
+\[
+  \partial_x\E[\Phi(X_T^x)]=\E\Big[\Phi(X_T^x)\,\frac1T\int_0^T\sigma^{-1}(X_t)Y_t\dd W_t\Big].
+\]
+En GBM, $\sigma^{-1}(X_t)Y_t=1/(\sigma x)$ y se recupera $\pi_\Delta$. La figura aplica la
+fórmula a un modelo CEV, $\sigma(x)=\sigma_0x^{\beta}$, sin fórmula cerrada para la delta
+digital (\codigo{greeks.bel\_delta}).
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=\linewidth]{07_localizacion_y_bel}
+  \caption{Reproducción de \guia{§12.7}, descomposición de la localización y delta digital en CEV.}
+\end{figure}

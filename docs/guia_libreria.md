@@ -12,13 +12,15 @@ src/malliavin/       Librería (importable tras `pip install -e .`)
   derivative.py      Derivada de Malliavin: discreta (dif. finitas sobre ΔW_k) y analítica
   skorokhod.py       MCEstimate, integrales de Itô/Wiener, δ(G h), chequeo de integración por partes
   clark_ocone.py     Integrandos E[D_tF|F_t] (cerrados y por cuadratura), reconstrucción
-  greeks.py          Pesos de Malliavin (Δ, Γ, vega, ρ), diferencias finitas, pathwise, asiática
+  greeks.py          Pesos de Malliavin (Δ, Γ, vega, ρ), diferencias finitas, pathwise, asiática,
+                     localización (§12.6) y Bismut–Elworthy–Li con proceso tangente (§12.4)
+  conditional.py     E[Φ(G)|F=x] por Malliavin (T. 14.1), localización, put bermuda (§14.2)
   density.py         Densidad vía p(x)=E[1_{F>x} δ(DF/||DF||²)], KDE para comparar
   plotting.py        Estilo matplotlib y paleta común; save() escribe en figures/
 examples/            Un script por concepto; genera figures/NN_*.png
 tests/               Identidades teóricas verificadas por Monte Carlo
 latex/               Documento teórico (main.tex + capitulos/ + referencias.bib)
-docs/                Esta guía, bibliografía, teoría resumida, PDF original (docs/pdf/)
+docs/                Esta guía, mapa PDF→código, bibliografía, teoría resumida, PDF original (docs/pdf/)
 ```
 
 ## Convenciones
@@ -30,8 +32,11 @@ docs/                Esta guía, bibliografía, teoría resumida, PDF original (
 - **Medida**: siempre neutral al riesgo; `W` es browniano bajo Q; pagos descontados con `e^{-rT}`.
 - **Semillas**: `brownian.rng(seed)`; los tests y ejemplos usan semillas fijas.
 - Docstrings y documentación en español; identificadores en inglés.
+- Las docstrings citan la guía PDF como «PDF §12.4», «Teorema 14.1 del PDF», etc.
 
 ## Mapa fórmula → función
+
+La numeración de la guía PDF para cada fila está en [`mapa_pdf.md`](mapa_pdf.md).
 
 | Fórmula | Función | Capítulo LaTeX |
 |---|---|---|
@@ -45,6 +50,11 @@ docs/                Esta guía, bibliografía, teoría resumida, PDF original (
 | π_Δ, π_V, π_Γ, π_ρ | `greeks.malliavin_weights` | 6 |
 | π_Δ asiática | `greeks.asian_delta_malliavin` | 6 |
 | p(x) = E[1_{S_T>x}(W_T/(σT)+1)/S_T] | `density.gbm_terminal_density` | 7 |
+| E[e^{-rT}Φ_reg' S_T/S_0] + E[e^{-rT}Φ_sing π_Δ] | `greeks.localized_delta` | 9 |
+| (1/T)∫σ^{-1}(X)Y dW (BEL) | `greeks.bel_delta` | 9 |
+| E[Φ(G)1_{F>x}δ(u)] / E[1_{F>x}δ(u)] | `conditional.conditional_expectation` | 10 |
+| Put bermuda (programación dinámica) | `conditional.bermudan_put_malliavin` | 10 |
+| φ_t digital = e^{-rT}φ(d₂)/√(T−t) | `clark_ocone.integrand_digital` | 5 |
 
 ## Derivación del peso asiático (resumen)
 
@@ -55,15 +65,12 @@ E[Φ'(A)A] = E[Φ(A) δ(2u/(σTA))], con δ(Gu) = G∫S dW − ⟨DG,u⟩ = 2∫
 
 ## Cómo añadir un módulo nuevo (checklist para agentes)
 
-1. Fórmula en `latex/capitulos/` (nuevo capítulo + `\input` en `main.tex`) y referencia en `referencias.bib`.
+1. Localiza el resultado en la guía PDF (`docs/mapa_pdf.md`) y usa su notación; fórmula en `latex/capitulos/` (nuevo capítulo + `\input` en `main.tex`) y referencia en `referencias.bib`.
 2. Implementación vectorizada en `src/malliavin/<modulo>.py` con docstring que cite la fórmula.
 3. Test que compare con un valor cerrado o una identidad (tolerancia en múltiplos del error estándar, `k=4`).
 4. Script `examples/NN_<nombre>.py` que use `plotting.setup()` / `plotting.save()`.
-5. Actualizar la tabla de este documento y `README.md`.
+5. Actualizar la tabla de este documento, `docs/mapa_pdf.md` y `README.md`.
 
 ## Ideas de extensión
 
-- Localización y pesos óptimos (Fournié 2001, Benhamou 2003).
-- Griegas en Heston / volatilidad local (derivada de Malliavin de una EDE vía proceso tangente Y_t).
-- Fórmula de Hull–White anticipativa y skew de volatilidad implícita (Alòs et al.).
-- Opciones americanas con esperanzas condicionadas vía Malliavin.
+Ver la lista priorizada en [`mapa_pdf.md`](mapa_pdf.md#próximos-módulos-propuestos-por-orden-de-valor-para-finanzas).

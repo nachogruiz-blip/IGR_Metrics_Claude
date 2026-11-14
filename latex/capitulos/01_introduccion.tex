@@ -1,5 +1,13 @@
 \chapter{Introducción}
 
+\paragraph{Relación con la guía teórica.} Este documento es el \emph{compañero
+numérico} de la guía \emph{Cálculo de Malliavin: de los procesos estocásticos y la
+integral de Itô al estado del arte} (\codigo{docs/pdf/Calculo\_de\_Malliavin\_corregido.pdf}),
+que contiene las demostraciones completas. Aquí se adopta su notación y se cita su
+numeración con la forma \guia{Teorema 8.9}. Cada resultado se acompaña de su
+implementación y de una figura reproducible. La correspondencia capítulo a capítulo está en
+\codigo{docs/mapa\_pdf.md}.
+
 El cálculo de Malliavin es un cálculo diferencial en dimensión infinita sobre el
 espacio de Wiener, introducido por P.~Malliavin \cite{malliavin1978} para dar una
 prueba probabilística del teorema de hipoelipticidad de Hörmander. Su herramienta
@@ -16,7 +24,7 @@ En finanzas esta identidad tiene tres usos principales, que recorre este documen
   \item \textbf{Sensibilidades} (cap.~\ref{cap:griegas}): las griegas se calculan
         por Monte Carlo sin derivar el pago, lo que es crucial para pagos
         discontinuos \cite{fournie1999,fournie2001,benhamou2003}.
-  \item \textbf{Densidades y volatilidad implícita} (cap.~\ref{cap:densidades}):
+  \item \textbf{Densidades y volatilidad implícita} (cap.~\ref{cap:densidades}), además de esperanzas condicionales y opciones bermudas \cite{bally2005}:
         existencia y estimación de densidades \cite{nualart2006} y desarrollos
         asintóticos de la volatilidad implícita \cite{alos2007,alosgarcialorite2021}.
 \end{enumerate}

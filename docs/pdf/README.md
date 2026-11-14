@@ -1,6 +1,6 @@
 # PDF de teoría original
 
-Coloca aquí el PDF de teoría de referencia del proyecto (p. ej. `malliavin_teoria.pdf`).
+`Calculo_de_Malliavin_corregido.pdf`: guía teórica de referencia del proyecto. El mapa de capítulos a código está en `../mapa_pdf.md`.
 
 El documento LaTeX de `latex/` se escribió con la teoría estándar (Nualart; Fournié et al.)
 y debe **alinearse con este PDF**: notación, orden de capítulos y resultados adicionales.

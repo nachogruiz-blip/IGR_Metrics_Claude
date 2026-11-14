@@ -118,3 +118,53 @@ def test_density_matches_lognormal():
     x = np.array([80.0, 100.0, 120.0])
     p, se = density.gbm_terminal_density(x, WT, ST, SIG, T)
     assert np.all(np.abs(p - bs.lognormal_pdf(x, S0, T, R, SIG)) < 4 * se)
+
+
+# --- Capítulos 12–14 del PDF ---------------------------------------------
+
+from malliavin import conditional
+from malliavin.brownian import TimeGrid as _TG, brownian_paths
+
+
+def test_localized_delta_unbiased_and_lower_variance():
+    WT = rng(7).standard_normal(400_000) * np.sqrt(T)
+    dig = greeks.digital_payoff(K)
+    reg, regp = greeks.sigmoid_regularization(K)
+    loc = greeks.localized_delta(dig, reg, regp, WT, S0, T, R, SIG)
+    plain = greeks.greeks_malliavin(dig, WT, S0, T, R, SIG)["delta"]
+    assert within(loc, bs.digital_greeks(S0, K, T, R, SIG)["delta"])
+    assert loc.stderr < 0.8 * plain.stderr
+
+
+def test_bel_reduces_to_bs_weight_for_gbm():
+    grid = _TG(T, 20)
+    dig = greeks.digital_payoff(K)
+    est = greeks.bel_delta(dig, lambda x: R * x, lambda x: R + 0 * x, lambda x: SIG * x, lambda x: SIG + 0 * x,
+                           S0, T, R, grid, 300_000, seed=8)
+    assert within(est, bs.digital_greeks(S0, K, T, R, SIG)["delta"], abs_tol=1e-4)  # sesgo de Euler
+
+
+def test_conditional_expectation_bs():
+    grid = _TG(1.0, 2)
+    W = brownian_paths(grid, 40_000, rng(9))
+    S = gbm_from_brownian(W, grid, S0, R, SIG)
+    H = conditional.bs_conditional_weight(S[:, 1], W[:, 1], W[:, 2], 0.5, 1.0, SIG)
+    x = np.array([90.0, 100.0, 110.0])
+    est = conditional.conditional_expectation(S[:, 2], S[:, 1], H, x)
+    np.testing.assert_allclose(est, x * np.exp(R * 0.5), rtol=0.01)
+
+
+def test_bermudan_put_close_to_binomial():
+    ref = conditional.bermudan_put_binomial(S0, K, T, R, SIG, 5)
+    est = conditional.bermudan_put_malliavin(S0, K, T, R, SIG, 5, 2000, seed=10)
+    assert abs(est - ref) / ref < 0.05
+
+
+def test_clark_ocone_digital_replication():
+    grid = _TG(T, 4000)
+    dW = brownian_increments(grid, 300, rng(11))
+    S = gbm_from_brownian(paths_from_increments(dW), grid, S0, R, SIG)
+    M = clark_ocone.reconstruct(bs.digital_price(S0, K, T, R, SIG), clark_ocone.integrand_digital(S, grid, K, R, SIG), dW)
+    target = np.exp(-R * T) * (S[:, -1] > K)
+    # la cobertura de una digital falla cerca del strike en el vencimiento: se mide la mediana
+    assert np.median(np.abs(M[:, -1] - target)) < 0.05

@@ -4,7 +4,8 @@ Para F = f(W_T) con E[F^2] < ∞:
 
     F = \sum_{n\ge 0} I_n(f_n),   f_n = c_n 1_{[0,T]}^{\otimes n},
 
-y como I_n(1_{[0,T]}^{\otimes n}) = T^{n/2} He_n(W_T / \sqrt{T}) (Hermite probabilistas),
+y como I_n(1_{[0,T]}^{\otimes n}) = T^{n/2} He_n(W_T / \sqrt{T}) (Hermite probabilísticos;
+la guía PDF los llama H_n, Definición 6.1),
 
     F = \sum_n a_n He_n(Z),   Z = W_T/\sqrt{T},   a_n = E[f(\sqrt{T} Z) He_n(Z)] / n!.
 

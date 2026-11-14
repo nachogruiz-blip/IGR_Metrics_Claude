@@ -1,6 +1,8 @@
 # IGR_Metrics_Claude — Cálculo de Malliavin y aplicaciones en finanzas
 
-Proyecto cuantitativo para **entender y visualizar** el cálculo de Malliavin y sus aplicaciones
+Proyecto cuantitativo, construido sobre la guía teórica
+[*Cálculo de Malliavin: de los procesos estocásticos y la integral de Itô al estado del arte*](docs/pdf/Calculo_de_Malliavin_corregido.pdf),
+para **entender y visualizar** el cálculo de Malliavin y sus aplicaciones
 financieras (cobertura, griegas y densidades) mediante una pequeña librería Python, scripts de
 visualización, un documento teórico en LaTeX y documentación bibliográfica.
 
@@ -8,11 +10,11 @@ visualización, un documento teórico en LaTeX y documentación bibliográfica.
 
 | Carpeta | Qué hay |
 |---|---|
-| `src/malliavin/` | Librería: caos de Wiener, derivada de Malliavin, Skorokhod, Clark–Ocone, griegas, densidades |
-| `examples/` | Scripts `01`–`06` que generan las figuras de `figures/` |
+| `src/malliavin/` | Librería: caos de Wiener, derivada de Malliavin, Skorokhod, Clark–Ocone, griegas (con localización y BEL), densidades, esperanzas condicionales y bermudas |
+| `examples/` | Scripts `01`–`08` que generan las figuras de `figures/` |
 | `tests/` | Verificación numérica de las identidades teóricas |
-| `latex/` | Documento teórico (`main.tex`, capítulos, `referencias.bib`) |
-| `docs/` | [Guía de la librería](docs/guia_libreria.md), [bibliografía comentada](docs/bibliografia.md), [chuleta de teoría](docs/teoria_resumen.md), `pdf/` para el PDF original |
+| `latex/` | Compañero numérico de la guía PDF (`main.tex`, capítulos, `referencias.bib`, `main.pdf`) |
+| `docs/` | [Mapa PDF → código](docs/mapa_pdf.md), [guía de la librería](docs/guia_libreria.md), [bibliografía comentada](docs/bibliografia.md), [chuleta de teoría](docs/teoria_resumen.md), [PDF de teoría](docs/pdf/Calculo_de_Malliavin_corregido.pdf) |
 | `AGENTS.md` | Instrucciones para agentes de IA que trabajen en el repo |
 
 ## Instalación y uso
@@ -34,6 +36,8 @@ cd latex && latexmk -pdf main.tex        # compila el documento (requiere TeX Li
 | `04_clark_ocone_cobertura.py` | Clark–Ocone y cobertura delta de Black–Scholes | ![](figures/04_clark_ocone_cobertura.png) |
 | `05_griegas_malliavin.py` | Griegas de digitales y asiáticas: Malliavin vs diferencias finitas | ![](figures/05_griegas_malliavin.png) |
 | `06_densidad_malliavin.py` | Densidad de S_T por integración por partes vs KDE | ![](figures/06_densidad_malliavin.png) |
+| `07_localizacion_y_bel.py` | Reproduce la tabla §12.7 de la guía; localización; Bismut–Elworthy–Li en CEV | ![](figures/07_localizacion_y_bel.png) |
+| `08_esperanza_condicional_bermudas.py` | E[S_t\|S_s=x] sin regresión (T. 14.1) y put bermuda vs árbol binomial | ![](figures/08_esperanza_condicional_bermudas.png) |
 
 ## Ejemplo mínimo
 

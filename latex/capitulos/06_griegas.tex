@@ -3,7 +3,7 @@
 Sea $V(\theta)=\E[e^{-rT}\Phi(S_T^\theta)]$. Las diferencias finitas tienen sesgo
 $O(h^2)$ y, si $\Phi$ es discontinua, varianza $O(h^{-1})$ para la delta y
 $O(h^{-3})$ para la gamma (con números aleatorios comunes); el método \emph{pathwise} exige $\Phi$ diferenciable. Aplicando
-\eqref{eq:peso} \cite{fournie1999}:
+\eqref{eq:peso} \cite{fournie1999} \guia{Proposición 12.2}:
 \[
   \partial_\theta V=\E\big[e^{-rT}\Phi(S_T)\,\pi_\theta\big],
 \]
@@ -19,8 +19,9 @@ con pesos que no dependen de $\Phi$. En el modelo de Black--Scholes:
 $\ip{\D S_T}{\ind}=\sigma S_TT$. Con $u=\ind$ y $G=S_T/S_0$ en \eqref{eq:peso}:
 $\dive\big(\tfrac{1}{S_0\sigma T}\big)=\tfrac{W_T}{S_0\sigma T}$.
 
-\section{Opción asiática}
-Sea $A=\frac1T\int_0^TS_t\dd t$. Con $u_t=S_t$:
+\section{Opción asiática \guia{Proposición 12.5}}
+Sea $A=\frac1T\int_0^TS_t\dd t$ (la guía usa $A=\int_0^TS_t\dd t$ sin dividir por $T$; las fórmulas
+son equivalentes). Con $u_t=S_t$:
 $\ip{\D A}{u}=\tfrac{\sigma}{T}\int_0^TS_s\int_s^TS_t\dd t\dd s=\tfrac{\sigma T}{2}A^2$, y
 \[
   \Delta=\frac{e^{-rT}}{S_0}\E\Big[\Phi(A)\Big(\frac{2(S_T-S_0)}{\sigma^2TA}-\frac{2r}{\sigma^2}+1\Big)\Big].

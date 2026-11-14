@@ -53,3 +53,17 @@ def reconstruct(EF: float, integrand: np.ndarray, dW: np.ndarray) -> np.ndarray:
     M[:, 0] = EF
     M[:, 1:] = EF + np.cumsum(integrand * dW, axis=1)
     return M
+
+
+def integrand_digital(S: np.ndarray, grid: TimeGrid, K: float, r: float, sigma: float) -> np.ndarray:
+    """F = e^{-rT} 1_{S_T>K}: φ_t = e^{-rT} φ(d_2(t)) / √(T−t)  (PDF Ejemplo 13.3, t < T).
+
+    Equivale a Δ_t = e^{-r(T−t)} φ(d_2) / (σ S_t √(T−t)) acciones.
+    """
+    from scipy.stats import norm
+
+    t = grid.t[:-1]
+    tau = np.maximum(grid.T - t, 1e-12)
+    St = S[:, :-1]
+    d2 = (np.log(St / K) + (r - 0.5 * sigma**2) * tau) / (sigma * np.sqrt(tau))
+    return np.exp(-r * grid.T) * norm.pdf(d2) / np.sqrt(tau)
