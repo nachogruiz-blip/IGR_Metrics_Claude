@@ -154,23 +154,32 @@ def localized_delta(
 
 def diffusion_with_tangent(
     b: Callable, db: Callable, sig: Callable, dsig: Callable,
-    x0: float, grid: TimeGrid, dW: np.ndarray,
+    x0: float, grid: TimeGrid, dW: np.ndarray, absorb_at_zero: bool = True,
 ) -> tuple[np.ndarray, np.ndarray]:
     """Euler para dX = b(X)dt + σ(X)dW y su proceso tangente Y = ∂X/∂x0:
 
         dY = b'(X) Y dt + σ'(X) Y dW,   Y_0 = 1.
 
-    Devuelve (X, Y) con forma (n_paths, n_steps+1).
+    Devuelve (X, Y) con forma (n_paths, n_steps+1). Con ``absorb_at_zero`` (por defecto) una
+    trayectoria que cruza 0 queda absorbida (X = 0, Y = 0): es la convención para precios de
+    activos (CEV, etc.) y evita evaluar σ'(x) en x ≤ 0, donde puede explotar.
     """
     n_paths, n_steps = dW.shape
     X = np.empty((n_paths, n_steps + 1))
     Y = np.empty_like(X)
     X[:, 0], Y[:, 0] = x0, 1.0
     dt = grid.dt
+    alive = np.ones(n_paths, dtype=bool)
     for k in range(n_steps):  # bucle temporal (vectorizado en trayectorias)
         x, y = X[:, k], Y[:, k]
-        X[:, k + 1] = x + b(x) * dt + sig(x) * dW[:, k]
-        Y[:, k + 1] = y + db(x) * y * dt + dsig(x) * y * dW[:, k]
+        xs = np.where(alive, x, 1.0)  # evita evaluar los coeficientes en 0 (p.ej. σ' de CEV)
+        X[:, k + 1] = np.where(alive, x + b(xs) * dt + sig(xs) * dW[:, k], 0.0)
+        Y[:, k + 1] = np.where(alive, y + db(xs) * y * dt + dsig(xs) * y * dW[:, k], 0.0)
+        if absorb_at_zero:
+            hit = alive & (X[:, k + 1] <= 0.0)
+            X[hit, k + 1] = 0.0
+            Y[hit, k + 1] = 0.0
+            alive &= ~hit
     return X, Y
 
 

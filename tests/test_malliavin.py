@@ -154,10 +154,58 @@ def test_conditional_expectation_bs():
     np.testing.assert_allclose(est, x * np.exp(R * 0.5), rtol=0.01)
 
 
-def test_bermudan_put_close_to_binomial():
+def test_bermudan_put_lower_estimator_matches_binomial():
     ref = conditional.bermudan_put_binomial(S0, K, T, R, SIG, 5)
-    est = conditional.bermudan_put_malliavin(S0, K, T, R, SIG, 5, 2000, seed=10)
-    assert abs(est - ref) / ref < 0.05
+    est = conditional.bermudan_put_malliavin(S0, K, T, R, SIG, 5, 1500, seed=10)
+    euro = bs.call_price(S0, K, T, R, SIG) - S0 + K * np.exp(-R * T)
+    # La regla de ejercicio aprendida es casi óptima: la cota inferior está cerca del árbol
+    # (sesgo de suboptimalidad ≤ 1 %) y por encima de la europea.
+    assert est.low <= ref + 4 * est.low_stderr
+    assert est.low >= 0.99 * ref - 4 * est.low_stderr
+    assert est.low > euro
+    assert abs(est.high - ref) / ref < 0.08
+
+
+def test_conditional_expectation_never_returns_garbage():
+    """En las colas el estimador devuelve NaN o un valor razonable, nunca valores absurdos."""
+    grid = _TG(1.0, 2)
+    W = brownian_paths(grid, 2000, rng(12))
+    S = gbm_from_brownian(W, grid, S0, R, SIG)
+    H = conditional.bs_conditional_weight(S[:, 1], W[:, 1], W[:, 2], 0.5, 1.0, SIG)
+    x = np.geomspace(20.0, 400.0, 40)
+    exact = x * np.exp(R * 0.5)
+    for loc in (False, True):
+        est, se = conditional.conditional_expectation(S[:, 2], S[:, 1], H, x, localize=loc, return_stderr=True)
+        ok = np.isnan(est) | (np.abs(est - exact) <= 4 * se)
+        assert ok.all(), (loc, x[~ok], est[~ok], exact[~ok])
+        assert np.isnan(est[0])  # x = 20: sin muestras cerca, no se extrapola
+        assert np.isfinite(est[(x > 85) & (x < 120)]).all()
+
+
+def test_cev_absorption_keeps_estimators_finite():
+    grid = _TG(T, 50)
+    s0 = 1.5  # volatilidad CEV alta: muchas trayectorias tocan 0
+    b, db = (lambda x: R * x), (lambda x: R + 0 * x)
+    sg = lambda x: s0 * np.maximum(x, 0) ** 0.5
+    dsg = lambda x: 0.5 * s0 * np.maximum(x, 1e-300) ** -0.5
+    dW = brownian_increments(grid, 20_000, rng(13))
+    X, Y = greeks.diffusion_with_tangent(b, db, sg, dsg, 1.0, grid, dW)
+    assert np.all(np.isfinite(X)) and np.all(np.isfinite(Y)) and np.all(X >= 0)
+    assert (X[:, -1] == 0).mean() > 0.1
+    # Una trayectoria absorbida se queda en 0.
+    hit = np.argmax(X == 0, axis=1)
+    rows = np.flatnonzero((X == 0).any(axis=1))[:50]
+    assert all(np.all(X[i, hit[i]:] == 0) for i in rows)
+
+
+def test_directional_derivative_matches_inner_product(setup_paths):
+    grid, dW, W = setup_paths
+    h = lambda t: np.cos(3 * t)
+    F = lambda w: w[:, -1] ** 3
+    lhs = derivative.directional_derivative(F, W, grid, h)
+    D = derivative.analytic_terminal_power(W, grid, 3)
+    rhs = (D * h(grid.t[:-1])).sum(axis=1) * grid.dt
+    np.testing.assert_allclose(lhs, rhs, rtol=1e-6, atol=1e-8)
 
 
 def test_clark_ocone_digital_replication():
