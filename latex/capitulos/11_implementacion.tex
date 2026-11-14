@@ -14,8 +14,10 @@
   BEL & $\frac1T\int\sigma^{-1}Y\dd W$ & \codigo{greeks.bel\_delta}\\
   Esp.\ condicional & cociente de \guia{T.~14.1} & \codigo{conditional.conditional\_expectation}\\
   Bermuda & programación dinámica & \codigo{conditional.bermudan\_put\_malliavin}\\
+  Alòs & HW $+\frac\rho2\E\int H\Lambda$ & \codigo{stochvol.alos\_decomposition\_rbergomi}\\
+  Skew ATM & $\partial_kI$ & \codigo{stochvol.atm\_skew}\\
 \end{tabular}
 \end{center}
 
 Las identidades de los capítulos anteriores se verifican automáticamente en
-\codigo{tests/test\_malliavin.py} (\codigo{pytest}).
+\codigo{tests/test\_malliavin.py} (\codigo{pytest}), que se ejecutan en GitHub Actions en cada cambio.

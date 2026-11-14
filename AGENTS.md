@@ -14,7 +14,7 @@ Proyecto: cálculo de Malliavin y aplicaciones en finanzas (teoría en LaTeX + l
 
 ## Comandos
 - Instalar: `pip install -e ".[dev]"`
-- Tests: `pytest` (rápidos, < 15 s). Deben pasar siempre.
+- Tests: `pytest` (rápidos, < 15 s). Deben pasar siempre; GitHub Actions (`.github/workflows/ci.yml`) los ejecuta junto con la compilación de los dos LaTeX en cada push a `main` y en cada PR.
 - Figuras: `for f in examples/*.py; do python "$f"; done` → `figures/`
 - LaTeX compañero: `cd latex && latexmk -pdf main.tex` (las figuras se cargan desde `../figures`).
 - LaTeX de la guía: `cd latex/guia && latexmk -pdf main.tex`.
@@ -27,5 +27,6 @@ Proyecto: cálculo de Malliavin y aplicaciones en finanzas (teoría en LaTeX + l
 - Paleta de figuras: usar `plotting.SERIES` en orden fijo; nunca doble eje Y.
 - Regenerar las figuras afectadas y comprometerlas junto con el código.
 - `latex/main.tex` es un compañero numérico de la guía: no copiar demostraciones largas, enlazar a la guía.
-- `latex/guia/` es la transcripción de la guía: solo corregir erratas de transcripción frente al PDF, sin reescribir contenido.
+- `latex/guia/` es la transcripción de la guía: reproduce su contenido, pero **corrige** las erratas y errores
+  del original (no se conservan). Cada corrección se anota en `latex/guia/ERRATAS.md`.
 - Recompilar `latex/main.pdf` tras cambiar `latex/` y comprometer el PDF.

@@ -26,8 +26,9 @@ capitulos/bibliografia.tex  thebibliography con las 63 entradas, en el mismo ord
   capítulo 12 hay un desfase de 1–2 páginas por diferencias menores de maquetación.
 - El estilo de las cajas, los colores y la portada (dibujo TikZ de `ω` y `ω + εh`) son una
   aproximación visual, no el código original.
-- Al ser una transcripción, puede haber erratas puntuales. Si encuentras una diferencia con el PDF,
-  el PDF manda.
+- **Las erratas del original se corrigen, no se conservan**; cada corrección queda anotada en
+  [`ERRATAS.md`](ERRATAS.md), junto con las comprobaciones realizadas (ortografía, comparación de texto
+  con el PDF y verificación de fórmulas).
 
 ## Macros principales (`preambulo.tex`)
 

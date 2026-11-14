@@ -28,7 +28,7 @@ Leyenda: ✅ implementado · 🔜 candidato natural a módulo · 📖 sólo teó
 | 11 | EDEs y Hörmander, matriz de Malliavin | 📖 | — | — |
 | 12 | Griegas: pesos BS (P. 12.2), BEL (T. 12.3), asiática (P. 12.5), localización (§12.6), tabla §12.7 | ✅ | 06, 09 | `greeks.py`, ej. 05, 07 |
 | 13 | Cobertura Clark–Ocone (call, digital, asiática, lookback), Merton–Ocone–Karatzas, insider | ✅ parcial | 05 | `clark_ocone.py` (call, digital); faltan lookback, Merton y asiática |
-| 14 | Esperanzas condicionales (T. 14.1), americanas, Alòs, skew en tiempo corto | ✅ parcial | 10 | `conditional.py`, ej. 08; faltan Alòs, Hull–White y el skew rough Bergomi |
+| 14 | Esperanzas condicionales (T. 14.1), americanas, Alòs, skew en tiempo corto | ✅ | 10, 12 | `conditional.py`, `stochvol.py`, ej. 08–09 (Alòs verificada numéricamente en rough Bergomi; skew Heston y rough Bergomi) |
 | 15–17 | EDPEs: Walsh–Dalang, densidades, modelo parabólico de Anderson | 📖 | — | — |
 | 18 | Browniano fraccionario, volatilidad rugosa | 🔜 | — | conecta con §14.4 (rough Bergomi) |
 | 19 | Malliavin en el espacio de Poisson | 📖 | — | — |
@@ -48,8 +48,8 @@ Leyenda: ✅ implementado · 🔜 candidato natural a módulo · 📖 sólo teó
 
 ## Próximos módulos propuestos (por orden de valor para finanzas)
 
-1. **Alòs / Hull–White y skew** (§14.3–14.4, 18.5): Heston y rough Bergomi por Monte Carlo y pendiente ATM frente a T − t.
-2. **Cobertura lookback y asiática** (Ejemplos 13.4–13.5).
-3. **Merton con coeficientes aleatorios** (T. 13.6): demanda de cobertura intertemporal.
+1. **Cobertura lookback y asiática** (Ejemplos 13.4–13.5).
+2. **Merton con coeficientes aleatorios** (T. 13.6): demanda de cobertura intertemporal (con `stochvol` como factor).
+3. **Griegas en volatilidad estocástica** (§12.8): pesos de Malliavin en Heston / rough Bergomi.
 4. **Ornstein–Uhlenbeck / Mehler / Poincaré** (cap. 9) y **Nourdin–Viens** (§10.5).
 5. **Malliavin–Stein**: cuarto momento y TCL para la variación cuadrática del fBm (cap. 20).

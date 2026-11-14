@@ -216,3 +216,46 @@ def test_clark_ocone_digital_replication():
     target = np.exp(-R * T) * (S[:, -1] > K)
     # la cobertura de una digital falla cerca del strike en el vencimiento: se mide la mediana
     assert np.median(np.abs(M[:, -1] - target)) < 0.05
+
+
+# --- Volatilidad estocástica (PDF §14.3–14.4) ------------------------------
+
+from malliavin import stochvol
+
+
+def test_rbergomi_exact_simulation_moments():
+    H, eta, xi0 = 0.1, 1.9, 0.04
+    p = stochvol.rough_bergomi_paths(1.0, 50, 100_000, H, eta, xi0, rng(20))
+    # E[σ_t²] = ξ₀ y corr(W_1, Ŵ^H_1) = √(2H)/(H+½)
+    np.testing.assert_allclose(p.var[:, [10, 50]].mean(axis=0), xi0, rtol=0.03)
+    Wh1 = (np.log(p.var[:, -1] / xi0) + 0.5 * eta**2) / eta
+    assert abs(np.corrcoef(p.W[:, -1], Wh1)[0, 1] - np.sqrt(2 * H) / (H + 0.5)) < 0.01
+    assert abs(Wh1.var() - 1.0) < 0.02  # Var Ŵ^H_1 = 1
+
+
+def test_alos_decomposition_identity():
+    """PDF Teorema 14.5: precio = término de Hull–White + corrección por correlación."""
+    H, eta, xi0, rho = 0.3, 1.0, 0.04, -0.7
+    p = stochvol.rough_bergomi_paths(1.0, 100, 60_000, H, eta, xi0, rng(21))
+    for K in (100.0, 110.0):
+        d = stochvol.alos_decomposition_rbergomi(p, 100.0, K, 0.0, rho, rng(22))
+        se = np.sqrt(d.price_se**2 + d.hull_white_se**2 + d.correction_se**2)
+        assert abs(d.price - d.hull_white) > 10 * se  # Hull–White solo no basta con ρ ≠ 0
+        assert abs(d.price - d.alos) < 4 * se + 0.01 * d.price  # tolerancia: discretización
+
+
+def test_heston_short_time_skew():
+    v0, nu, rho = 0.04, 0.5, -0.7
+    p = stochvol.heston_paths(0.01, 100, 300_000, v0, 1.5, 0.04, nu, rng(23))
+    limit = stochvol.heston_skew_limit(v0, nu, rho)
+    assert abs(stochvol.atm_skew(p, 100.0, 0.0, rho) / limit - 1) < 0.08
+
+
+def test_rbergomi_skew_power_law():
+    """PDF Teorema 14.6(b): skew ATM ∝ T^{H−1/2}."""
+    H, eta, xi0, rho = 0.1, 1.9, 0.04, -0.9
+    Ts = (0.005, 0.5)
+    sk = [stochvol.atm_skew(stochvol.rough_bergomi_paths(T, 100, 100_000, H, eta, xi0, rng(24)), 100.0, 0.0, rho)
+          for T in Ts]
+    slope = np.log(sk[0] / sk[1]) / np.log(Ts[1] / Ts[0])
+    assert abs(slope - (0.5 - H)) < 0.06

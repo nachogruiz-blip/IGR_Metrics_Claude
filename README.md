@@ -1,5 +1,7 @@
 # IGR_Metrics_Claude — Cálculo de Malliavin y aplicaciones en finanzas
 
+[![CI](https://github.com/nachogruiz-blip/IGR_Metrics_Claude/actions/workflows/ci.yml/badge.svg)](https://github.com/nachogruiz-blip/IGR_Metrics_Claude/actions/workflows/ci.yml)
+
 Proyecto cuantitativo, construido sobre la guía teórica
 [*Cálculo de Malliavin: de los procesos estocásticos y la integral de Itô al estado del arte*](docs/pdf/Calculo_de_Malliavin_corregido.pdf),
 para **entender y visualizar** el cálculo de Malliavin y sus aplicaciones
@@ -10,8 +12,8 @@ visualización, un documento teórico en LaTeX y documentación bibliográfica.
 
 | Carpeta | Qué hay |
 |---|---|
-| `src/malliavin/` | Librería: caos de Wiener, derivada de Malliavin, Skorokhod, Clark–Ocone, griegas (con localización y BEL), densidades, esperanzas condicionales y bermudas |
-| `examples/` | Scripts `01`–`08` que generan las figuras de `figures/` |
+| `src/malliavin/` | Librería: caos de Wiener, derivada de Malliavin, Skorokhod, Clark–Ocone, griegas (con localización y BEL), densidades, esperanzas condicionales y bermudas, volatilidad estocástica (Alòs, skew) |
+| `examples/` | Scripts `01`–`09` que generan las figuras de `figures/` |
 | `tests/` | Verificación numérica de las identidades teóricas |
 | `latex/` | Compañero numérico de la guía PDF (`main.tex`, capítulos, `referencias.bib`, `main.pdf`) |
 | `latex/guia/` | Fuente LaTeX de la guía teórica, reconstruida desde el PDF (23 capítulos + apéndices) |
@@ -38,7 +40,8 @@ cd latex && latexmk -pdf main.tex        # compila el documento (requiere TeX Li
 | `05_griegas_malliavin.py` | Griegas de digitales y asiáticas: Malliavin vs diferencias finitas | ![](figures/05_griegas_malliavin.png) |
 | `06_densidad_malliavin.py` | Densidad de S_T por integración por partes vs KDE | ![](figures/06_densidad_malliavin.png) |
 | `07_localizacion_y_bel.py` | Reproduce la tabla §12.7 de la guía; localización; Bismut–Elworthy–Li en CEV | ![](figures/07_localizacion_y_bel.png) |
-| `08_esperanza_condicional_bermudas.py` | E[S_t\|S_s=x] sin regresión (T. 14.1) y put bermuda vs árbol binomial | ![](figures/08_esperanza_condicional_bermudas.png) |
+| `08_esperanza_condicional_bermudas.py` | E[S_t\|S_s=x] sin regresión (T. 14.1); put bermuda: estimador por valores vs cota inferior vs árbol | ![](figures/08_esperanza_condicional_bermudas.png) |
+| `09_alos_skew.py` | Fórmula de Alòs verificada en rough Bergomi; skew ATM de Heston (constante) vs rough Bergomi (∝ T^{H−1/2}) | ![](figures/09_alos_skew.png) |
 
 ## Ejemplo mínimo
 

@@ -14,7 +14,10 @@ src/malliavin/       Librería (importable tras `pip install -e .`)
   clark_ocone.py     Integrandos E[D_tF|F_t] (cerrados y por cuadratura), reconstrucción
   greeks.py          Pesos de Malliavin (Δ, Γ, vega, ρ), diferencias finitas, pathwise, asiática,
                      localización (§12.6) y Bismut–Elworthy–Li con proceso tangente (§12.4)
-  conditional.py     E[Φ(G)|F=x] por Malliavin (T. 14.1), localización, put bermuda (§14.2)
+  conditional.py     E[Φ(G)|F=x] por Malliavin (T. 14.1) con error estándar y NaN si no es fiable,
+                     localización, put bermuda con estimador por valores y cota inferior (§14.2)
+  stochvol.py        Rough Bergomi (simulación exacta por Cholesky) y Heston, precios condicionales,
+                     volatilidad implícita, skew ATM, descomposición de Alòs (§14.3–14.4)
   density.py         Densidad vía p(x)=E[1_{F>x} δ(DF/||DF||²)], KDE para comparar
   plotting.py        Estilo matplotlib y paleta común; save() escribe en figures/
 examples/            Un script por concepto; genera figures/NN_*.png
@@ -32,6 +35,7 @@ docs/                Esta guía, mapa PDF→código, bibliografía, teoría resu
 - **Medida**: siempre neutral al riesgo; `W` es browniano bajo Q; pagos descontados con `e^{-rT}`.
 - **Semillas**: `brownian.rng(seed)`; los tests y ejemplos usan semillas fijas.
 - Docstrings y documentación en español; identificadores en inglés.
+- Las funciones de Monte Carlo devuelven `NaN` (no un número arbitrario) donde la estimación no es fiable.
 - Las docstrings citan la guía PDF como «PDF §12.4», «Teorema 14.1 del PDF», etc.
 
 ## Mapa fórmula → función
@@ -53,7 +57,10 @@ La numeración de la guía PDF para cada fila está en [`mapa_pdf.md`](mapa_pdf.
 | E[e^{-rT}Φ_reg' S_T/S_0] + E[e^{-rT}Φ_sing π_Δ] | `greeks.localized_delta` | 9 |
 | (1/T)∫σ^{-1}(X)Y dW (BEL) | `greeks.bel_delta` | 9 |
 | E[Φ(G)1_{F>x}δ(u)] / E[1_{F>x}δ(u)] | `conditional.conditional_expectation` | 10 |
-| Put bermuda (programación dinámica) | `conditional.bermudan_put_malliavin` | 10 |
+| Put bermuda (programación dinámica) | `conditional.bermudan_put_malliavin` → `BermudanEstimate(high, low, low_stderr)` | 10 |
+| V₀ = E[BS(v₀)] + (ρ/2)E∫e^{-rs}HΛ ds (Alòs) | `stochvol.alos_decomposition_rbergomi` | 12 |
+| D^W_s σ_r² = η√(2H) σ_r² (r−s)^{H−1/2} | dentro de `alos_decomposition_rbergomi` | 12 |
+| Skew ATM ∂ₖI y asíntotas (T. 14.6) | `stochvol.atm_skew`, `heston_skew_limit`, `rbergomi_skew_asymptotic` | 12 |
 | φ_t digital = e^{-rT}φ(d₂)/√(T−t) | `clark_ocone.integrand_digital` | 5 |
 
 ## Derivación del peso asiático (resumen)

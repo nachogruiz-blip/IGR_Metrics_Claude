@@ -22,10 +22,22 @@ $V_{t_n}=\Phi(S_{t_n})$, $V_{t_k}=\max\{\Phi(S_{t_k}),e^{-r\Delta t}\E[V_{t_{k+1
 evaluando la esperanza condicional en cada trayectoria con el cociente anterior
 (coste $O(N^2)$ por fecha). Referencia: árbol binomial con ejercicio en las mismas fechas.
 
+\paragraph{Fiabilidad del cociente.} El denominador estima $p_F(x)$ y es muy ruidoso en las colas
+de $F$. El código estima el error estándar del cociente $R=\bar a/\bar b$ por el método delta,
+$\mathrm{se}(R)=\mathrm{std}(a_i-Rb_i)/(\sqrt N\,|\bar b|)$, y devuelve \codigo{NaN} cuando el error
+relativo supera un umbral (y, sin localizar, cuando hay menos de 100 muestras a cada lado de $x$),
+en lugar de valores sin sentido.
+
+\paragraph{Dos estimadores.} Tomar el máximo de estimaciones ruidosas sobre las mismas trayectorias
+sesga el precio \emph{por valores} al alza (desigualdad de Jensen) y lo hace muy variable. Por eso se
+calcula también el valor de la \emph{regla de ejercicio} aprendida, aplicada a trayectorias nuevas e
+independientes: al ser una regla de parada admisible, da una cota inferior insesgada. Se reduce su
+varianza con la put europea como variable de control.
+
 \begin{observacion}
-Al usar el valor estimado (y no el flujo de la regla de parada) el estimador tiene un
-pequeño sesgo al alza; con $N=2000$ y 10 fechas se obtiene $6{,}15\pm0{,}08$ frente a
-$6{,}033$ del árbol.
+Con $N=2000$ trayectorias de entrenamiento y 10 fechas (12 semillas): por valores
+$6{,}06\pm0{,}10$; regla de ejercicio $5{,}99\pm0{,}03$; árbol $6{,}033$. La cota inferior es
+precisa y la regla aprendida es casi óptima (pérdida $<1\%$).
 \end{observacion}
 
 \begin{figure}[h]
