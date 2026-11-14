@@ -1,0 +1,17 @@
+\chapter{Implementación}\label{cap:implementacion}
+
+\begin{center}
+\begin{tabular}{lll}
+  Concepto & Fórmula & Función\\\hline
+  Caos & $a_n=\E[fHe_n]/n!$ & \codigo{chaos.chaos\_coefficients}\\
+  Derivada discreta & $\partial\phi/\partial\Delta W_k$ & \codigo{derivative.discrete\_malliavin\_derivative}\\
+  Skorokhod producto & $G\dive(h)-\ip{\D G}{h}$ & \codigo{skorokhod.skorokhod\_product}\\
+  Clark--Ocone & $\E[\D_tF\mid\F_t]$ & \codigo{clark\_ocone.integrand\_*}\\
+  Griegas & $\E[\Phi\,\pi_\theta]$ & \codigo{greeks.greeks\_malliavin}\\
+  Asiática & $\pi_\Delta^{A}$ & \codigo{greeks.asian\_delta\_malliavin}\\
+  Densidad & $\E[\ind_{F>x}\dive(\cdot)]$ & \codigo{density.gbm\_terminal\_density}\\
+\end{tabular}
+\end{center}
+
+Las identidades de los capítulos anteriores se verifican automáticamente en
+\codigo{tests/test\_malliavin.py} (\codigo{pytest}).

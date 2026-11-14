@@ -1,0 +1,38 @@
+% Cálculo de Malliavin y aplicaciones en finanzas
+% Compilar: latexmk -pdf main.tex   (o: pdflatex main && biber main && pdflatex main ×2)
+\documentclass[11pt,a4paper]{report}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish,es-noshorthands]{babel}
+\usepackage{amsmath,amssymb,amsthm,mathtools,bm}
+\usepackage{graphicx}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage[backend=biber,style=alphabetic]{biblatex}
+\addbibresource{referencias.bib}
+\graphicspath{{../figures/}}
+
+\input{macros}
+
+\title{Cálculo de Malliavin y aplicaciones en finanzas\\[0.3em]
+\large Teoría, implementación numérica y visualización}
+\author{}
+\date{\today}
+
+\begin{document}
+\maketitle
+\tableofcontents
+
+\input{capitulos/01_introduccion}
+\input{capitulos/02_espacio_wiener_caos}
+\input{capitulos/03_derivada}
+\input{capitulos/04_divergencia}
+\input{capitulos/05_clark_ocone}
+\input{capitulos/06_griegas}
+\input{capitulos/07_densidades}
+\input{capitulos/08_implementacion}
+
+\printbibliography[heading=bibintoc,title={Bibliografía}]
+\end{document}

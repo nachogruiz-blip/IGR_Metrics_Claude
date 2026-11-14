@@ -1,0 +1,32 @@
+\chapter{Introducción}
+
+El cálculo de Malliavin es un cálculo diferencial en dimensión infinita sobre el
+espacio de Wiener, introducido por P.~Malliavin \cite{malliavin1978} para dar una
+prueba probabilística del teorema de hipoelipticidad de Hörmander. Su herramienta
+central es una \emph{fórmula de integración por partes} que permite trasladar
+derivadas desde una función hacia un \emph{peso} aleatorio:
+\[
+  \E\big[\varphi'(F)\,G\big] = \E\big[\varphi(F)\,H(F,G)\big].
+\]
+En finanzas esta identidad tiene tres usos principales, que recorre este documento:
+\begin{enumerate}
+  \item \textbf{Cobertura} (cap.~\ref{cap:clark-ocone}): la fórmula de
+        Clark--Ocone identifica explícitamente la cartera replicante
+        \cite{ocone1984,oconekaratzas1991}.
+  \item \textbf{Sensibilidades} (cap.~\ref{cap:griegas}): las griegas se calculan
+        por Monte Carlo sin derivar el pago, lo que es crucial para pagos
+        discontinuos \cite{fournie1999,fournie2001,benhamou2003}.
+  \item \textbf{Densidades y volatilidad implícita} (cap.~\ref{cap:densidades}):
+        existencia y estimación de densidades \cite{nualart2006} y desarrollos
+        asintóticos de la volatilidad implícita \cite{alos2007,alosgarcialorite2021}.
+\end{enumerate}
+
+Cada resultado se acompaña de una implementación en la librería Python
+\codigo{malliavin} (directorio \codigo{src/malliavin}) y de un script de
+visualización en \codigo{examples/}; las figuras se incluyen desde
+\codigo{figures/}. El capítulo~\ref{cap:implementacion} describe el mapa
+fórmula~$\to$~función.
+
+\paragraph{Notación.} $W=(W_t)_{t\in[0,T]}$ es un movimiento browniano estándar en
+$(\Omega,\F,\Prob)$ con filtración natural $(\F_t)$; $\Hil=L^2([0,T])$ con producto
+$\ip{h}{g}=\int_0^T h(t)g(t)\dd t$; $W(h)=\int_0^T h\dd W$ es la integral de Wiener.
