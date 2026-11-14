@@ -1,8 +1,8 @@
 \chapter{Griegas por pesos de Malliavin}\label{cap:griegas}
 
 Sea $V(\theta)=\E[e^{-rT}\Phi(S_T^\theta)]$. Las diferencias finitas tienen sesgo
-$O(h^2)$ y varianza $O(h^{-2})$ (o $O(h^{-3})$ para la gamma) si $\Phi$ es
-discontinua; el método \emph{pathwise} exige $\Phi$ diferenciable. Aplicando
+$O(h^2)$ y, si $\Phi$ es discontinua, varianza $O(h^{-1})$ para la delta y
+$O(h^{-3})$ para la gamma (con números aleatorios comunes); el método \emph{pathwise} exige $\Phi$ diferenciable. Aplicando
 \eqref{eq:peso} \cite{fournie1999}:
 \[
   \partial_\theta V=\E\big[e^{-rT}\Phi(S_T)\,\pi_\theta\big],
