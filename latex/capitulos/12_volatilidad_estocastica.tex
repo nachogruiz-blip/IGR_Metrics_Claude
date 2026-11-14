@@ -1,0 +1,50 @@
+\chapter{Volatilidad estocástica: fórmula de Alòs y skew}\label{cap:vol-estocastica}
+
+\section{Modelos}
+Log-precio $\dd X_t=(r-\frac{\sigma_t^2}{2})\dd t+\sigma_t(\rho\,\dd W_t+\sqrt{1-\rho^2}\,\dd B_t)$
+\guia{§14.3}, con dos modelos para $\sigma$:
+\begin{itemize}
+  \item \textbf{Rough Bergomi} \guia{Ejemplo 14.7}: $\sigma_t^2=\xi_0\exp(\eta\hat W^H_t-\frac{\eta^2}{2}t^{2H})$,
+  $\hat W^H_t=\int_0^t\sqrt{2H}(t-s)^{H-1/2}\dd W_s$. Se simula \emph{exactamente en la malla}: el vector
+  $(W_{t_i},\hat W^H_{t_i})_{i\le n}$ es gaussiano, con
+  $\mathrm{Cov}(W_s,\hat W^H_t)=\frac{\sqrt{2H}}{H+1/2}\big(t^{H+1/2}-(t-s\wedge t)^{H+1/2}\big)$ y, para $s\le t$,
+  \[
+    \mathrm{Cov}(\hat W^H_s,\hat W^H_t)=2H\,\frac{(t-s)^{a}s^{a+1}}{a+1}\,{}_2F_1\Big(-a,a+1;a+2;-\frac{s}{t-s}\Big),\qquad a=H-\tfrac12,
+  \]
+  y se muestrea con su factor de Cholesky (\codigo{stochvol.rough\_bergomi\_paths}).
+  \item \textbf{Heston}: $\dd v=\kappa(\theta-v)\dd t+\nu\sqrt v\,\dd W$, Euler con truncamiento total.
+\end{itemize}
+Los precios se calculan condicionando a $\F^W_T$: $X_T$ es gaussiana y
+$\E[(S_T-K)^+\mid\F^W_T]=BS\big(S_0e^{\rho\int\sigma\dd W-\frac{\rho^2}{2}\int\sigma^2},K,T,r,\sqrt{(1-\rho^2)\int\sigma^2/T}\big)$,
+lo que elimina el ruido de $B$.
+
+\section{Verificación numérica de la fórmula de Alòs \guia{Teorema 14.5}}
+En rough Bergomi la derivada de Malliavin es explícita,
+$D^W_s\sigma_r^2=\eta\sqrt{2H}\,\sigma_r^2(r-s)^{H-1/2}$, así que ambos lados de
+\[
+  V_0=\E[BS(0,X_0,v_0)]+\frac\rho2\,\E\Big[\int_0^Te^{-rs}H(s,X_s,v_s)\Lambda_s\dd s\Big],\qquad
+  H=(\partial_x^3-\partial_x^2)BS=\frac{e^x\varphi(d_1)}{v\sqrt\tau}\Big(1-\frac{d_1}{v\sqrt\tau}\Big),
+\]
+se calculan sobre las mismas trayectorias (\codigo{stochvol.alos\_decomposition\_rbergomi}); la
+volatilidad futura $v_s$ y $\Lambda_s=\sigma_s\int_s^TD^W_s\sigma_r^2\dd r$ anticipan el futuro y se
+evalúan sobre la trayectoria completa, integrando el núcleo singular exactamente en cada celda.
+El test comprueba la identidad ($H=0{,}3$) y que el término de Hull--White solo \emph{no} basta.
+Con $H=0{,}1$ la diferencia residual en las calls muy fuera del dinero es error de
+discretización: decrece al refinar la malla (de $0{,}27$ a $0{,}07$ con $n=50\to400$ pasos).
+
+\section{Skew en tiempo corto \guia{Teorema 14.6}}
+\begin{itemize}
+  \item Heston (caso (a)): $D_s\sigma_r\to\nu/2$, luego $\partial_kI\to\rho\nu/(4\sqrt{v_0})$. Con 6 semillas a
+  $T=0{,}01$: $-0{,}442\pm0{,}007$ frente a $-0{,}4375$.
+  \item Rough Bergomi (caso (b)): $\partial_kI\approx\frac{\rho\eta\sqrt{2H}}{2(H+1/2)(H+3/2)}T^{H-1/2}$. La pendiente
+  log-log medida es $-0{,}42$ (teoría $-0{,}4$); el nivel queda un $\sim10\%$ por debajo de la asíntota
+  de primer orden para $\eta=1{,}9$, por correcciones de orden $\eta^2T^{2H}$.
+\end{itemize}
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=\linewidth]{09_alos_skew}
+  \caption{Izquierda: la corrección de Alòs (construida con $D^W\sigma^2$) convierte la sonrisa casi
+  plana de Hull--White en el skew del modelo. Derecha: skew ATM, constante en Heston y
+  $\propto T^{H-1/2}$ en rough Bergomi (\codigo{examples/09\_alos\_skew.py}).}
+\end{figure}

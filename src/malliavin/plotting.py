@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 from pathlib import Path
 
 import matplotlib
@@ -17,7 +18,19 @@ GRID = "#e4e3df"
 SURFACE = "#fcfcfb"
 NEUTRAL = "#9a9890"
 
-FIG_DIR = Path(__file__).resolve().parents[2] / "figures"
+def _default_fig_dir() -> Path:
+    """$MALLIAVIN_FIG_DIR, o figures/ del repositorio si la librería está instalada en modo
+    editable, o ./figures en el directorio actual en otro caso."""
+    env = os.environ.get("MALLIAVIN_FIG_DIR")
+    if env:
+        return Path(env)
+    repo = Path(__file__).resolve().parents[2]
+    if (repo / "pyproject.toml").exists():
+        return repo / "figures"
+    return Path.cwd() / "figures"
+
+
+FIG_DIR = _default_fig_dir()
 
 
 def setup() -> None:
@@ -53,7 +66,7 @@ def setup() -> None:
 
 
 def save(fig, name: str) -> Path:
-    FIG_DIR.mkdir(exist_ok=True)
+    FIG_DIR.mkdir(parents=True, exist_ok=True)
     path = FIG_DIR / f"{name}.png"
     fig.savefig(path)
     plt.close(fig)

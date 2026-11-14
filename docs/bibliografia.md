@@ -27,11 +27,11 @@ Los DOI incluidos en el `.bib` se han verificado; para el resto, consultar la ed
 | `malliavinthalmaier2006` | P. Malliavin, A. Thalmaier, *Stochastic Calculus of Variations in Mathematical Finance*, Springer 2006 | Visión del propio Malliavin sobre finanzas: griegas, mercados incompletos. |
 | `alos2007` | Alòs, León, Vives, *Finance Stoch.* 11 (2007) | Volatilidad implícita a corto plazo vía Malliavin (fórmula de Hull–White anticipativa). |
 | `alosgarcialorite2021` | E. Alòs, D. García Lorite, *Malliavin Calculus in Finance*, CRC 2021 | Libro práctico reciente: volatilidad implícita, skew, modelos rough. Buen siguiente paso. |
-| `alos2006` | E. Alòs, *Finance Stoch.* 10 (2006) | Fórmula de descomposición (Hull–White generalizada), guía §14.3. |
+| `alos2006` | E. Alòs, *Finance Stoch.* 10 (2006) | Fórmula de descomposición (Hull–White generalizada), guía §14.3; `stochvol.alos_decomposition_rbergomi`. |
 | `bally2005` | Bally, Caramellino, Zanette, *Monte Carlo Methods Appl.* 11 (2005) | Americanas por Malliavin (`conditional.py`), guía §14.2. |
 | `bismut1981` | J.-M. Bismut, *Z. Wahrsch.* 56 (1981) | Origen de la fórmula de Bismut–Elworthy–Li (`greeks.bel_delta`), guía §12.4. |
 | `imkeller2003` | P. Imkeller, *Math. Finance* 13 (2003) | Información privilegiada (insider), guía §13.4. |
-| `bayer2016` | Bayer, Friz, Gatheral, *Quant. Finance* 16 (2016) | Rough Bergomi, guía Ejemplo 14.7. |
+| `bayer2016` | Bayer, Friz, Gatheral, *Quant. Finance* 16 (2016) | Rough Bergomi, guía Ejemplo 14.7; `stochvol.rough_bergomi_paths`. |
 | `glasserman2003` | P. Glasserman, *Monte Carlo Methods in Financial Engineering*, Springer 2003 | Cap. 7: comparación diferencias finitas / pathwise / likelihood ratio (≈ Malliavin en BS). |
 
 ## Ruta de lectura sugerida

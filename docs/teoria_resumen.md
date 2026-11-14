@@ -16,6 +16,7 @@ Notación: W browniano en [0,T], H = L²[0,T], W(h) = ∫h dW.
 | Bismut–Elworthy–Li | ∂_x E[Φ(X_T)] = E[Φ(X_T)(1/T)∫σ^{-1}(X_t)Y_t dW_t]  (guía T. 12.3) |
 | Esperanza condicional | E[Φ(G)\|F=x] = E[Φ(G)1_{F>x}δ(u)]/E[1_{F>x}δ(u)], ⟨DF,u⟩=1, ⟨DG,u⟩=0  (guía T. 14.1) |
 | Cobertura | ϕ_t = E_Q[D̃_t H̃ \| F_t]/(σ_t S̃_t)  (guía T. 13.1) |
-| Alòs | V_t = E_t[BS(t,X_t,v_t)] + (ρ/2) E_t∫ e^{-r(s-t)} H(s,X_s,v_s) Λ_s ds  (guía T. 14.5, pendiente de implementar) |
+| Alòs | V_t = E_t[BS(t,X_t,v_t)] + (ρ/2) E_t∫ e^{-r(s-t)} H(s,X_s,v_s) Λ_s ds  (guía T. 14.5; `stochvol.alos_decomposition_rbergomi`) |
+| Skew ATM | Heston: ∂ₖI → ρν/(4√v₀); rough Bergomi: ∂ₖI ≈ ρη√(2H)/(2(H+½)(H+3/2)) T^{H−1/2}  (guía T. 14.6) |
 
 Demostraciones: guía PDF (`docs/pdf/`), apéndice A (formulario). Compañero numérico: `latex/main.tex`. Implementación: `docs/guia_libreria.md`.
