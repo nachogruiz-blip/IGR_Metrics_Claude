@@ -4,8 +4,12 @@ Fuente: [`docs/pdf/Calculo_de_Malliavin_corregido.pdf`](pdf/Calculo_de_Malliavin
 *Cálculo de Malliavin: de los procesos estocásticos y la integral de Itô al estado del arte*
 (105 págs., 7 partes, 23 capítulos + formulario + notación).
 
-`latex/` **no transcribe** la guía: es su *compañero numérico*. Sigue su notación y cita su
-numeración con `\guia{Teorema 8.9}`.
+Hay dos documentos LaTeX:
+
+- **`latex/guia/`**: fuente LaTeX de la propia guía, reconstruida página a página desde el PDF
+  (misma numeración de capítulos, teoremas, ecuaciones y bibliografía). Ver `latex/guia/README.md`.
+- **`latex/main.tex`**: *compañero numérico* (código + figuras). Sigue la notación de la guía y cita su
+  numeración con `\guia{Teorema 8.9}`.
 
 Leyenda: ✅ implementado · 🔜 candidato natural a módulo · 📖 sólo teórico (sin código previsto por ahora)
 

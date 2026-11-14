@@ -1,1 +1,160 @@
-\chapter{Pendiente}
+\chapter{Densidades para EDPEs}\label{cap:densidades-edpe}
+
+\begin{panorama}
+Probamos que la solución de la ecuación del calor estocástica es Malliavin-diferenciable a
+todos los órdenes, escribimos la ecuación lineal que satisface su derivada y deducimos la
+existencia de densidad (Pardoux--Zhang) y su regularidad $C^\infty$ (Bally--Pardoux, Mueller--Nualart).
+La pieza clave es una estimación de pequeñas probabilidades para $\norm{Du(t,x)}^2_\Hf$
+que explota la ventana temporal $[t-\delta,t]$. Discutimos la positividad estricta, las densidades
+conjuntas y las probabilidades de alcance, y la ecuación de ondas.
+\end{panorama}
+
+Trabajamos con la ecuación~\eqref{eq:calor-estocastica} en $d=1$ con ruido blanco, salvo indicación contraria; la
+mayoría de los resultados se extienden a ruidos que satisfacen la condición de Dalang.
+
+\section{Diferenciabilidad de Malliavin}
+
+\begin{teorema}\label{teo:derivada-edpe}
+Si $b,\sigma\in C^\infty$ con derivadas acotadas, entonces $u(t,x)\in\D^\infty$ para todo $(t,x)$,
+y la derivada satisface, para $r<t$,
+\begin{equation}\label{eq:derivada-edpe}
+\begin{aligned}
+  D_{r,z}u(t,x)={}&G(t-r,x-z)\sigma(u(r,z))+\int_r^t\!\!\int G(t-s,x-y)\,b'(u(s,y))D_{r,z}u(s,y)\,\dd y\,\dd s\\
+  &+\int_r^t\!\!\int G(t-s,x-y)\,\sigma'(u(s,y))D_{r,z}u(s,y)\,W(\dd s,\dd y),
+\end{aligned}
+\end{equation}
+y $D_{r,z}u(t,x)=0$ si $r>t$. Además, $\sup_{(t,x)}\E\norm{D^ku(t,x)}^p_{\Hf^{\otimes k}}<\infty$ para todo $k,p$.
+\end{teorema}
+
+\begin{proof}[Esbozo]
+Las iteraciones de Picard $u^n$ son Malliavin-diferenciables. Derivando la ecuación mild
+con la regla de la cadena y el Corolario~\ref{cor:derivada-ito} (versión Walsh), $Du^{n+1}$ satisface la versión lineal
+de~\eqref{eq:derivada-edpe} con $u^n$ en los coeficientes. El término $G(t-r,x-z)\sigma(u^n(r,z))$ es la ``derivada
+del integrando respecto al ruido en el propio punto $(r,z)$'', el análogo del término $u_t$ en el
+Corolario~\ref{cor:derivada-ito}. Las estimaciones del Teorema~\ref{teo:existencia-edpe}, aplicadas ahora en el espacio $L^p(\Omega;\Hf)$, dan
+cotas uniformes en $n$, y la cerrabilidad de $D$ permite pasar al límite. Las derivadas superiores
+satisfacen ecuaciones lineales análogas con términos fuente que involucran derivadas de orden
+inferior. Véase~\cite{BallyPardoux98,Nualart06,SanzSole05}.
+\end{proof}
+
+\begin{intuicion}
+La ecuación~\eqref{eq:derivada-edpe} es la versión de dimensión infinita del Teorema~\ref{teo:derivada-ede}: un impulso del
+ruido en $(r,z)$ produce un desplazamiento $\sigma(u(r,z))$ en el punto $z$, que después se propaga
+por el calor y por la linealización de la ecuación. Si se desprecia la parte linealizada,
+$D_{r,z}u(t,x)\approx G(t-r,x-z)\sigma(u(r,z))$: la sensibilidad está concentrada en un ``cono
+parabólico'' detrás de $(t,x)$.
+\end{intuicion}
+
+\section{Existencia de densidad}
+
+\begin{teorema}[Pardoux--Zhang, 1993]
+Supongamos $b,\sigma$ Lipschitz, $\sigma\in C^1$, $u_0$ continuo y
+acotado en $\R$, y que existe $y_0$ con $\sigma(u_0(y_0))\ne0$. Entonces para todo $t>0$ y $x\in\R$, la ley de
+$u(t,x)$ es absolutamente continua.
+\end{teorema}
+
+\begin{proof}[Esbozo]
+Por el criterio de Bouleau--Hirsch (Teorema~\ref{teo:bouleau-hirsch}) basta ver que $\norm{Du(t,x)}_\Hf>0$ c.s.
+La dificultad es que $\sigma(u(r,z))$ puede anularse. Se procede en dos pasos. (1) Por continuidad,
+$\sigma(u(r,z))\ne0$ para $(r,z)$ en un entorno de $(0,y_0)$ con probabilidad positiva, y un argumento de
+\emph{propagación} usando la positividad del núcleo del calor muestra que el conjunto de $(r,z)$ donde
+$\sigma(u(r,z))\ne0$ alcanza, c.s., un entorno de cualquier $z$ para $r$ próximo a $t$. (2) En una ventana
+$[t-\delta,t]\times\{\abs{z-x}\le\delta^{1/2}\}$ donde $\abs{\sigma(u)}\ge c>0$, el término principal de~\eqref{eq:derivada-edpe} domina al resto
+(siguiente sección), lo que da $\norm{Du(t,x)}>0$.
+\end{proof}
+
+\section{Regularidad de la densidad}
+
+\begin{teorema}[Bally--Pardoux, 1998; Mueller--Nualart, 2008]\label{teo:regularidad-edpe}
+Supongamos $b,\sigma\in C^\infty$ con
+derivadas acotadas. Si $\abs{\sigma(v)}\ge c>0$ para todo $v$ \textup{(elipticidad)}, entonces para todo $t>0$
+y $x\in\R$, $u(t,x)$ tiene densidad $C^\infty$. Mueller y Nualart~\cite{MuellerNualart08} prueban la misma conclusión,
+para la ecuación en $[0,1]$ con condiciones de Dirichlet, bajo la mera hipótesis $\sigma(u_0(y_0))\ne0$
+para algún $y_0$.
+\end{teorema}
+
+\begin{proof}[Demostración en el caso elíptico]
+Por los Teoremas~\ref{teo:malliavin-densidad} y~\ref{teo:derivada-edpe}, basta probar que
+$\norm{Du(t,x)}^{-2}_\Hf\in\bigcap_pL^p$, y para ello que, para todo $p$, $\P(\norm{Du(t,x)}^2_\Hf<\varepsilon)\le C_p\varepsilon^p$ para $\varepsilon$
+pequeño.
+
+Sea $\delta\in(0,t)$ que fijaremos en función de $\varepsilon$. Restringiendo la norma a la ventana $[t-\delta,t]$ y
+usando $(a+b)^2\ge\frac12a^2-b^2$,
+\[
+  \norm{Du(t,x)}^2_\Hf\ge\int_{t-\delta}^t\int_\R\abs{D_{r,z}u(t,x)}^2\,\dd z\,\dd r\ge\frac12I_1(\delta)-I_2(\delta),
+\]
+donde
+\[
+  I_1(\delta)=\int_{t-\delta}^t\int G(t-r,x-z)^2\sigma(u(r,z))^2\,\dd z\,\dd r,\qquad I_2(\delta)=\int_{t-\delta}^t\int\abs{R_{r,z}(t,x)}^2\,\dd z\,\dd r,
+\]
+y $R_{r,z}(t,x)$ es la integral (deriva más ruido) en~\eqref{eq:derivada-edpe}.
+
+\emph{Cota inferior de $I_1$.} Como $\int_\R G(s,y)^2\,\dd y=(4\pi s)^{-1/2}$,
+\[
+  I_1(\delta)\ge c^2\int_0^\delta(4\pi s)^{-1/2}\,\dd s=c_1\,\delta^{1/2}.
+\]
+
+\emph{Cota superior de $I_2$.} Usando BDG para la parte de ruido, Hölder para la deriva, y las cotas
+uniformes de $\E\abs{D_{r,z}u(s,y)}^p$ integradas en $(r,z)$ sobre la ventana, se prueba
+\[
+  \E\abs{I_2(\delta)}^p\le C_p\,\delta^p.
+\]
+La razón heurística: $R_{r,z}$ es una integral sobre $s\in[r,t]$, intervalo de longitud $\le\delta$, de una
+cantidad del tamaño de $D_{r,z}u(s,y)$; integrando su cuadrado en la ventana se gana un factor
+$\delta^{1/2}$ adicional respecto a $I_1$.
+
+\emph{Conclusión.} Elegimos $\delta$ de modo que $\frac{c_1}{2}\delta^{1/2}=2\varepsilon$, es decir, $\delta=(4\varepsilon/c_1)^2$. Entonces
+\[
+  \P\big(\norm{Du(t,x)}^2_\Hf<\varepsilon\big)\le\P\big(I_2(\delta)\ge\tfrac{c_1}{2}\delta^{1/2}-\varepsilon\big)=\P(I_2(\delta)\ge\varepsilon)\le\frac{\E\abs{I_2(\delta)}^p}{\varepsilon^p}\le C\frac{\delta^p}{\varepsilon^p}=C'\varepsilon^p.
+  \qedhere
+\]
+\end{proof}
+
+\begin{observacion}
+El exponente $1/2$ de la cota de $I_1$ refleja la regularidad temporal $1/4$ de $u$
+(pues $\norm{Du}$ mide una ``varianza local'' de orden $\delta^{1/2}=(\delta^{1/4})^2$). En ruidos coloreados con medida
+espectral $\mu$, se obtiene $I_1(\delta)\ge c\int_0^\delta\int e^{-s\abs\xi^2}\mu(\dd\xi)\,\dd s$, y la prueba funciona si esta cantidad es al
+menos $\delta^\alpha$ y $\E I_2^p\le C\delta^{\beta p}$ con $\beta>\alpha$. Esto da la teoría de Nualart y Quer-Sardanyons~\cite{NualartQuerSardanyons07} para
+ecuaciones espacialmente homogéneas.
+\end{observacion}
+
+\section{Positividad estricta}
+
+\begin{teorema}[Mueller--Nualart; Chen--Hu--Nualart~\cite{ChenHuNualart21}]
+Bajo las hipótesis del Teorema~\ref{teo:regularidad-edpe} en el caso elíptico, la densidad de $u(t,x)$ es estrictamente positiva en todo $\R$.
+Para la ecuación con $\sigma(0)=0$ y $u_0\ge0$ (por ejemplo, el modelo parabólico de Anderson,
+$\sigma(u)=u$), la solución es estrictamente positiva y la densidad es positiva en $(0,\infty)$.
+\end{teorema}
+
+La prueba usa el criterio de Bally--Pardoux, que es esencialmente una versión cuantitativa
+del teorema de Cameron--Martin: si $F$ es no degenerado en un entorno de $y$ y existe una
+dirección $h\in\Hf$ tal que $F(\omega+h)$ ``apunta'' a $y$ con probabilidad positiva, entonces $p_F(y)>0$.
+Las direcciones $h$ se construyen resolviendo un problema de control: elegir $h$ como control de la
+EDP determinista $\partial_tv=\frac12\Delta v+b(v)+\sigma(v)h$ que lleva $v(t,x)$ a $y$.
+
+\section{Densidades conjuntas y probabilidades de alcance}
+Para el vector $(u(t,x_1),\dots,u(t,x_n))$ o para sistemas $u=(u^1,\dots,u^d)$ de ecuaciones del calor
+con valores en $\R^d$, la matriz de Malliavin es $d\times d$ y la no degeneración requiere controlar su
+autovalor mínimo. Dalang, Khoshnevisan y Nualart~\cite{DalangKhoshnevisanNualart07} obtuvieron \emph{cotas gaussianas} para la
+densidad conjunta de $(u(t,x),u(s,y))$:
+\[
+  p_{t,x;s,y}(z_1,z_2)\le C\,\Delta^{-d/2}\exp\Big(-\frac{\abs{z_1-z_2}^2}{C\Delta}\Big),\qquad\Delta=\abs{t-s}^{1/2}+\abs{x-y},
+\]
+y, mediante las técnicas de Khoshnevisan de capacidad, las \emph{probabilidades de alcance}: para un
+conjunto $A\subset\R^d$,
+\[
+  c\operatorname{Cap}_{d-6}(A)\le\P\big(u(I\times J)\cap A\ne\emptyset\big)\le C\,\mathcal H_{d-6}(A),
+\]
+donde $\mathcal H_\beta$ es la medida de Hausdorff y $\operatorname{Cap}_\beta$ la capacidad de Bessel--Riesz. El número 6 es
+la ``dimensión'' de $(t,x)\in\R_+\times\R$ con la métrica parabólica $\abs{t-s}^{1/4}+\abs{x-y}^{1/2}$: $4+2$. En
+particular, la superficie aleatoria $u$ alcanza puntos fijos con probabilidad positiva si $d<6$ y no
+los alcanza si $d>6$; el caso crítico $d=6$ requirió trabajo posterior.
+
+\section{La ecuación de ondas}
+Para $\partial^2_{tt}u=\Delta u+b(u)+\sigma(u)\dot W$ en $d\le3$ con ruido que satisface la condición de Dalang, el
+análogo de la ecuación~\eqref{eq:derivada-edpe} vale con $G$ el núcleo de ondas. En $d=3$, $G(t)$ es la medida uniforme
+en la esfera de radio $t$ (normalizada), una distribución no funcional, y hay que usar la integral de
+Dalang. La estrategia de la ventana temporal funciona con $I_1(\delta)\ge c\int_0^\delta\int\frac{\sin^2(s\abs\xi)}{\abs\xi^2}\mu(\dd\xi)\,\dd s\ge c\delta^3$
+cerca de 0. Quer-Sardanyons y Sanz-Solé probaron la existencia de densidades regulares en
+$d=3$; la falta de positividad del núcleo de ondas en $d\ge4$, y de efecto regularizante, hace la
+teoría mucho más delicada que la del calor. Véase~\cite{SanzSole05}.

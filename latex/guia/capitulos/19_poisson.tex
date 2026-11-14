@@ -1,1 +1,98 @@
-\chapter{Pendiente}
+\chapter{Cálculo de Malliavin en el espacio de Poisson}\label{cap:poisson}
+
+\begin{panorama}
+Para procesos con saltos, el ruido gaussiano se sustituye por una medida aleatoria de
+Poisson. Todavía hay una descomposición en caos, pero la derivada pasa a ser un \emph{operador
+diferencia}: $D_zF$ es el cambio de $F$ al añadir un punto en $z$. Desarrollamos la teoría (Last,
+Penrose, Peccati, Nualart--Vives) y señalamos las diferencias fundamentales con el caso
+gaussiano: no hay regla de la cadena, y la desigualdad de Poincaré y las representaciones
+de covarianza siguen valiendo, lo que basta para el método de Malliavin--Stein.
+\end{panorama}
+
+\section{Medidas aleatorias de Poisson}
+Sea $(\mathbb X,\mathcal X,\lambda)$ un espacio de medida $\sigma$-finito. Una \emph{medida aleatoria de Poisson} $\eta$ con intensidad
+$\lambda$ es una medida aleatoria con valores en $\N\cup\{\infty\}$ tal que, para conjuntos disjuntos $A_1,\dots,A_n$
+con $\lambda(A_i)<\infty$, las variables $\eta(A_i)$ son independientes y $\eta(A_i)\sim\mathrm{Poisson}(\lambda(A_i))$. La medida
+compensada es $\hat\eta=\eta-\lambda$. Para un proceso de Lévy puro salto, $\mathbb X=\R_+\times(\R\setminus\{0\})$ y $\lambda=\dd t\otimes\nu$,
+con $\nu$ la medida de Lévy.
+
+Sea $F=f(\eta)$ un funcional de la configuración de puntos. Escribimos $\eta+\delta_z$ para la
+configuración con un punto añadido en $z$.
+
+\begin{definicion}
+El \emph{operador diferencia} (o derivada de adición) es
+\[
+  D_zF=f(\eta+\delta_z)-f(\eta),\qquad z\in\mathbb X.
+\]
+Las diferencias iteradas $D^n_{z_1,\dots,z_n}F$ se definen recursivamente y son simétricas.
+\end{definicion}
+
+\section{Caos de Poisson y fórmula de Stroock}
+
+\begin{teorema}[Last--Penrose~\cite{LastPenrose17}]
+Toda $F\in L^2(\P_\eta)$ se descompone como $F=\sum_{n\ge0}I_n(f_n)$,
+donde $I_n$ es la integral múltiple respecto a $\hat\eta$ (fuera de las diagonales), con
+\[
+  f_n(z_1,\dots,z_n)=\frac1{n!}\E\big[D^n_{z_1,\dots,z_n}F\big],\qquad\E F^2=\sum_nn!\norm{f_n}^2_{L^2(\lambda^n)}.
+\]
+\end{teorema}
+
+\begin{proof}[Esbozo]
+La fórmula de Mecke, $\E\int h(\eta,z)\eta(\dd z)=\E\int h(\eta+\delta_z,z)\lambda(\dd z)$, que caracteriza a la
+medida de Poisson, implica una fórmula de integración por partes. Para funcionales exponenciales
+$F=\exp(-\int g\,\dd\eta)$ el desarrollo se calcula explícitamente, y se concluye por densidad. La fórmula
+de Stroock es exacta y no requiere ninguna regularidad: $D^n$ siempre está definido.
+\end{proof}
+
+Como en el caso gaussiano, $F\in\Dom D$ si y solo si $\sum_nn\,n!\norm{f_n}^2<\infty$, y entonces
+$D_zF=\sum_nnI_{n-1}(f_n(\cdot,z))$. Se definen análogamente $\delta=D^*$ (que extiende la integral respecto
+a $\hat\eta$ de integrandos predecibles) y $L=-\delta D=-\sum nJ_n$.
+
+\section{Diferencias con el caso gaussiano}
+\begin{itemize}
+  \item \textbf{No hay regla de la cadena.} $D_z\varphi(F)=\varphi(F+D_zF)-\varphi(F)$, que no es $\varphi'(F)D_zF$.
+  Un desarrollo de Taylor da $D_z\varphi(F)=\varphi'(F)D_zF+R$, con $\abs R\le\frac12\norm{\varphi''}_\infty(D_zF)^2$: los
+  términos de resto son la principal dificultad técnica.
+  \item \textbf{$D$ no es una derivación}: $D_z(FG)=FD_zG+GD_zF+D_zFD_zG$.
+  \item \textbf{Las leyes pueden tener átomos.} Todo funcional de un número finito de puntos tiene
+  átomos, de modo que no hay un análogo directo del criterio de Bouleau--Hirsch. Para
+  densidades de funcionales de procesos de Lévy se usan otras derivadas: las de Bismut,
+  que mueven los tiempos o las alturas de los saltos (cálculo de Malliavin ``por perturbación
+  de saltos''; Bichteler--Gravereaux--Jacod, Bally--Clément).
+  \item \textbf{La hipercontractividad falla} en su forma gaussiana: el semigrupo de Ornstein--Uhlenbeck
+  de Poisson (vía la fórmula de Mehler de Last--Peccati--Schulte, que ``adelgaza''
+  los puntos con probabilidad $e^{-t}$ y añade puntos independientes con intensidad $(1-e^{-t})\lambda$)
+  no es hipercontractivo. Los momentos dentro de un caos fijo no son equivalentes en
+  general.
+\end{itemize}
+
+\section{Lo que sí funciona}
+
+\begin{teorema}[Poincaré y covarianzas de Poisson]
+Para $F,G\in L^2$,
+\[
+  \Var F\le\E\int\abs{D_zF}^2\,\lambda(\dd z),\qquad\Cov(F,G)=\E\int D_zF\,(-D_zL^{-1}G)\,\lambda(\dd z).
+\]
+\end{teorema}
+
+\begin{proof}
+La primera es la misma prueba por caos que el Teorema~\ref{teo:poincare}. La segunda, la de
+la Proposición~\ref{prop:covarianzas}, usando solo la dualidad.
+\end{proof}
+
+La representación de covarianzas, combinada con la expansión de Taylor anterior, basta
+para desarrollar el método de Malliavin--Stein en el espacio de Poisson (Peccati, Solé, Taqqu,
+Utzet, 2010). Last, Peccati y Schulte~\cite{LastPeccatiSchulte16} obtuvieron las \emph{desigualdades de Poincaré de segundo
+orden}, que acotan la distancia a la normal solo en términos de $\E\abs{D_zF}^4$ y $\E\abs{D^2_{z,w}F}^4$. Su gran
+ventaja es que se aplican a funcionales \emph{geométricos} de procesos de puntos: longitud del árbol
+recubridor mínimo, volumen intrínseco de la envolvente convexa, número de aristas en grafos
+aleatorios geométricos. Para todos estos se obtienen TCLs con la tasa óptima $\lambda(\mathbb X)^{-1/2}$.
+
+\begin{ejemplo}[Estabilización]
+Sea $\eta_t$ un proceso de Poisson de intensidad $t$ en $[0,1]^d$ y
+$F_t=\sum_{x\in\eta_t}\xi(x,\eta_t)$, donde $\xi$ es una \emph{puntuación local} (por ejemplo, la distancia al vecino
+más próximo). Si $\xi$ se ``estabiliza'', es decir, $D_zF_t$ depende solo de los puntos en una bola
+aleatoria de radio con colas exponenciales, entonces $D_zF_t$ y $D^2F_t$ tienen momentos acotados
+uniformemente, $D^2_{z,w}F_t$ decae rápidamente en $\abs{z-w}$, y la desigualdad de Last--Peccati--Schulte
+da $d_W\big(\frac{F_t-\E F_t}{\sqrt{\Var F_t}},N\big)\le Ct^{-1/2}$.
+\end{ejemplo}

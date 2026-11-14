@@ -1,1 +1,128 @@
-\chapter{Pendiente}
+\chapter{Browniano fraccionario y procesos gaussianos generales}\label{cap:fraccionario}
+
+\begin{panorama}
+El browniano fraccionario (fBm) $B^H$ es el proceso gaussiano autosimilar con incrementos
+estacionarios más sencillo después del browniano. Para $H\ne1/2$ no es semimartingala,
+de modo que el cálculo de Itô no se aplica. El cálculo de Malliavin, que solo necesita un
+proceso isonormal, sí: la divergencia $\delta$ proporciona una integral estocástica natural, y su
+relación con las integrales trayectoriales (Young, Stratonovich) se expresa con un término
+de traza que involucra la derivada de Malliavin. Es el lenguaje de la volatilidad rugosa
+del Capítulo~\ref{cap:esperanzas-condicionales}.
+\end{panorama}
+
+\section{Definición y propiedades}
+
+\begin{definicion}
+Para $H\in(0,1)$, el \emph{browniano fraccionario} de Hurst $H$ es el proceso
+gaussiano centrado continuo con
+\[
+  R_H(s,t)=\E[B^H_sB^H_t]=\tfrac12\big(t^{2H}+s^{2H}-\abs{t-s}^{2H}\big).
+\]
+\end{definicion}
+
+\begin{proposicion}
+\begin{enumerate}[label=(\roman*)]
+  \item \textup{Autosimilitud:} $(B^H_{ct})_t\law(c^HB^H_t)_t$. \textup{Incrementos estacionarios:}
+  $\E(B^H_t-B^H_s)^2=\abs{t-s}^{2H}$.
+  \item Las trayectorias son $\gamma$-Hölder para todo $\gamma<H$ y para ningún $\gamma>H$.
+  \item Si $H>1/2$, los incrementos están positivamente correlacionados y $\sum_n\Cov(B^H_1,B^H_{n+1}-
+  B^H_n)=\infty$ (memoria larga). Si $H<1/2$, están negativamente correlacionados (trayectorias
+  rugosas).
+  \item Para $H\ne\frac12$, $B^H$ no es semimartingala: su $p$-variación es 0 si $p>1/H$ e infinita si
+  $p<1/H$.
+\end{enumerate}
+\end{proposicion}
+
+\begin{proof}
+(i) Directo de la covarianza. (ii) Kolmogorov con $\E\abs{B^H_t-B^H_s}^{2m}=
+c_m\abs{t-s}^{2Hm}$, y la cota inferior por la ley del logaritmo iterado local. (iii) $\Cov(B^H_1,B^H_{n+1}-B^H_n)=
+\frac12((n+1)^{2H}-2n^{2H}+(n-1)^{2H})\sim H(2H-1)n^{2H-2}$. (iv) Por autosimilitud y ergodicidad,
+$\sum_i\abs{B^H_{(i+1)/n}-B^H_{i/n}}^p\approx n^{1-pH}\E\abs{B^H_1}^p$. Si $H<1/2$, la variación cuadrática es infinita; si
+$H>1/2$, es nula, y una semimartingala continua con variación cuadrática nula sería de
+variación finita, lo que contradice (iv) con $p=1$.
+\end{proof}
+
+\section{El espacio de Hilbert asociado}
+Sea $\mathcal E$ el espacio de funciones escalonadas en $[0,T]$ y $\Hf$ la compleción respecto a $\ip{\ind_{[0,t]}}{\ind_{[0,s]}}_\Hf=
+R_H(s,t)$. Entonces $B^H(\varphi)$, extendido por linealidad e isometría, es un proceso isonormal sobre
+$\Hf$, y la Parte~II se aplica íntegramente.
+
+\paragraph{El caso $H>1/2$.} Como $\partial_s\partial_tR_H(s,t)=\alpha_H\abs{t-s}^{2H-2}$, con $\alpha_H=H(2H-1)$,
+\[
+  \ip{\varphi}{\psi}_\Hf=\alpha_H\int_0^T\int_0^T\varphi(s)\psi(t)\abs{t-s}^{2H-2}\,\dd s\,\dd t,
+\]
+y $L^{1/H}([0,T])\subset\Hf$. Los elementos de $\Hf$ pueden ser distribuciones.
+
+\paragraph{El caso $H<1/2$.} $\Hf$ es un espacio de funciones más pequeño, contenido en $L^2$, e igual a un
+espacio de funciones con ``regularidad fraccionaria $\frac12-H$'' en un sentido preciso (vía el operador
+$K_H^*$).
+
+\paragraph{Representación de Volterra.} Existe un núcleo $K_H(t,s)$, con $K_H(t,s)=0$ para $s>t$, tal que
+$B^H_t=\int_0^tK_H(t,s)\,\dd W_s$ para un browniano $W$. El operador $(K_H^*\varphi)(s)=\int_s^T\varphi(t)\partial_tK_H(t,s)\,\dd t$
+(con interpretación adecuada) es una isometría de $\Hf$ en $L^2([0,T])$, y la derivada de Malliavin
+respecto a $B^H$ se relaciona con la de $W$ por $D^WF=K_H^*D^{B^H}F$. Esto permite transportar
+resultados del browniano.
+
+\section{Integrales respecto al fBm}
+Para $u$ un proceso adecuado, hay tres candidatos a ``$\int_0^Tu_t\,\dd B^H_t$'':
+\begin{enumerate}
+  \item La \emph{integral de divergencia} (o de Skorokhod) $\delta^{B^H}(u)$, con $\E\delta(u)=0$.
+  \item La \emph{integral de Young} trayectorial, cuando $u$ es $\alpha$-Hölder con $\alpha+H>1$:
+  \[
+    \int_0^Tu_t\,\dd B^H_t=\lim_{\abs\pi\to0}\sum_iu_{t_i}\big(B^H_{t_{i+1}}-B^H_{t_i}\big).
+  \]
+  \item La \emph{integral simétrica o de Stratonovich}, definida por regularización: $\lim_{\varepsilon\to0}\frac1{2\varepsilon}\int_0^Tu_t(B^H_{t+\varepsilon}-
+  B^H_{t-\varepsilon})\,\dd t$.
+\end{enumerate}
+
+\begin{teorema}[Relación entre integrales, $H>1/2$]
+Si $H>1/2$ y $u\in\D^{1,2}(\Hf)$ es
+suficientemente regular, la integral trayectorial (Young o Stratonovich) existe y
+\[
+  \int_0^Tu_t\circ\dd B^H_t=\delta^{B^H}(u)+\alpha_H\int_0^T\int_0^TD_su_t\,\abs{t-s}^{2H-2}\,\dd s\,\dd t.
+\]
+\end{teorema}
+
+\begin{proof}[Esbozo]
+Para la suma de Riemann, por la Proposición~\ref{prop:reglas-delta}(ii),
+\[
+  u_{t_i}\big(B^H_{t_{i+1}}-B^H_{t_i}\big)=\delta\big(u_{t_i}\ind_{(t_i,t_{i+1}]}\big)+\ip{Du_{t_i}}{\ind_{(t_i,t_{i+1}]}}_\Hf.
+\]
+El primer término converge a $\delta(u)$ por cerrabilidad. El segundo es
+\[
+  \alpha_H\sum_i\int_0^T\int_{t_i}^{t_{i+1}}D_su_{t_i}\abs{t-s}^{2H-2}\,\dd t\,\dd s,
+\]
+que converge al término de traza.
+\end{proof}
+
+Para $H=1/2$, $\alpha_H\abs{t-s}^{2H-2}$ se sustituye por $\delta(t-s)$ y el término de traza es $\frac12\int_0^TD_tu_t\,\dd t$,
+la corrección de Itô--Stratonovich, recuperando $\int u\circ\dd W=\int u\,\dd W+\frac12\langle u,W\rangle$.
+
+\begin{teorema}[Fórmula de Itô para la divergencia]
+Si $f\in C^2$ con derivadas de crecimiento
+moderado y $H>1/4$,
+\[
+  f(B^H_t)=f(0)+\delta^{B^H}\big(f'(B^H_\cdot)\ind_{[0,t]}\big)+H\int_0^tf''(B^H_s)s^{2H-1}\,\dd s.
+\]
+\end{teorema}
+
+Para $H\le1/4$, el proceso $f'(B^H)\ind_{[0,t]}$ deja de estar en el dominio de $\delta$ en general, y se
+necesita una noción extendida de divergencia; este umbral coincide con el de la teoría de rough
+paths para procesos gaussianos (Capítulo~\ref{cap:rough-paths}).
+
+\section{EDEs dirigidas por fBm}
+Para $H>1/2$, la ecuación $\dd X_t=b(X_t)\,\dd t+\sigma(X_t)\,\dd B^H_t$, interpretada como integral de Young,
+tiene solución única trayectorial (Lyons, Nualart--Răşcanu), y es Malliavin-diferenciable con
+$D_sX_t=Y_tZ_s\sigma(X_s)$, la misma fórmula que en el Teorema~\ref{teo:derivada-ede}. La existencia de densidad regular
+bajo condición de Hörmander fue probada por Baudoin y Hairer ($H>1/2$), y extendida a
+$H>1/4$ con rough paths por Cass, Friz, Hairer, Litterer y Tindel~\cite{CassHairerLittererTindel15}. La dificultad es que la
+matriz de Malliavin ya no se controla con la isometría de Itô, porque la norma de $\Hf$ no es local;
+se necesitan \emph{desigualdades de interpolación} entre la norma de $\Hf$ y normas de Hölder.
+
+\section{Procesos de Volterra y volatilidad rugosa}
+El proceso de Riemann--Liouville $\hat W^H_t=\sqrt{2H}\int_0^t(t-s)^{H-1/2}\,\dd W_s$ es una variante del fBm
+(sin incrementos estacionarios pero con la misma regularidad) que es \emph{adaptado a la filtración
+browniana}. Por eso es el proceso preferido en volatilidad rugosa: la derivada de Malliavin
+respecto a $W$ es explícita, $D_s\hat W^H_t=\sqrt{2H}(t-s)^{H-1/2}\ind_{\{s<t\}}$, y todas las fórmulas del Capítulo~\ref{cap:esperanzas-condicionales}
+se aplican con derivadas respecto a un browniano estándar. La singularidad del núcleo en $s=t$
+es exactamente lo que produce la explosión del skew en tiempo corto.

@@ -1,1 +1,163 @@
-\chapter{Pendiente}
+\chapter{Integración estocástica para EDPEs}\label{cap:integracion-edpe}
+
+\begin{panorama}
+Las ecuaciones en derivadas parciales estocásticas (EDPEs) son ecuaciones de evolución
+dirigidas por un ruido que depende del espacio y del tiempo. Presentamos el enfoque de
+\emph{campos aleatorios} de Walsh y su extensión por Dalang, en el que la solución es una función
+$u(t,x)$ y el ruido es un proceso isonormal sobre un espacio $\Hf$ adaptado a su covarianza
+espacial. Probamos la \emph{condición de Dalang}, criterio necesario y suficiente para que la
+ecuación lineal tenga solución en forma de función, y el teorema de existencia y unicidad
+para la ecuación no lineal. Este marco es el escenario natural para el cálculo de Malliavin
+de los Capítulos~\ref{cap:densidades-edpe} y~\ref{cap:anderson}.
+\end{panorama}
+
+\section{Motivación: la ecuación del calor estocástica}
+La ecuación modelo es
+\begin{equation}\label{eq:calor-estocastica}
+  \partial_tu(t,x)=\tfrac12\Delta u(t,x)+b(u(t,x))+\sigma(u(t,x))\,\dot W(t,x),\qquad t>0,\ x\in\R^d,
+\end{equation}
+con dato inicial $u(0,\cdot)=u_0$. Aquí $\dot W$ es un ruido gaussiano centrado, blanco en tiempo, con
+covarianza espacial $\gamma$:
+\[
+  \E\big[\dot W(t,x)\dot W(s,y)\big]=\delta(t-s)\,\gamma(x-y).
+\]
+El caso $\gamma=\delta_0$ es el \emph{ruido blanco espacio-temporal}. Las aplicaciones incluyen la propagación de
+calor con fuentes aleatorias, la dinámica de poblaciones (Fisher--KPP estocástica), los polímeros
+dirigidos en medio aleatorio y la superficie de crecimiento KPZ (vía la transformación de
+Cole--Hopf, Capítulo~\ref{cap:anderson}).
+
+\paragraph{Una primera dificultad.} Con $\sigma\equiv1$, $b\equiv0$, $u_0\equiv0$ y ruido blanco, la solución sería
+\[
+  u(t,x)=\int_0^t\int_{\R^d}G(t-s,x-y)\,W(\dd s,\dd y),\qquad G(t,x)=(2\pi t)^{-d/2}e^{-\abs x^2/2t},
+\]
+una variable gaussiana de varianza $\int_0^t\int G(s,y)^2\,\dd y\,\dd s=\int_0^t(4\pi s)^{-d/2}\,\dd s$, que es finita \emph{si y solo
+si} $d=1$. En $d\ge2$ el ruido blanco es demasiado irregular y la solución solo existe como
+distribución. Esto motiva tanto los ruidos coloreados (Dalang) como la teoría de estructuras de
+regularidad (Capítulo~\ref{cap:estructuras}).
+
+\section{El ruido como proceso isonormal}
+Sea $\gamma$ una medida no negativa, simétrica y \emph{definida no negativa} en $\R^d$, de modo que, por el
+teorema de Bochner--Schwartz, $\gamma=\hat\mu$ para una medida temperada $\mu\ge0$, la \emph{medida espectral}.
+Definimos $\Hc_0$ como la compleción de $C_c^\infty(\R^d)$ con
+\[
+  \ip{\varphi}{\psi}_{\Hc_0}=\int_{\R^{2d}}\varphi(x)\psi(y)\gamma(x-y)\,\dd x\,\dd y=\int_{\R^d}\hat\varphi(\xi)\overline{\hat\psi(\xi)}\,\mu(\dd\xi),
+\]
+y $\Hf=L^2([0,T];\Hc_0)$. El ruido es un proceso isonormal $\{W(h):h\in\Hf\}$. Para $h=\ind_{[0,t]}\varphi$,
+$W_t(\varphi)=W(\ind_{[0,t]}\varphi)$ define, para cada $\varphi$, un browniano con varianza $t\norm{\varphi}^2_{\Hc_0}$: en el lenguaje de
+Da Prato--Zabczyk, $W$ es un \emph{browniano cilíndrico} en $\Hc_0$.
+
+\begin{ejemplo}
+\begin{enumerate}[label=(\alph*)]
+  \item Ruido blanco: $\gamma=\delta_0$, $\mu(\dd\xi)=(2\pi)^{-d}\,\dd\xi$, $\Hc_0=L^2(\R^d)$.
+  \item Núcleo de Riesz: $\gamma(x)=\abs x^{-\beta}$, $0<\beta<d$, $\mu(\dd\xi)=c_{d,\beta}\abs\xi^{\beta-d}\,\dd\xi$.
+  \item Ruido fraccionario en espacio, en $d=1$: $\gamma(x)=H(2H-1)\abs x^{2H-2}$ con $H>1/2$~\cite{HuNualartSong11}.
+\end{enumerate}
+\end{ejemplo}
+
+\section{La integral estocástica de Walsh--Dalang}
+Sea $\F_t$ la filtración generada por $\{W_s(\varphi):\ s\le t,\ \varphi\in\Hc_0\}$. Para un campo aleatorio $X(s,y)$
+\emph{predecible} (medible respecto a la $\sigma$-álgebra generada por los elementales $Z\ind_{(a,b]}(s)\ind_A(y)$ con
+$Z\in\F_a$) definimos
+\[
+  \int_0^t\int_{\R^d}X(s,y)\,W(\dd s,\dd y)
+\]
+primero para elementales, como $Z(W_b(\ind_A)-W_a(\ind_A))$, y después por la isometría.
+
+\begin{teorema}[Isometría de Walsh--Dalang]\label{teo:walsh-dalang}
+Para $X$ predecible con $\E\int_0^T\norm{X(s,\cdot)}^2_{\Hc_0}\,\dd s<
+\infty$, la integral está bien definida, es una martingala continua en $t$ y
+\[
+  \E\Big[\Big(\int_0^t\!\!\int X\,\dd W\Big)^2\Big]=\E\int_0^t\int_{\R^{2d}}X(s,y)X(s,z)\gamma(y-z)\,\dd y\,\dd z\,\dd s=\E\int_0^t\norm{X(s,\cdot)}^2_{\Hc_0}\,\dd s.
+\]
+Además vale la desigualdad de BDG: $\E\big|\int_0^t\int X\,\dd W\big|^p\le C_p\E\big(\int_0^t\norm{X(s)}^2_{\Hc_0}\,\dd s\big)^{p/2}$.
+\end{teorema}
+
+\begin{proof}
+Para elementales es el cálculo de la isometría de Itô (Lema~\ref{lem:isometria-elemental}), usando que
+$\E[W_b(\ind_A)W_b(\ind_B)]=b\ip{\ind_A}{\ind_B}_{\Hc_0}$. La extensión es por densidad, como en el Teorema~\ref{teo:integral-ito}. La
+BDG es el Teorema~\ref{teo:bdg} aplicado a la martingala $t\mapsto\int_0^t\int X\,\dd W$, cuya variación cuadrática es
+$\int_0^t\norm{X(s)}^2_{\Hc_0}\,\dd s$.
+\end{proof}
+
+Dalang~\cite{Dalang99} extendió la integral a integrandos de la forma $G(t-s,x-\cdot)Z(s,\cdot)$ en los que
+$G(t-s,x-\cdot)$ es una \emph{distribución} (como el núcleo de ondas en $d=3$), lo que requiere que $\Hc_0$
+contenga distribuciones.
+
+\section{La condición de Dalang}
+Consideramos un operador diferencial $\mathcal L$ con solución fundamental $G$ y la ecuación lineal $\mathcal Lu=\dot W$
+con dato nulo: $u(t,x)=\int_0^t\int G(t-s,x-y)W(\dd s,\dd y)$.
+
+\begin{teorema}[Dalang, 1999]\label{teo:dalang}
+Sea $\mathcal L=\partial_t-\frac12\Delta$ (calor) o $\mathcal L=\partial^2_{tt}-\Delta$ (ondas, con $d\le3$).
+La solución de la ecuación lineal es un campo aleatorio, con $\E u(t,x)^2<\infty$, si y solo si
+\begin{equation}\label{eq:dalang}
+  \Upsilon:=\int_{\R^d}\frac{\mu(\dd\xi)}{1+\abs\xi^2}<\infty.
+\end{equation}
+\end{teorema}
+
+\begin{proof}
+Por la isometría y Plancherel,
+\[
+  \E u(t,x)^2=\int_0^t\norm{G(s,\cdot)}^2_{\Hc_0}\,\dd s=\int_0^t\int_{\R^d}\abs{\mathcal FG(s,\cdot)(\xi)}^2\,\mu(\dd\xi)\,\dd s.
+\]
+\emph{Calor:} $\mathcal FG(s)(\xi)=e^{-s\abs\xi^2/2}$ y $\int_0^te^{-s\abs\xi^2}\,\dd s=\frac{1-e^{-t\abs\xi^2}}{\abs\xi^2}$. Esta función es comparable, con
+constantes dependientes de $t$, a $(1+\abs\xi^2)^{-1}$.
+
+\emph{Ondas:} $\mathcal FG(s)(\xi)=\frac{\sin(s\abs\xi)}{\abs\xi}$ y $\int_0^t\frac{\sin^2(s\abs\xi)}{\abs\xi^2}\,\dd s=\frac{t}{2\abs\xi^2}-\frac{\sin(2t\abs\xi)}{4\abs\xi^3}$, de nuevo comparable a
+$(1+\abs\xi^2)^{-1}$ (cerca de $\xi=0$ vale $\approx t^3/3$).
+
+En ambos casos $\E u(t,x)^2<\infty\iff\Upsilon<\infty$.
+\end{proof}
+
+\begin{ejemplo}
+Ruido blanco: $\Upsilon=\int\frac{\dd\xi}{1+\abs\xi^2}<\infty\iff d=1$. Núcleo de Riesz $\abs x^{-\beta}$:
+$\int\frac{\abs\xi^{\beta-d}}{1+\abs\xi^2}\,\dd\xi<\infty\iff\beta<2$, en cualquier dimensión.
+\end{ejemplo}
+
+\section{La ecuación no lineal}
+
+\begin{definicion}
+Una \emph{solución mild} de~\eqref{eq:calor-estocastica} es un campo aleatorio predecible $u$ tal que,
+para todo $(t,x)$,
+\begin{align*}
+  u(t,x)={}&\int G(t,x-y)u_0(y)\,\dd y+\int_0^t\!\!\int G(t-s,x-y)b(u(s,y))\,\dd y\,\dd s\\
+  &+\int_0^t\!\!\int G(t-s,x-y)\sigma(u(s,y))W(\dd s,\dd y).
+\end{align*}
+\end{definicion}
+
+\begin{teorema}[Walsh; Dalang]\label{teo:existencia-edpe}
+Supongamos~\eqref{eq:dalang}, $b,\sigma$ globalmente Lipschitz y $u_0$ acotado
+y medible. Entonces existe una única solución mild con $\sup_{t\le T,x\in\R^d}\E\abs{u(t,x)}^p<\infty$ para
+todo $p$. Si además $\int\frac{\mu(\dd\xi)}{(1+\abs\xi^2)^{1-\eta}}<\infty$ para algún $\eta\in(0,1)$, entonces $u$ tiene una versión
+localmente Hölder de orden $<\eta/2$ en $t$ y $<\eta$ en $x$.
+\end{teorema}
+
+\begin{proof}[Esbozo]
+Iteración de Picard: $u^{n+1}=\Phi(u^n)$ con $\Phi$ el lado derecho. Por BDG (Teorema~\ref{teo:walsh-dalang}) y
+Minkowski,
+\[
+  \sup_x\norm{u^{n+1}(t,x)-u^n(t,x)}_p^2\le C\int_0^t\sup_y\norm{u^n(s,y)-u^{n-1}(s,y)}_p^2\,J(t-s)\,\dd s,
+\]
+con $J(s)=\norm{G(s)}^2_{\Hc_0}+\norm{G(s)}_{L^1}$ (para la parte de $\sigma$ se usa que $\gamma\ge0$: desarrollando
+$\norm{G(t-s,x-\cdot)Z(s,\cdot)}^2_{\Hc_0}$ como integral doble contra $\gamma$ y aplicando Minkowski y Cauchy--Schwarz,
+se obtiene la cota $\sup_y\norm{Z(s,y)}_p^2\norm{G(t-s)}^2_{\Hc_0}$). La condición de Dalang dice exactamente
+$\int_0^TJ<\infty$. Un \emph{lema de Gronwall con núcleo} (Dalang, Lemma~15) muestra que si
+$f_n(t)\le\int_0^tf_{n-1}(s)J(t-s)\,\dd s$, entonces $\sum_nf_n(t)^{1/2}<\infty$ uniformemente en $[0,T]$. La regularidad
+se prueba estimando incrementos y aplicando Kolmogorov (Teorema~\ref{teo:kolmogorov}).
+\end{proof}
+
+\begin{ejemplo}
+Para ruido blanco en $d=1$, $\mu=\dd\xi/2\pi$ y la condición con $\eta$ vale para $\eta<1/2$:
+$u$ es Hölder de orden $<1/4$ en tiempo y $<1/2$ en espacio, como el browniano en espacio y
+como el browniano fraccionario de Hurst $1/4$ en tiempo.
+\end{ejemplo}
+
+\section{El marco de Malliavin para EDPEs}
+El ruido es un proceso isonormal sobre $\Hf=L^2([0,T];\Hc_0)$, y por tanto toda la Parte~II se
+aplica. La derivada de Malliavin de un funcional $F$ es un elemento de $\Hf$, que denotamos $D_{r,\cdot}F$
+o, cuando es función, $D_{r,z}F$. En el caso de ruido blanco, $\Hf=L^2([0,T]\times\R^d)$ y
+\[
+  D_{r,z}W(\ind_{[0,t]\times A})=\ind_{[0,t]}(r)\ind_A(z),\qquad\norm{DF}^2_\Hf=\int_0^T\int_{\R^d}\abs{D_{r,z}F}^2\,\dd z\,\dd r.
+\]
+La divergencia $\delta$ restringida a campos predecibles es la integral de Walsh--Dalang, como en el
+Teorema~\ref{teo:skorokhod-ito}, y la fórmula de Clark--Ocone tiene la forma $F=\E F+\int_0^T\int\E[D_{r,z}F\mid\F_r]W(\dd r,\dd z)$.

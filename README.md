@@ -14,6 +14,7 @@ visualización, un documento teórico en LaTeX y documentación bibliográfica.
 | `examples/` | Scripts `01`–`08` que generan las figuras de `figures/` |
 | `tests/` | Verificación numérica de las identidades teóricas |
 | `latex/` | Compañero numérico de la guía PDF (`main.tex`, capítulos, `referencias.bib`, `main.pdf`) |
+| `latex/guia/` | Fuente LaTeX de la guía teórica, reconstruida desde el PDF (23 capítulos + apéndices) |
 | `docs/` | [Mapa PDF → código](docs/mapa_pdf.md), [guía de la librería](docs/guia_libreria.md), [bibliografía comentada](docs/bibliografia.md), [chuleta de teoría](docs/teoria_resumen.md), [PDF de teoría](docs/pdf/Calculo_de_Malliavin_corregido.pdf) |
 | `AGENTS.md` | Instrucciones para agentes de IA que trabajen en el repo |
 

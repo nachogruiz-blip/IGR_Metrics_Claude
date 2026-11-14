@@ -1,1 +1,134 @@
-\chapter{Pendiente}
+\chapter{Malliavin en estructuras de regularidad}\label{cap:estructuras}
+
+\begin{panorama}
+La teoría de estructuras de regularidad de Hairer~\cite{Hairer14} da sentido a EDPEs \emph{singulares},
+como $\Phi^4_3$, KPZ o el PAM en dimensión 2 y 3, en las que aparecen productos de distribuciones
+que solo existen tras una \emph{renormalización}. La parte analítica de la teoría es
+determinista; la probabilística consiste en construir el \emph{modelo} a partir del ruido y probar
+sus estimaciones estocásticas. El cálculo de Malliavin interviene de tres maneras: (1)
+la hipercontractividad reduce las estimaciones a segundos momentos; (2) desde 2021, el
+programa de Otto y colaboradores sustituye los diagramas de Feynman por la \emph{desigualdad
+de spectral gap} y la derivada de Malliavin, con una prueba que funciona en todo el régimen
+subcrítico; (3) el cálculo de Malliavin da densidades para soluciones de EDPEs singulares.
+\end{panorama}
+
+\section{EDPEs singulares}
+Consideramos, en el toro $\mathbb T^d$, el \emph{modelo parabólico de Anderson generalizado} y la ecuación $\Phi^4$:
+\[
+  \partial_tu=\Delta u+g(u)\xi\quad\text{(gPAM, $\xi$ ruido blanco espacial en $d=2$)},\qquad\partial_t\phi=\Delta\phi-\phi^3+\xi\quad(\Phi^4_d).
+\]
+En gPAM con $d=2$, $\xi\in C^{-1-\kappa}$ para todo $\kappa>0$, y la teoría de Schauder sugiere $u\in C^{1-\kappa}$. El
+producto $g(u)\xi$ involucra una función $C^{1-\kappa}$ por una distribución $C^{-1-\kappa}$: la suma de regularidades
+es $-2\kappa<0$ y el producto no está definido (criterio de Young). En $\Phi^4_3$, $\phi\in C^{-1/2-\kappa}$ y $\phi^3$ es aún
+peor. Si se regulariza el ruido, $\xi_\varepsilon=\xi*\rho_\varepsilon$, las soluciones $u_\varepsilon$ \emph{no convergen}; sí convergen las de
+las ecuaciones \emph{renormalizadas}
+\[
+  \partial_tu_\varepsilon=\Delta u_\varepsilon+g(u_\varepsilon)\big(\xi_\varepsilon-C_\varepsilon g'(u_\varepsilon)\big),\qquad C_\varepsilon\sim\frac1{2\pi}\abs{\log\varepsilon},
+\]
+y el límite no depende del regularizador. Una ecuación es \emph{subcrítica} si, a escalas pequeñas, la
+no linealidad es perturbativa respecto a la parte lineal; las tres ecuaciones anteriores lo son, y
+$\Phi^4_4$, KPZ en $d\ge2$ o el PAM en $d=4$ no.
+
+\section{La arquitectura de la teoría}
+Muy esquemáticamente:
+\begin{enumerate}
+  \item Se construye un conjunto finito de \emph{símbolos} $\tau$ (árboles), que representan los objetos que
+  aparecen al iterar la ecuación: $\Xi$ (el ruido), $\mathcal I(\Xi)$ (la solución de la ecuación del calor con
+  ese ruido), $\mathcal I(\Xi)\Xi$, etc. Cada uno tiene una \emph{homogeneidad} $\abs\tau\in\R$.
+  \item Un \emph{modelo} asigna a cada símbolo y cada punto base $x$ una distribución $\Pi_x\tau$, que es el
+  ``objeto $\tau$ recentrado en $x$'', y que debe satisfacer
+  \begin{equation}\label{eq:modelo}
+    \Big|\big\langle\Pi_x\tau,\varphi^\lambda_x\big\rangle\Big|\lesssim\lambda^{\abs\tau},\qquad\varphi^\lambda_x(y)=\lambda^{-d}\varphi((y-x)/\lambda),
+  \end{equation}
+  junto con aplicaciones $\Gamma_{xy}$ que relacionan los recentrados en puntos distintos.
+  \item El \emph{teorema de reconstrucción} permite construir distribuciones globales a partir de desarrollos
+  locales en los símbolos. La EDPE se reformula como un punto fijo en un espacio de
+  \emph{distribuciones modeladas}, que se resuelve de manera determinista y continua en el modelo.
+  \item Lo probabilístico: dado el ruido regularizado, se construye el modelo canónico, se renormaliza
+  (con el grupo de renormalización de Bruned--Hairer--Zambotti~\cite{BrunedHairerZambotti19}, que actúa sobre los
+  modelos mediante álgebras de Hopf de árboles) y se prueba que el modelo renormalizado
+  converge y satisface~\eqref{eq:modelo} en momentos:
+  \begin{equation}\label{eq:modelo-momentos}
+    \E\Big|\big\langle\Pi_x\tau,\varphi^\lambda_x\big\rangle\Big|^p\lesssim\lambda^{p\abs\tau}\qquad\text{uniformemente en el regularizador.}
+  \end{equation}
+\end{enumerate}
+
+\section{Primer papel del cálculo de Malliavin: hipercontractividad}
+Si el ruido es gaussiano, $\big\langle\Pi_x\tau,\varphi^\lambda_x\big\rangle$ es un polinomio en el ruido de grado igual al número de
+hojas $\Xi$ de $\tau$, y por tanto vive en una suma finita de caos de Wiener. Por el Teorema~\ref{teo:normas-caos},
+\emph{basta probar}~\eqref{eq:modelo-momentos} \emph{para $p=2$}. El segundo momento se calcula con la isometría de las integrales
+múltiples, y la estructura de las contracciones (Teorema~\ref{teo:producto}) se codifica en \emph{diagramas de Feynman}.
+El teorema BPHZ general de Chandra y Hairer (2016) prueba que, con la renormalización
+de Bogoliubov--Parasiuk--Hepp--Zimmermann, todos los diagramas tienen la cota correcta; su
+demostración es un tour de force combinatorio de análisis multiescala.
+
+\section{Segundo papel: spectral gap y derivada de Malliavin}
+
+\begin{proposicion}[Desigualdad de spectral gap en $L^p$]
+Para $F\in\D^{1,p}$, $p\ge2$, existe $C_p$
+(independiente de la dimensión) tal que
+\[
+  \E\abs{F-\E F}^p\le C_p\,\E\norm{DF}^p_\Hf.
+\]
+\end{proposicion}
+
+\begin{proof}[Esbozo]
+Por la fórmula de Mehler, en forma ``rotacional'' (\emph{desigualdad de Pisier}): para $\Phi$
+convexa,
+\[
+  \E\,\Phi(F-\E F)\le\E\E'\,\Phi\Big(\frac\pi2W'(DF)\Big),
+\]
+con $W'$ una copia independiente. Se prueba interpolando $F(W)-F(W')=\int_0^{\pi/2}\frac{\dd}{\dd\theta}F(W\sin\theta+
+W'\cos\theta)\,\dd\theta$, aplicando Jensen y observando que $(W\sin\theta+W'\cos\theta,W\cos\theta-W'\sin\theta)$ tiene
+la misma ley que $(W,W')$. Tomando $\Phi(x)=\abs x^p$, $\E'\abs{W'(DF)}^p=c_p\norm{DF}^p_\Hf$ por ser gaussiana
+condicionalmente.
+\end{proof}
+
+La idea de Otto, Sauer, Smith y Weber~\cite{OttoSauerSmithWeber25} y de Linares, Otto, Tempelmayr y Tsatsoulis~\cite{LinaresOttoTempelmayrTsatsoulis24}
+es aplicar esta desigualdad a $F=\big\langle\Pi_x\tau,\varphi^\lambda_x\big\rangle$ y estimar $\norm{DF}_\Hf$ \emph{por inducción en la homogeneidad},
+sin desarrollar en caos. Concretamente:
+\begin{itemize}
+  \item La derivada de Malliavin $\delta\Pi_x$ del modelo en una dirección $\delta\xi$ del ruido satisface una
+  versión linealizada de la ecuación que define $\Pi_x$. Así, $\delta\Pi_x$ es un objeto de la misma
+  naturaleza que $\Pi_x$, pero de homogeneidad mayor (porque $\delta\xi\in\Hf$ es más regular que $\xi$).
+  \item Por el lema de Hölder--Kolmogorov y los argumentos de recentrado, una cota de $\delta\Pi_x$ en
+  una norma adecuada (dual de $\Hf$, es decir, la norma de Cameron--Martin) se obtiene a
+  partir de cotas de los $\Pi_x\tau'$ con $\abs{\tau'}<\abs\tau$.
+  \item El spectral gap transforma la cota de la derivada en cota de las fluctuaciones de $\Pi_x\tau$,
+  y la esperanza se fija con la renormalización (que, en este enfoque, se elige imponiendo
+  condiciones de simetría o de anulación de la esperanza en ciertos símbolos).
+\end{itemize}
+
+\begin{intuicion}
+La derivada de Malliavin del modelo es un \emph{vector tangente} a la ``variedad de soluciones'':
+perturbar el ruido en una dirección de Cameron--Martin perturba la solución de manera
+más regular que el ruido mismo. Esta ganancia de regularidad es el motor de la inducción.
+Frente a los diagramas, el enfoque tiene dos ventajas: funciona automáticamente en todo
+el régimen subcrítico (sin análisis caso a caso) y se extiende a ruidos \emph{no gaussianos} que
+satisfacen una desigualdad de spectral gap, como los ruidos de ciertos modelos de la
+mecánica estadística.
+\end{intuicion}
+
+El programa se ha desarrollado en una serie de trabajos: Linares, Otto y Tempelmayr~\cite{LinaresOttoTempelmayr23}
+construyeron el grupo de estructura mediante álgebras envolventes universales de álgebras de
+Lie pre-Lie; Otto, Sauer, Smith y Weber obtuvieron cotas a priori para EDPEs cuasilineales en
+el régimen subcrítico completo; Hairer y Steele reformularon el teorema BPHZ en el lenguaje
+de árboles usando el spectral gap. Las notas de Broux, Otto y Tempelmayr~\cite{BrouxOttoTempelmayr25}, publicadas
+en 2025, son la introducción pedagógica de referencia: muestran que la derivada de Malliavin
+proporciona una caracterización del modelo centrado \emph{estable al eliminar el regularizador} y, junto
+con el spectral gap, sus estimaciones estocásticas en todo el régimen subcrítico. Trabajos de
+2026 exploran el \emph{recentrado} del modelo directamente con la derivada de Malliavin.
+
+\section{Tercer papel: densidades para EDPEs singulares}
+¿Tiene densidad la solución $u(t,x)$ de una EDPE singular? La dificultad es que $u$ no es un
+funcional regular del ruido en el sentido clásico, porque la aplicación ``ruido $\mapsto$ solución'' solo es
+continua tras levantar el ruido a un modelo, y la renormalización introduce constantes divergentes.
+Cannizzaro, Friz y Gassiat~\cite{CannizzaroFrizGassiat17} desarrollaron un cálculo de Malliavin para estructuras de
+regularidad en el caso de gPAM en $d=2$: definen las \emph{traslaciones de Cameron--Martin de
+modelos}, prueban que el modelo renormalizado trasladado coincide con el modelo del ruido
+trasladado (sin renormalización adicional, porque las direcciones de $\Hf$ son regulares) y deducen
+la diferenciabilidad de Malliavin de la solución y la existencia de densidad. Gassiat y Labbé
+probaron la existencia de densidades para el modelo dinámico $\Phi^4_3$, y Schönbauer desarrolló un
+marco general de cálculo de Malliavin para EDPEs singulares que cubre una amplia clase de
+ecuaciones. La pregunta de la regularidad $C^\infty$ de las densidades en todo el régimen subcrítico
+está esencialmente abierta.

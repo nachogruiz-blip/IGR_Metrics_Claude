@@ -1,1 +1,127 @@
-\chapter{Pendiente}
+\chapter{Fronteras y aplicaciones recientes}\label{cap:fronteras}
+
+\begin{panorama}
+Cerramos con un recorrido por líneas de investigación activas en las que el cálculo de
+Malliavin desempeña un papel central: aprendizaje automático (modelos de difusión
+generativos y redes neuronales anchas), métodos numéricos (error débil, multinivel), ecuaciones
+estocásticas hacia atrás, ecuaciones de McKean--Vlasov, estadística de difusiones, y
+una lista de problemas abiertos.
+\end{panorama}
+
+\section{Modelos de difusión generativos}
+Los modelos generativos basados en difusiones (\emph{score-based diffusion models}) generan muestras
+de una ley de datos $p_0$ invirtiendo en el tiempo una difusión que la convierte en ruido gaussiano.
+Si $\dd X_t=b(t,X_t)\,\dd t+\sigma(t)\,\dd W_t$ con $X_0\sim p_0$, el proceso invertido $\bar X_s=X_{T-s}$ satisface
+\[
+  \dd\bar X_s=\big(-b(T-s,\bar X_s)+\sigma\sigma^\top(T-s)\nabla\log p_{T-s}(\bar X_s)\big)\,\dd s+\sigma(T-s)\,\dd\bar W_s,
+\]
+y la clave es aprender la \emph{función score} $\nabla\log p_t$. El cálculo de Malliavin da una representación
+de la score como esperanza condicional.
+
+\begin{proposicion}[Score por integración por partes]
+Sea $X_t\in(\D^\infty)^d$ no degenerado, con
+densidad $p_t>0$. Entonces
+\[
+  \nabla\log p_t(x)=-\E\big[H(X_t)\,\big|\,X_t=x\big],\qquad H_i(X_t)=\sum_j\delta\big((\gamma_{X_t}^{-1})_{ij}DX^j_t\big).
+\]
+\end{proposicion}
+
+\begin{proof}
+Por la Proposición~\ref{prop:ibp-iterada} con $G=1$, $\E[\partial_i\varphi(X_t)]=\E[\varphi(X_t)H_i(X_t)]$. El lado
+izquierdo es $\int\partial_i\varphi\,p_t=-\int\varphi\,\partial_ip_t$, y el derecho es $\int\varphi(x)\E[H_i\mid X_t=x]p_t(x)\,\dd x$. Igualando para
+toda $\varphi$, $\partial_ip_t=-p_t\E[H_i\mid X_t=x]$.
+\end{proof}
+
+Cuando $X_0$ es determinista, esta es la fórmula de Bismut; cuando $X_0\sim p_0$, se aplica
+condicionalmente. La consecuencia práctica es que la score es la mejor aproximación en $L^2$ de
+$-H(X_t)$ por funciones de $X_t$, de modo que puede aprenderse por regresión (es el análogo de la
+\emph{denoising score matching}, que corresponde a elegir pesos de Malliavin particulares). Trabajos de
+2025 desarrollan esta conexión para difusiones con coeficientes no lineales y ruido degenerado,
+donde las fórmulas de tipo gaussiano no se aplican.
+
+\section{Redes neuronales anchas}
+Una red neuronal totalmente conectada con pesos gaussianos aleatorios converge, cuando la
+anchura $n\to\infty$, a un proceso gaussiano (Neal; Lee et al.; Matthews et al.). Cada salida de la
+red es un funcional no lineal de los pesos gaussianos. Basteri y Trevisan (2022) cuantificaron esta
+convergencia con técnicas de transporte óptimo, y Favaro, Hanin, Marinucci, Nourdin y Peccati
+(2023) obtuvieron tasas del orden de $n^{-1/2}$ en distancias de Wasserstein y total variación con las
+desigualdades de Poincaré de segundo orden del Capítulo~\ref{cap:malliavin-stein}. La derivada de Malliavin respecto
+a los pesos de la última capa es, esencialmente, el gradiente que usa la retropropagación.
+
+\section{Métodos numéricos}
+
+\paragraph{Error débil.} Para el esquema de Euler $X^n$ de una EDE, el error débil $\E\Phi(X_T)-\E\Phi(X^n_T)$ es
+$O(1/n)$ si $\Phi$ es regular (Talay--Tubaro). Bally y Talay probaron, con integración por partes de
+Malliavin y la condición de Hörmander, que la tasa $O(1/n)$ se mantiene para $\Phi$ \emph{solo medible y
+acotada}, y que la densidad de $X^n_T$ converge a la de $X_T$ a la misma tasa.
+
+\paragraph{Multinivel.} En el método Monte Carlo multinivel de Giles, los estimadores de griegas con
+pesos de Malliavin tienen varianza de nivel $O(1/n)$ incluso para pagos discontinuos, manteniendo
+la complejidad óptima $O(\varepsilon^{-2})$ en casos donde la diferenciación trayectorial falla.
+
+\paragraph{Cubatura en el espacio de Wiener.} Kusuoka y Lyons--Victoir construyen medidas discretas
+en el espacio de trayectorias que reproducen los momentos de las integrales iteradas del browniano
+hasta cierto orden. El análisis del error usa la regularización del semigrupo bajo la condición de
+Hörmander, probada con cálculo de Malliavin (condición UFG de Kusuoka).
+
+\section{Ecuaciones estocásticas hacia atrás}
+Una EDEA es un par adaptado $(Y,Z)$ con $Y_t=\xi+\int_t^Tf(s,Y_s,Z_s)\,\dd s-\int_t^TZ_s\,\dd W_s$. El resultado
+clásico de El Karoui, Peng y Quenez es que, si $\xi$ y $f$ son Malliavin-diferenciables,
+\[
+  Z_t=D_tY_t\qquad\text{(versión adecuada)},
+\]
+y $D_rY_t$ satisface a su vez una EDEA lineal. Esto da la regularidad de $Z$, crucial para el análisis
+de esquemas de discretización (Zhang; Bouchard--Touzi) y para los métodos de aprendizaje
+profundo para EDPs parabólicas no lineales en alta dimensión (Han, Jentzen y E), en los que
+$Z$ se aproxima con una red neuronal y las fórmulas de tipo Bismut proporcionan estimadores
+alternativos.
+
+\section{Ecuaciones de McKean--Vlasov}
+En una ecuación de McKean--Vlasov, $\dd X_t=b(X_t,\mathcal L(X_t))\,\dd t+\sigma(X_t,\mathcal L(X_t))\,\dd W_t$, los coeficientes
+dependen de la ley de la solución. El cálculo de Malliavin se combina con la \emph{derivada de Lions}
+respecto a la medida: Crisan y McMurray obtuvieron fórmulas de integración por partes y la
+regularidad de las densidades bajo condiciones de tipo Hörmander, y se han obtenido fórmulas
+de Bismut para el semigrupo sobre el espacio de medidas, útiles en juegos de campo medio.
+
+\section{Estadística de difusiones}
+Gobet usó el cálculo de Malliavin para probar la propiedad LAN (normalidad asintótica local)
+para difusiones elípticas observadas en tiempo discreto, expresando la derivada del logaritmo de
+la verosimilitud de transición, que no es explícita, como una esperanza condicional de pesos
+de Malliavin. La misma idea da estimadores de máxima verosimilitud aproximados y cotas de
+eficiencia.
+
+\section{Problemas abiertos}
+\begin{enumerate}
+  \item \textbf{Hörmander para $H\le1/4$.} Para el browniano fraccionario con $H\le1/4$ (o procesos
+  gaussianos aún más irregulares), la teoría de rough paths requiere levantamientos de orden
+  superior que existen pero no son canónicos, y no se sabe probar la existencia de densidad
+  regular en general bajo la condición de Hörmander.
+  \item \textbf{Densidades $C^\infty$ para EDPEs singulares} en todo el régimen subcrítico: falta un
+  análogo infinito-dimensional robusto de la no degeneración de la matriz de Malliavin
+  compatible con la renormalización.
+  \item \textbf{Hipoelipticidad en dimensión infinita.} Más allá de los resultados de Hairer--Mattingly
+  para EDPEs semilineales con ruido degenerado, el caso de ecuaciones cuasilineales o
+  singulares está abierto.
+  \item \textbf{Tasas óptimas fuera de un caos fijo.} Para funcionales con infinitos caos (como las
+  soluciones de EDPEs), las tasas de las desigualdades de Poincaré de segundo orden no
+  son siempre óptimas, y caracterizar la tasa óptima es un problema abierto en general.
+  \item \textbf{Malliavin--Stein para límites no gaussianos.} Fuera del segundo caos y de las
+  leyes Gamma, la teoría para límites en caos superiores o límites mezcla es incompleta:
+  por ejemplo, el teorema de convergencia a variables del segundo caos tiene condiciones
+  necesarias y suficientes solo en casos particulares.
+  \item \textbf{Ruidos no gaussianos.} Extender el programa de spectral gap del Capítulo~\ref{cap:estructuras} a ruidos
+  de Poisson o de Lévy, donde la desigualdad de Poincaré vale pero la hipercontractividad
+  no, es un objetivo natural.
+\end{enumerate}
+
+\section{Lecturas recomendadas}
+\begin{itemize}
+  \item \emph{Para la teoría general:} Nualart~\cite{Nualart06} (la referencia estándar), Nualart--Nualart~\cite{NualartNualart18} (más
+  accesible).
+  \item \emph{Para Malliavin--Stein:} Nourdin--Peccati~\cite{NourdinPeccati12} y la reseña~\cite{AzmoodehPeccatiYang21}.
+  \item \emph{Para finanzas:} Alòs--García-Lorite~\cite{AlosGarciaLorite21}, Malliavin--Thalmaier~\cite{MalliavinThalmaier06}, Di Nunno--Øksendal--Proske~\cite{DiNunnoOksendalProske09}.
+  \item \emph{Para EDPEs:} Sanz-Solé~\cite{SanzSole05}, Khoshnevisan~\cite{Khoshnevisan14}, Walsh~\cite{Walsh86}.
+  \item \emph{Para Hörmander:} Hairer~\cite{Hairer11}, una prueba completa en 15 páginas.
+  \item \emph{Para rough paths:} Friz--Hairer~\cite{FrizHairer20}.
+  \item \emph{Para estructuras de regularidad:} Broux--Otto--Tempelmayr~\cite{BrouxOttoTempelmayr25}.
+\end{itemize}
