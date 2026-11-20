@@ -65,7 +65,7 @@ $2f^*$ es aproximadamente nulo: arriesgar de más destruye riqueza aunque la ven
 \begin{aviso}[Nunca uses Kelly completo]
 $p$ y $b$ son estimaciones con mucho error. Sobrestimar la ventaja te lleva a la zona de la derecha de
 la figura~\ref{fig:kelly}. Los profesionales usan entre $1/4$ y $1/2$ de Kelly, que sacrifica poco
-crecimiento (con $f^*/2$ se obtiene el 75~\% del crecimiento máximo) y reduce mucho la volatilidad.
+crecimiento (con $f^*/2$ se obtiene en torno al 75~\% del crecimiento máximo) y reduce mucho la volatilidad.
 \end{aviso}
 
 \section{Riesgo de ruina y drawdown}
@@ -113,7 +113,7 @@ Una posición pequeña pero muy correlacionada con el resto puede dominar el rie
 
 \begin{ejercicios}
 \begin{enumerate}
-\item Con $p=0{,}45$ y $b=2$, calcula Kelly y medio Kelly. Comprueba con \py{risk.growth\_rate} que medio Kelly da el 75~\% del crecimiento.
+\item Con $p=0{,}45$ y $b=2$, calcula Kelly y medio Kelly. Comprueba con \py{risk.growth\_rate} que medio Kelly da aproximadamente el 75~\% del crecimiento.
 \item Tu sistema tiene un 35~\% de acierto. ¿Qué probabilidad hay de 8 pérdidas consecutivas en una secuencia concreta de 8? Simula cuántas rachas así aparecen en 500 operaciones.
 \item Ejecuta \py{scripts/informe\_riesgo.py} y explica por qué el VaR histórico al 99~\% difiere del normal.
 \end{enumerate}

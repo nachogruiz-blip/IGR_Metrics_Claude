@@ -25,6 +25,8 @@ def main(argv=None):
     args = ap.parse_args(argv)
 
     if args.estrategia == "pares":
+        if args.csv:
+            print("Aviso: «pares» usa un par sintético; --csv se ignora en esta estrategia.")
         df = data.synthetic_pair(1500)
         b = equity.hedge_ratio(df["y"].iloc[:500], df["x"].iloc[:500])  # estimado sólo con el pasado
         s = equity.spread(df["y"], df["x"], b)

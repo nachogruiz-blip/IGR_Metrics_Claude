@@ -25,7 +25,8 @@ def rsi(close: pd.Series, n: int = 14) -> pd.Series:
     down = _wilder(-d.clip(upper=0), n)
     rs = up / down
     out = 100 - 100 / (1 + rs)
-    return out.where(down > 0, 100.0).where(up.notna())
+    out = out.where(down > 0, 100.0).where(~((up == 0) & (down == 0)), 50.0)
+    return out.where(up.notna())
 
 
 def true_range(ohlc: pd.DataFrame) -> pd.Series:

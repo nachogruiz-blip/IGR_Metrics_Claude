@@ -8,7 +8,7 @@ consola en **español**; identificadores en inglés. `CLAUDE.md` es un enlace a 
 
 - **Hecho (v0.1, nov. 2026)**: PDF de 46 págs. (`latex/main.pdf`, 15 capítulos + formulario + glosario
   + bibliografía); librería `trader/` con 14 módulos; 6 scripts de uso diario + generador de figuras;
-  11 figuras; 54 tests (~15 s, sin red).
+  11 figuras; 55 tests (~15 s, sin red).
 - **Pendiente / ideas**: capítulo de opciones con sonrisa SVI y P&L de gamma scalping simulado;
   índices de volatilidad (VIX, curva de futuros VIX); renta fija con curva cero bootstrap y futuros de
   bonos (CTD, factor de conversión); estacionalidad real con datos; app Streamlit opcional que envuelva

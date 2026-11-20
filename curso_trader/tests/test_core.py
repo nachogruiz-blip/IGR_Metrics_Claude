@@ -161,3 +161,7 @@ def test_vol_target(ohlc):
 def test_walk_forward():
     sp = bt.walk_forward_splits(100, 50, 10)
     assert len(sp) == 5 and all(tr.stop == te.start for tr, te in sp)
+
+
+def test_rsi_flat_is_neutral():
+    assert ind.rsi(pd.Series([10.0] * 30)).iloc[-1] == pytest.approx(50.0)
