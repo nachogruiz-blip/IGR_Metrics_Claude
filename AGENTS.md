@@ -35,3 +35,6 @@ Proyecto: cálculo de Malliavin y aplicaciones en finanzas (teoría en LaTeX + l
 Proyecto independiente de la librería (sus propias dependencias y tests: `pytest dashboard/tests`).
 Antes de modificarlo, lee `dashboard/AGENTS.md`. Las reglas de LaTeX/figuras de arriba no le aplican.
 
+## Analizador de empresas (`analisis_empresa/`)
+Proyecto independiente (sus propias dependencias y tests: `pytest analisis_empresa/tests`).
+Antes de modificarlo, lee `analisis_empresa/AGENTS.md`. Las reglas de LaTeX/figuras de arriba no le aplican.

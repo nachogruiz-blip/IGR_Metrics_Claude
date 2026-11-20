@@ -48,6 +48,20 @@ jobs:
         run: |
           COMMODASH_DEMO=1 timeout 90 python -c "from streamlit.testing.v1 import AppTest; at = AppTest.from_file('commodities/app.py', default_timeout=60).run(); assert not at.exception, at.exception"
 
+  analisis_empresa:
+    name: Tests del analizador de empresas
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r analisis_empresa/requirements.txt
+      - run: pytest analisis_empresa/tests
+      - name: La app arranca en modo demo
+        run: |
+          ANALYST_DEMO=1 timeout 90 python -c "from streamlit.testing.v1 import AppTest; at = AppTest.from_file('analisis_empresa/app.py', default_timeout=60).run(); assert not at.exception, at.exception"
+
   latex:
     name: Compilar LaTeX
     runs-on: ubuntu-latest
