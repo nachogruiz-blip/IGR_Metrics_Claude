@@ -86,15 +86,16 @@ def load(ticker: str, years: int, demo: bool) -> data.CompanyData:
 
 
 with st.sidebar:
-    st.header("Empresa")
+    st.header("Activo")
     demo = st.toggle("Datos sintéticos (demo)", value=DEMO_ENV,
                      help="Sin conexión: empresas inventadas con perfiles conocidos.")
     if demo:
-        ticker = st.selectbox("Perfil demo", list(data.DEMO_PROFILES), index=1)
+        ticker = st.selectbox("Perfil demo", list(data.DEMO_PROFILES) + ["DEMO-ORO"], index=1)
     else:
         ticker = st.text_input("Ticker de Yahoo Finance", value="ITX.MC",
-                               help="Ejemplos: SAN.MC, ITX.MC, IBE.MC (Madrid); ASML.AS; SAP.DE; "
-                                    "MC.PA; AAPL, MSFT (EE. UU.)").strip().upper()
+                               help="Acciones: SAN.MC, ITX.MC, IBE.MC (Madrid); ASML.AS; SAP.DE; "
+                                    "MC.PA; AAPL, MSFT (EE. UU.). Materias primas: GC=F (oro), "
+                                    "SI=F (plata), CL=F (petróleo). Divisas: EURUSD=X.").strip().upper()
     years = st.slider("Años de historia de precios", 2, 10, 5)
     rf_override = st.number_input("Tipo libre de riesgo (%, 0 = automático)", 0.0, 10.0, 0.0, 0.1)
     st.caption("Herramienta de apoyo, no asesoramiento financiero.")
@@ -116,8 +117,10 @@ cur = cd.currency
 
 # --------------------------------------------------------------------------- cabecera y veredicto
 st.title(f"{cd.name} ({cd.ticker})")
-st.caption(f"Datos a {cd.asof:%d/%m/%Y} · {cd.info.get('sector', '—')} / {cd.info.get('industry', '—')} · "
-           f"índice {cd.bench_ticker or '—'} · tipo sin riesgo {cd.risk_free:.2%}"
+st.caption(f"Datos a {cd.asof:%d/%m/%Y} · "
+           + (f"{cd.info.get('sector', '—')} / {cd.info.get('industry', '—')} · " if cd.is_equity
+              else f"{report.ASSET_LABEL.get(cd.asset_type, cd.asset_type)} · ")
+           + f"índice {cd.bench_ticker or '—'} · tipo sin riesgo {cd.risk_free:.2%}"
            + (" · **datos sintéticos**" if cd.demo else ""))
 for w in cd.warnings:
     st.warning(w)
@@ -131,14 +134,20 @@ with c1:
     st.markdown(f"**{v.headline}**")
     m1, m2, m3 = st.columns(3)
     m1.metric("Precio", f"{fmt(cd.price, 'money')} {cur}")
-    m2.metric("Valor estimado", fmt(val.fair_value, "money"), fmt(val.margin, "pct"),
-              help=val.method or "Sin modelo de valoración aplicable")
-    tgt = cd.info.get("targetMeanPrice")
-    m3.metric("Objetivo analistas", fmt(tgt, "money"),
-              fmt(tgt / cd.price - 1 if finite(tgt) else np.nan, "pct"))
+    if val is not None:
+        m2.metric("Valor estimado", fmt(val.fair_value, "money"), fmt(val.margin, "pct"),
+                  help=val.method or "Sin modelo de valoración aplicable")
+        tgt = cd.info.get("targetMeanPrice")
+        m3.metric("Objetivo analistas", fmt(tgt, "money"),
+                  fmt(tgt / cd.price - 1 if finite(tgt) else np.nan, "pct"))
+    else:
+        m2.metric("Vol. prevista 1 mes", fmt(ts.stats.get("garch_vol_1m"), "pct0"), help="GARCH(1,1)")
+        cone = ts.cone.loc["3 meses"]
+        m3.metric("Rango 3 meses (68 %)", f"{cone['p16']:,.0f}–{cone['p84']:,.0f}".replace(",", " "))
 with c2:
-    axes = {"Calidad": v.quality, "Valoración": v.valuation, "Atractivo fundamental": v.fundamental,
-            "Momento técnico": v.timing, "Riesgo": v.risk, "Compuesta": v.composite}
+    axes = ({"Calidad": v.quality, "Valoración": v.valuation, "Atractivo fundamental": v.fundamental}
+            if A.macro is None else {"Factores macro": v.fundamental})
+    axes.update({"Momento técnico": v.timing, "Riesgo": v.risk, "Compuesta": v.composite})
     names = list(axes)[::-1]
     vals = [axes[k] if finite(axes[k]) else 0 for k in names]
     fig = go.Figure(go.Bar(x=vals, y=names, orientation="h",
@@ -172,94 +181,138 @@ with c3:
     if cd.earnings_date is not None:
         st.caption(f"Próximos resultados: {cd.earnings_date:%d/%m/%Y}")
 
-tabs = st.tabs(["Balance y cuentas", "Valoración", "Técnico", "Series temporales", "Informe",
-                "Guía de uso", "Metodología"])
+tab_names = (["Balance y cuentas", "Valoración"] if A.macro is None else ["Factores macro"]) + \
+    ["Técnico", "Series temporales", "Informe", "Guía de uso", "Metodología"]
+T = dict(zip(tab_names, st.tabs(tab_names)))
 
-# --------------------------------------------------------------------------- balance
-with tabs[0]:
-    if cd.income.empty:
-        st.info("No hay estados financieros disponibles para este valor.")
-    else:
-        r = A.ratios
-        yrs = [f"{d:%Y}" for d in r.index]
+# --------------------------------------------------------------------------- factores macro
+if A.macro is not None:
+    with T["Factores macro"]:
+        m = A.macro
+        st.markdown("Sensibilidad (β) de los rendimientos **semanales** a cada factor en los "
+                    "últimos 2 años y **efecto implícito** del movimiento del factor en las "
+                    "últimas 13 semanas (β × movimiento): positivo = viento a favor.")
+        rows = [{"Factor": d.name,
+                 "Movimiento 3 m": f"{d.move:+.2f} pp" if d.ticker_kind == "yield" else fmt(d.move, "pct"),
+                 "β": f"{d.beta:+.3f} /pp" if d.ticker_kind == "yield" else fmt(d.beta),
+                 "Correlación": d.corr, "Efecto implícito": d.implied,
+                 "Signo esperado": {1: "+", -1: "−", 0: "—"}[d.expected_sign] + (" ⚠ inusual" if d.unusual else "")}
+                for d in m.drivers]
+        if rows:
+            st.dataframe(pd.DataFrame(rows).style.map(lambda x: score_bg(np.clip(x / 0.04, -1, 1)) if finite(x) else "",
+                                                      subset=["Efecto implícito"])
+                         .format({"Correlación": s_fmt, "Efecto implícito": lambda x: fmt(x, "pct")}),
+                         hide_index=True, width="stretch")
+        for n in m.notes:
+            st.markdown(f"- {n}")
         c1, c2 = st.columns(2)
         with c1:
             fig = go.Figure()
-            for k, (name, ser) in enumerate((("Ventas", cd.income["revenue"]),
-                                             ("Beneficio neto", cd.income["net_income"]),
-                                             ("Flujo de caja libre", r["fcf"]))):
-                fig.add_bar(x=yrs, y=ser.reindex(r.index) / 1e6, name=name, marker_color=SERIES[k])
-            base_layout(fig, 330).update_layout(title=f"Cuenta de resultados y caja (millones {cur})",
-                                                barmode="group")
+            for k, col in enumerate(m.rebased.columns):
+                fig.add_scatter(x=m.rebased.index, y=m.rebased[col], name=col,
+                                line=dict(color=SERIES[k % len(SERIES)] if k < len(SERIES) else NEUTRAL,
+                                          width=2.4 if col == "Activo" else 1.2,
+                                          dash="solid" if k < len(SERIES) else "dot"))
+            base_layout(fig, 360).update_layout(title="Activo y factores, base 100 (último año)")
             st.plotly_chart(fig, width="stretch")
         with c2:
             fig = go.Figure()
-            for k, (name, key) in enumerate((("Margen EBIT", "ebit_margin"), ("Margen neto", "net_margin"),
-                                             ("ROE", "roe"), ("ROIC", "roic"))):
-                if r[key].notna().any():
-                    fig.add_scatter(x=yrs, y=r[key], name=name, mode="lines+markers",
-                                    line=dict(color=SERIES[k], width=2))
-            fig.update_yaxes(tickformat=".0%")
-            base_layout(fig, 330).update_layout(title="Márgenes y rentabilidad")
+            for k, col in enumerate(m.rolling_corr.columns):
+                fig.add_scatter(x=m.rolling_corr.index, y=m.rolling_corr[col], name=col,
+                                line=dict(color=SERIES[k % len(SERIES)] if k < len(SERIES) else NEUTRAL,
+                                          width=1.4, dash="solid" if k < len(SERIES) else "dot"))
+            fig.add_hline(y=0, line=dict(color=AXIS, width=1))
+            fig.update_yaxes(range=[-1, 1])
+            base_layout(fig, 360).update_layout(title="Correlación móvil 26 semanas con cada factor")
             st.plotly_chart(fig, width="stretch")
-        show = {"Crec. ventas": ("revenue_growth", "pct"), "Margen bruto": ("gross_margin", "pct0"),
-                "Margen EBIT": ("ebit_margin", "pct0"), "Margen neto": ("net_margin", "pct0"),
-                "Margen FCF": ("fcf_margin", "pct0"), "ROE": ("roe", "pct0"), "ROA": ("roa", "pct0"),
-                "ROIC": ("roic", "pct0"), "Liquidez": ("current_ratio", "num"),
-                "Prueba ácida": ("quick_ratio", "num"), "Deuda/patrimonio": ("debt_to_equity", "num"),
-                "Deuda neta/EBITDA": ("net_debt_ebitda", "x"), "Cobertura intereses": ("interest_coverage", "x"),
-                "Flujo operativo/beneficio": ("ocf_to_net_income", "x"), "Payout": ("payout", "pct0"),
-                "Variación de acciones": ("share_change", "pct")}
-        tab = pd.DataFrame({name: [fmt(x, kind) for x in r[key]] for name, (key, kind) in show.items()},
-                           index=yrs).T
-        st.markdown("**Ratios por ejercicio**")
-        st.dataframe(tab, width="stretch")
-        pio = A.piotroski
-        if pio.available:
-            st.markdown(f"**F-score de Piotroski: {pio.score}/9** "
-                        f"<span class='small'>({pio.available} pruebas con dato)</span>",
-                        unsafe_allow_html=True)
-            st.markdown(" · ".join(f"{'✓' if t else '✗' if t is not None else '?'} {PIOTROSKI_LABELS[k]}"
-                                   for k, t in pio.tests.items()))
-    c1, c2 = st.columns(2)
-    with c1:
-        pillar_table(A.balance)
-    with c2:
-        pillar_table(A.profitability)
+        pillar_table(m.pillar)
 
-# --------------------------------------------------------------------------- valoración
-with tabs[1]:
-    c1, c2 = st.columns([1, 1])
-    with c1:
-        if val.method:
-            st.markdown(f"**{val.method}**: valor estimado **{fmt(val.fair_value, 'money')} {cur}** "
-                        f"({fmt(val.margin, 'pct')} frente al precio).")
-        for n in val.notes:
-            st.markdown(f"- {n}")
-        st.markdown(f"- Coste del capital propio (CAPM) {fmt(val.ke, 'pct0')}; WACC {fmt(val.wacc, 'pct0')}.")
-        if not val.sensitivity.empty:
-            sens = val.sensitivity.copy()
-            sens.index = [f"{x:.1%}" for x in sens.index]
-            sens.columns = [f"g {x:.1%}" for x in sens.columns]
-            st.markdown("**Sensibilidad del valor por acción** (filas: tasa de descuento)")
-            st.dataframe(sens.style.format(lambda x: fmt(x, "money")).map(
-                lambda x: score_bg(np.clip(x / cd.price - 1, -1, 1)) if finite(x) else ""),
-                width="stretch")
-    with c2:
-        refs = {"Precio": cd.price, "Valor estimado": val.fair_value,
-                "Objetivo analistas": cd.info.get("targetMeanPrice"),
-                "Mín. 52 sem.": cd.prices["Low"].iloc[-252:].min(),
-                "Máx. 52 sem.": cd.prices["High"].iloc[-252:].max()}
-        refs = {k: x for k, x in refs.items() if finite(x)}
-        fig = go.Figure(go.Bar(x=list(refs.values()), y=list(refs), orientation="h",
-                               marker_color=[SERIES[0] if k == "Precio" else NEUTRAL for k in refs],
-                               text=[fmt(x, "money") for x in refs.values()], textposition="outside"))
-        base_layout(fig, 280).update_layout(title=f"Precio frente a referencias ({cur})", hovermode="closest")
-        st.plotly_chart(fig, width="stretch")
-    pillar_table(val.pillar)
+# --------------------------------------------------------------------------- balance
+if A.macro is None:
+    with T["Balance y cuentas"]:
+        if cd.income.empty:
+            st.info("No hay estados financieros disponibles para este valor.")
+        else:
+            r = A.ratios
+            yrs = [f"{d:%Y}" for d in r.index]
+            c1, c2 = st.columns(2)
+            with c1:
+                fig = go.Figure()
+                for k, (name, ser) in enumerate((("Ventas", cd.income["revenue"]),
+                                                 ("Beneficio neto", cd.income["net_income"]),
+                                                 ("Flujo de caja libre", r["fcf"]))):
+                    fig.add_bar(x=yrs, y=ser.reindex(r.index) / 1e6, name=name, marker_color=SERIES[k])
+                base_layout(fig, 330).update_layout(title=f"Cuenta de resultados y caja (millones {cur})",
+                                                    barmode="group")
+                st.plotly_chart(fig, width="stretch")
+            with c2:
+                fig = go.Figure()
+                for k, (name, key) in enumerate((("Margen EBIT", "ebit_margin"), ("Margen neto", "net_margin"),
+                                                 ("ROE", "roe"), ("ROIC", "roic"))):
+                    if r[key].notna().any():
+                        fig.add_scatter(x=yrs, y=r[key], name=name, mode="lines+markers",
+                                        line=dict(color=SERIES[k], width=2))
+                fig.update_yaxes(tickformat=".0%")
+                base_layout(fig, 330).update_layout(title="Márgenes y rentabilidad")
+                st.plotly_chart(fig, width="stretch")
+            show = {"Crec. ventas": ("revenue_growth", "pct"), "Margen bruto": ("gross_margin", "pct0"),
+                    "Margen EBIT": ("ebit_margin", "pct0"), "Margen neto": ("net_margin", "pct0"),
+                    "Margen FCF": ("fcf_margin", "pct0"), "ROE": ("roe", "pct0"), "ROA": ("roa", "pct0"),
+                    "ROIC": ("roic", "pct0"), "Liquidez": ("current_ratio", "num"),
+                    "Prueba ácida": ("quick_ratio", "num"), "Deuda/patrimonio": ("debt_to_equity", "num"),
+                    "Deuda neta/EBITDA": ("net_debt_ebitda", "x"), "Cobertura intereses": ("interest_coverage", "x"),
+                    "Flujo operativo/beneficio": ("ocf_to_net_income", "x"), "Payout": ("payout", "pct0"),
+                    "Variación de acciones": ("share_change", "pct")}
+            tab = pd.DataFrame({name: [fmt(x, kind) for x in r[key]] for name, (key, kind) in show.items()},
+                               index=yrs).T
+            st.markdown("**Ratios por ejercicio**")
+            st.dataframe(tab, width="stretch")
+            pio = A.piotroski
+            if pio.available:
+                st.markdown(f"**F-score de Piotroski: {pio.score}/9** "
+                            f"<span class='small'>({pio.available} pruebas con dato)</span>",
+                            unsafe_allow_html=True)
+                st.markdown(" · ".join(f"{'✓' if t else '✗' if t is not None else '?'} {PIOTROSKI_LABELS[k]}"
+                                       for k, t in pio.tests.items()))
+        c1, c2 = st.columns(2)
+        with c1:
+            pillar_table(A.balance)
+        with c2:
+            pillar_table(A.profitability)
+
+    # --------------------------------------------------------------------------- valoración
+    with T["Valoración"]:
+        c1, c2 = st.columns([1, 1])
+        with c1:
+            if val.method:
+                st.markdown(f"**{val.method}**: valor estimado **{fmt(val.fair_value, 'money')} {cur}** "
+                            f"({fmt(val.margin, 'pct')} frente al precio).")
+            for n in val.notes:
+                st.markdown(f"- {n}")
+            st.markdown(f"- Coste del capital propio (CAPM) {fmt(val.ke, 'pct0')}; WACC {fmt(val.wacc, 'pct0')}.")
+            if not val.sensitivity.empty:
+                sens = val.sensitivity.copy()
+                sens.index = [f"{x:.1%}" for x in sens.index]
+                sens.columns = [f"g {x:.1%}" for x in sens.columns]
+                st.markdown("**Sensibilidad del valor por acción** (filas: tasa de descuento)")
+                st.dataframe(sens.style.format(lambda x: fmt(x, "money")).map(
+                    lambda x: score_bg(np.clip(x / cd.price - 1, -1, 1)) if finite(x) else ""),
+                    width="stretch")
+        with c2:
+            refs = {"Precio": cd.price, "Valor estimado": val.fair_value,
+                    "Objetivo analistas": cd.info.get("targetMeanPrice"),
+                    "Mín. 52 sem.": cd.prices["Low"].iloc[-252:].min(),
+                    "Máx. 52 sem.": cd.prices["High"].iloc[-252:].max()}
+            refs = {k: x for k, x in refs.items() if finite(x)}
+            fig = go.Figure(go.Bar(x=list(refs.values()), y=list(refs), orientation="h",
+                                   marker_color=[SERIES[0] if k == "Precio" else NEUTRAL for k in refs],
+                                   text=[fmt(x, "money") for x in refs.values()], textposition="outside"))
+            base_layout(fig, 280).update_layout(title=f"Precio frente a referencias ({cur})", hovermode="closest")
+            st.plotly_chart(fig, width="stretch")
+        pillar_table(val.pillar)
 
 # --------------------------------------------------------------------------- técnico
-with tabs[2]:
+with T["Técnico"]:
     f = tech.frame.iloc[-min(len(tech.frame), 504):]
     p = cd.prices.loc[f.index]
     fig = make_subplots(rows=3, cols=1, shared_xaxes=True, row_heights=[0.6, 0.2, 0.2],
@@ -294,7 +347,7 @@ with tabs[2]:
     pillar_table(tech.pillar)
 
 # --------------------------------------------------------------------------- series temporales
-with tabs[3]:
+with T["Series temporales"]:
     s = ts.stats
     k = st.columns(6)
     k[0].metric("Rent. anual compuesta", fmt(s["cagr"], "pct"))
@@ -385,12 +438,12 @@ with tabs[3]:
     pillar_table(ts.pillar)
 
 # --------------------------------------------------------------------------- informe y metodología
-with tabs[4]:
+with T["Informe"]:
     md = report.to_markdown(A)
     st.download_button("Descargar informe (Markdown)", md, file_name=f"analisis_{cd.ticker}.md",
                        mime="text/markdown")
     st.markdown(md)
-with tabs[5]:
+with T["Guía de uso"]:
     st.markdown((HERE / "GUIA_USO.md").read_text(encoding="utf-8"))
-with tabs[6]:
+with T["Metodología"]:
     st.markdown((HERE / "METODOLOGIA.md").read_text(encoding="utf-8"))

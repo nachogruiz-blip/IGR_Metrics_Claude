@@ -9,10 +9,11 @@ Guía para agentes de IA (y personas) que modifiquen `analisis_empresa/`. Proyec
 | Archivo | Responsabilidad | No debe |
 |---|---|---|
 | `app.py` | Interfaz Streamlit (cacheada), gráficos y tablas | contener cálculos ni umbrales |
-| `analyst/data.py` | `CompanyData`, descarga Yahoo (import perezoso), `ALIASES` de partidas, demo | puntuar |
+| `analyst/data.py` | `CompanyData`, descarga Yahoo (import perezoso), `ALIASES` de partidas, `asset_type`, `MACRO_DRIVERS`, demo (`DEMO-ORO` incluido) | puntuar |
 | `analyst/statements.py` | Ratios por ejercicio, Piotroski, Altman, pilares de balance y rentabilidad | — |
 | `analyst/valuation.py` | CAPM/WACC, DCF, DCF inverso, P/VC justificado, pilar de valoración | — |
 | `analyst/technical.py` | Indicadores, niveles, cruces, avisos (`flags`), pilar técnico | — |
+| `analyst/macro.py` | Factores macro de oro/materias primas/divisas: β, efecto implícito, valor relativo, pilar | — |
 | `analyst/timeseries.py` | Estadísticos, contrastes, EWMA, GARCH, VaR, β, pilar de riesgo | — |
 | `analyst/verdict.py` | Matriz A×T, reglas de timing/veto, niveles → `Verdict` | importar streamlit/yfinance |
 | `analyst/core.py` | Orquesta todo → `Analysis` | — |
@@ -23,6 +24,11 @@ Guía para agentes de IA (y personas) que modifiquen `analisis_empresa/`. Proyec
 
 Flujo: `data.fetch`/`data.demo` → `core.analyze` → `Analysis` (pilares + `Verdict`) →
 `app.py` / `report.to_markdown`.
+
+Dos ramas según `CompanyData.asset_type`: `"equity"` (balance, rentabilidad, valoración, técnico,
+riesgo) y `"commodity"`/`"fx"` (factores macro, técnico, riesgo; `Analysis.valuation is None`,
+`Analysis.macro` relleno, `decide(..., macro=pilar)`). `app.py` y `report.py` muestran una u otra
+según `A.macro`.
 
 ## Comandos (desde `analisis_empresa/`)
 
@@ -48,7 +54,11 @@ arranca la app en modo demo con `streamlit.testing`.
    deuda = kₑ; Altman; Piotroski 9/0; filtro GARCH = recursión explícita; GARCH recupera
    parámetros simulados; VaR normal = cuantil (tolerancia 4·stderr).
 5. Perfiles demo ⇒ veredicto conocido: `DEMO-COMPRA` COMPRAR, `DEMO-ESPERA` ESPERAR (tendencia
-   bajista), `DEMO-VENDE` VENDER, `DEMO-CARA` ESPERAR (resultados en 9 días).
+   bajista), `DEMO-VENDE` VENDER, `DEMO-CARA` ESPERAR (resultados en 9 días). `DEMO-ORO`:
+   sensibilidades simuladas (β dólar −0.5, β tipos −0.04/pp) con el signo correcto y sin
+   «relación inusual».
+7. La app arranca en modo demo con una acción y con el oro (`tests/test_app.py`; `AppTest` no
+   informa de errores de sintaxis en `at.exception`, por eso se comprueba también el título).
 6. Nada de red en tests (`data.demo`). Vectorizar sobre fechas; la única recursión temporal es
    la simulación GARCH de la demo (el filtro usa `lfilter`).
 
@@ -58,10 +68,13 @@ arranca la app en modo demo con `streamlit.testing`.
   puntuación, formato, lectura, peso)` al pilar, test con valor cerrado y fila en
   `METODOLOGIA.md`.
 - **Tras cambiar umbrales, pesos o el informe**: regenerar `ejemplos/` (comando en
-  `GUIA_USO.md` §5) y revisar que la tabla de ejemplos de la guía sigue siendo cierta.
+  `GUIA_USO.md` §6) y revisar que la tabla de ejemplos de la guía sigue siendo cierta.
 - **Cambiar la decisión**: constantes `A_BUY`, `A_SELL`, `T_UP`, `T_DOWN`, `T_TACTICAL`,
   `EARNINGS_DAYS` y pesos en `verdict.py`; actualizar la tabla de `METODOLOGIA.md` y
   `test_decision_matrix`.
+- **Nuevo factor macro o nueva materia prima**: añadir `(ticker, tipo, signo esperado)` a
+  `data.MACRO_DRIVERS` (o un conjunto nuevo y su detección en `driver_set`); tipos `price`,
+  `yield`, `level`, `ratio`. Actualizar la tabla de la sección 7 de `METODOLOGIA.md`.
 - **Nueva partida de Yahoo**: añadir alias en `data.ALIASES` (el primero presente gana).
 - **Paleta**: azul `#2a78d6`, naranja `#eb6834`, aqua `#1baf7a`, ámbar `#eda100` en ese orden;
   diverging azul (+) / rojo (−); el veredicto usa icono + texto, nunca sólo color; nunca doble

@@ -33,6 +33,8 @@ Se usa el formato de Yahoo Finance: el código de la acción y un sufijo que ind
 | Suiza | `.SW` | `NESN.SW` | SMI |
 | Lisboa | `.LS` | `EDP.LS` | PSI |
 | EE. UU. | (ninguno) | `AAPL`, `MSFT`, `NVDA`, `JPM` | S&P 500 |
+| Materias primas (futuros) | `=F` | `GC=F` oro, `SI=F` plata, `CL=F` petróleo WTI, `HG=F` cobre | S&P 500 |
+| Divisas | `=X` | `EURUSD=X`, `XAUUSD=X` (oro al contado) | S&P 500 |
 
 Si no sabes el ticker, búscalo en finance.yahoo.com: es el código que aparece entre paréntesis
 junto al nombre.
@@ -169,7 +171,37 @@ En cada tabla, **«cobertura»** indica qué parte de los indicadores tenía dat
 - **Informe**: todo lo anterior en Markdown, descargable.
 - **Metodología**: fórmulas, umbrales y esta guía.
 
-## 5. Ejemplos
+## 5. Oro, materias primas y divisas
+
+```bash
+python -m analyst GC=F         # oro, futuro continuo de COMEX (el más fiable en Yahoo)
+python -m analyst XAUUSD=X     # oro al contado (a veces Yahoo no tiene datos o volumen)
+```
+
+En la app basta con escribir el ticker. Un ETF de oro (`GLD`, `SGLD.L`, `4GLD.DE`) se analiza
+como una acción sin cuentas; para el análisis macro usa `GC=F`.
+
+Qué cambia frente a una acción:
+
+- No hay pestañas de **Balance** ni **Valoración**: el oro no tiene beneficios ni flujos de caja.
+  En su lugar aparece **Factores macro**.
+- **Factores macro**: para cada factor (dólar, tipos a 10 años, bonos ligados a la inflación,
+  S&P 500, VIX) se muestra cuánto se ha movido en 3 meses, la sensibilidad del oro (β) y la
+  correlación de los últimos 2 años, y el **efecto implícito** (β × movimiento): positivo = el
+  factor ha empujado al alza. Ejemplo: si el dólar ha caído un 6 % y la β del oro al dólar es
+  −0.4, el efecto implícito es +2.4 %: viento a favor.
+- **Relación inusual (⚠)**: la relación de los datos va contra la teoría (p. ej. oro y dólar
+  subiendo juntos). Ocurre en cambios de régimen; esa relación no debe extrapolarse.
+- **Valor relativo**: extensión del precio frente a su media de 3 años (por encima de z = 2 el
+  oro está muy estirado y puntúa en contra) y ratio oro/plata (alto = oro caro frente a la plata).
+- **Veredicto**: el eje «Factores macro» sustituye al atractivo fundamental. Con factores
+  neutros, sólo una tendencia muy fuerte da COMPRAR o VENDER (táctico); si no, MANTENER. No hay
+  aviso de resultados ni veto de solvencia. El objetivo de referencia es el extremo superior del
+  rango de precio a 3 meses (no hay objetivo de analistas).
+- **β frente al S&P 500** (pestaña Series temporales): en el oro suele ser cercana a 0 o
+  negativa; si sube, el oro está cotizando como un activo de riesgo más que como refugio.
+
+## 6. Ejemplos
 
 La carpeta [`ejemplos/`](ejemplos/) contiene los informes completos de las cuatro empresas
 sintéticas del modo demo, una por cada situación típica:
@@ -180,15 +212,16 @@ sintéticas del modo demo, una por cada situación típica:
 | [`DEMO-ESPERA`](ejemplos/DEMO-ESPERA.md) | Buena empresa barata, pero el precio cae (cruce bajista de medias) | ⏸ ESPERAR a que recupere la media de 50 o a un soporte con sobreventa |
 | [`DEMO-VENDE`](ejemplos/DEMO-VENDE.md) | Pérdidas, deuda neta/EBITDA > 13×, Z de Altman en zona de riesgo, tendencia bajista | ▼ VENDER (convicción alta) |
 | [`DEMO-CARA`](ejemplos/DEMO-CARA.md) | Empresa sana pero cara (PER 38×), tendencia alcista y resultados en 9 días | ⏸ ESPERAR a los resultados |
+| [`DEMO-ORO`](ejemplos/DEMO-ORO.md) | Oro en tendencia alcista; dólar y tipos bajando (a favor) pero precio muy estirado frente a su media de 3 años | ▲ COMPRAR táctico (convicción baja) |
 
 Para regenerarlos tras cambiar el modelo:
 
 ```bash
 cd analisis_empresa
-for t in DEMO-COMPRA DEMO-ESPERA DEMO-VENDE DEMO-CARA; do python -m analyst $t --demo --out ejemplos/$t.md; done
+for t in DEMO-COMPRA DEMO-ESPERA DEMO-VENDE DEMO-CARA DEMO-ORO; do python -m analyst $t --demo --out ejemplos/$t.md; done
 ```
 
-## 6. Casos especiales
+## 7. Casos especiales
 
 - **Bancos y aseguradoras** (sector *Financial Services*): no se calculan liquidez,
   deuda/EBITDA ni Z de Altman (la deuda es su negocio), ni DCF. La valoración usa el **P/VC
@@ -200,7 +233,7 @@ for t in DEMO-COMPRA DEMO-ESPERA DEMO-VENDE DEMO-CARA; do python -m analyst $t -
 - **Sin estados financieros** (ETF, índices, algunas filiales): sólo se analizan técnico y series
   temporales; el veredicto se apoya entonces casi solo en el precio.
 
-## 7. Problemas frecuentes
+## 8. Problemas frecuentes
 
 | Síntoma | Causa probable | Solución |
 |---|---|---|
@@ -208,12 +241,16 @@ for t in DEMO-COMPRA DEMO-ESPERA DEMO-VENDE DEMO-CARA; do python -m analyst $t -
 | Bloques con cobertura baja o «—» | Yahoo no da esa partida para el valor | Normal en algunos valores; el resto de pesos se reparte. |
 | Aviso «No se pudo obtener…» | Yahoo limita peticiones o cambió un formato | Reintentar en unos minutos; si persiste, actualizar `yfinance`. |
 | Valoración muy extrema (±100 %) | Flujo de caja de un año atípico o supuestos que no encajan | Revisar la tabla de sensibilidad y los ratios por ejercicio; no fiarse sólo del DCF. |
+| Oro: «Sin precios para XAUUSD=X» | Yahoo no siempre sirve el contado | Usar `GC=F`. |
+| Falta algún factor macro | Yahoo no devolvió esa serie (aviso «No se pudo obtener el factor…») | El pilar se calcula con el resto; reintentar más tarde. |
 | Fecha de resultados ausente | Yahoo no la publica para ese valor | Consultarla en la web de relación con inversores de la empresa. |
 
-## 8. Limitaciones
+## 9. Limitaciones
 
 - Datos anuales de los últimos ~4 ejercicios (lo que da Yahoo), no trimestrales.
 - No compara los múltiplos con los de su sector (el `dashboard/` del repositorio sí lo hace).
 - No tiene en cuenta noticias, regulación, calidad del equipo directivo ni ventajas
   competitivas: lo cuantitativo es sólo una parte del análisis.
 - Sin backtest del veredicto.
+- En materias primas no se modelan inventarios, curva de futuros (contango/backwardation) ni el
+  posicionamiento de los especuladores.

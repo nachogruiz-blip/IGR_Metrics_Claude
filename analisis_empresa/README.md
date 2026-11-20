@@ -16,6 +16,11 @@ Le das un ticker (mercado español, europeo o estadounidense) y analiza la **emp
    previsión), VaR/CVaR (histórico, normal, Cornish-Fisher), caídas, Sharpe/Sortino/Calmar,
    β frente al índice, Ljung-Box, ratio de varianzas, Hurst, estacionalidad y cono de precios.
 
+También analiza **oro, materias primas y divisas** (`GC=F`, `XAUUSD=X`, `SI=F`, `CL=F`,
+`EURUSD=X`): como no tienen cuentas, los bloques 1–3 se sustituyen por **factores macro**
+(sensibilidad al dólar, a los tipos a 10 años, a los bonos ligados a la inflación, al S&P 500 y
+al VIX, y valor relativo: extensión frente a su media de 3 años y ratio oro/plata).
+
 El **veredicto** combina atractivo fundamental (¿buena empresa a buen precio?) y momento técnico
 (¿acompaña el precio?), y aplica reglas de *timing*: resultados inminentes, sobrecompra,
 solvencia y régimen de volatilidad. Da los disparadores a vigilar y niveles de entrada, stop y
@@ -44,6 +49,7 @@ cd analisis_empresa
 python -m analyst ITX.MC                                 # a la consola
 python -m analyst SAN.MC --out informe_san.md            # a un archivo
 python -m analyst AAPL --rf 0.043                        # fijando el tipo libre de riesgo
+python -m analyst GC=F                                   # oro (futuro continuo)
 python -m analyst DEMO-ESPERA --demo                     # sin red
 
 pytest analisis_empresa/tests                            # tests (sin red, ~3 s)
@@ -51,13 +57,17 @@ pytest analisis_empresa/tests                            # tests (sin red, ~3 s)
 
 Tickers con el formato de Yahoo: `SAN.MC`, `ITX.MC`, `IBE.MC` (Madrid), `ASML.AS` (Ámsterdam),
 `SAP.DE` (Fráncfort), `MC.PA` (París), `ENEL.MI` (Milán), `AAPL`, `MSFT` (EE. UU.). El índice de
-referencia se elige por sufijo (`data.BENCHMARKS`). Perfiles demo: `DEMO-COMPRA`, `DEMO-ESPERA`,
-`DEMO-VENDE`, `DEMO-CARA`.
+referencia se elige por sufijo (`data.BENCHMARKS`). Materias primas y divisas: `GC=F`
+(oro), `XAUUSD=X` (oro al contado), `SI=F` (plata), `CL=F` (petróleo), `EURUSD=X`. Perfiles demo:
+`DEMO-COMPRA`, `DEMO-ESPERA`, `DEMO-VENDE`, `DEMO-CARA` y `DEMO-ORO`.
 
 ## Pantallas de la app
 
 - **Cabecera**: veredicto con convicción, puntuación de cada eje, disparadores y avisos, razones
   a favor y en contra, niveles.
+- **Factores macro** (sólo oro, materias primas y divisas; sustituye a «Balance» y
+  «Valoración»): tabla de sensibilidades y efecto implícito de cada factor, activo y factores en
+  base 100, correlación móvil.
 - **Balance y cuentas**: ventas, beneficio y FCF por año; márgenes y rentabilidad; ratios por
   ejercicio; Piotroski; tablas de puntuación.
 - **Valoración**: valor estimado, supuestos, sensibilidad, precio frente a referencias.
@@ -78,6 +88,7 @@ analisis_empresa/
     valuation.py         CAPM/WACC, DCF, DCF inverso, P/VC justificado, múltiplos
     technical.py         Indicadores, soportes/resistencias, cruces, pilar técnico
     timeseries.py        Estadísticos, Ljung-Box, VR, Hurst, EWMA, GARCH, VaR, β
+    macro.py             Factores macro de oro, materias primas y divisas
     verdict.py           Matriz de decisión y reglas de timing → Verdict
     core.py              CompanyData → Analysis
     report.py            Informe Markdown
@@ -85,7 +96,7 @@ analisis_empresa/
   tests/                 Identidades y valores cerrados, escenarios demo, CLI
   GUIA_USO.md            Cómo usarlo e interpretar el resultado
   METODOLOGIA.md         Explicación de indicadores, umbrales y veredicto
-  ejemplos/              Informes generados con los perfiles demo
+  ejemplos/              Informes generados con los perfiles demo (incluido el oro)
   AGENTS.md              Guía para agentes que modifiquen el proyecto
 ```
 

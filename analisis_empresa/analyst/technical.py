@@ -12,7 +12,7 @@ from dataclasses import dataclass, field
 import numpy as np
 import pandas as pd
 
-from .common import TRADING_DAYS, Item, Pillar, finite, piecewise, ramp
+from .common import Item, Pillar, finite, piecewise, ramp
 
 
 # --------------------------------------------------------------------------- indicadores

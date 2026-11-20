@@ -6,6 +6,7 @@ from .common import Pillar, finite, fmt
 from .core import Analysis
 from .statements import PIOTROSKI_LABELS
 
+ASSET_LABEL = {"equity": "acción", "commodity": "materia prima", "fx": "divisa"}
 ACTION_ICON = {"COMPRAR": "▲", "VENDER": "▼", "ESPERAR": "⏸", "MANTENER": "●"}
 LEVEL_LABELS = {
     "precio": "Precio actual", "stop": "Stop orientativo", "riesgo_stop": "Distancia al stop",
@@ -31,20 +32,48 @@ def _s(x: float) -> str:
     return "—" if not finite(x) else f"{x:+.2f}"
 
 
+def _macro_section(a: Analysis) -> list[str]:
+    m = a.macro
+    L = ["## 1. Factores macro", "",
+         "Sensibilidad (β) de los rendimientos semanales del activo a cada factor en los últimos "
+         "2 años y efecto implícito del movimiento del factor en las últimas 13 semanas "
+         "(β × movimiento).", "",
+         "| Factor | Movimiento 3 m | β | Correlación | Efecto implícito | Signo esperado |",
+         "|---|---:|---:|---:|---:|---|"]
+    for d in m.drivers:
+        mv = f"{d.move:+.2f} pp" if d.ticker_kind == "yield" else fmt(d.move, "pct")
+        exp = {1: "+", -1: "−", 0: "—"}[d.expected_sign] + (" ⚠ inusual" if d.unusual else "")
+        L.append(f"| {d.name} | {mv} | {fmt(d.beta, 'num') if d.ticker_kind != 'yield' else f'{d.beta:+.3f}/pp'} "
+                 f"| {fmt(d.corr)} | {fmt(d.implied, 'pct')} | {exp} |")
+    L.append("")
+    rel = m.relative
+    if "gold_silver" in rel:
+        L.append(f"- Ratio oro/plata {rel['gold_silver']:.0f} (percentil {rel['gold_silver_pct']:.0%} de su historia).")
+    if "vs_spx_pct" in rel:
+        L.append(f"- Precio relativo frente al S&P 500 en el percentil {rel['vs_spx_pct']:.0%} de su historia.")
+    L += [f"- {n}" for n in m.notes] + [""]
+    return L + _pillar_table(m.pillar)
+
+
 def to_markdown(a: Analysis) -> str:
     cd, v, val, tech, ts = a.data, a.verdict, a.valuation, a.technical, a.timeseries
     s = ts.stats
     cur = cd.currency
     L = [f"# {cd.name} ({cd.ticker})", "",
          f"Datos a {cd.asof:%d/%m/%Y} · precio {fmt(cd.price, 'money')} {cur} · "
-         f"sector {cd.info.get('sector', '—')} · índice de referencia {cd.bench_ticker or '—'}"
+         + (f"sector {cd.info.get('sector', '—')}" if cd.is_equity else f"tipo {ASSET_LABEL.get(cd.asset_type, cd.asset_type)}")
+         + f" · índice de referencia {cd.bench_ticker or '—'}"
          + (" · **DATOS SINTÉTICOS (demo)**" if cd.demo else ""), "",
          f"## Veredicto: {ACTION_ICON.get(v.action, '')} {v.action} (convicción {v.conviction})", "",
          f"**{v.headline}**", "",
-         "| Eje | Puntuación |", "|---|---:|",
-         f"| Calidad (balance + rentabilidad) | {_s(v.quality)} |",
-         f"| Valoración | {_s(v.valuation)} |",
-         f"| **Atractivo fundamental** | **{_s(v.fundamental)}** |",
+         "| Eje | Puntuación |", "|---|---:|"]
+    if a.macro is None:
+        L += [f"| Calidad (balance + rentabilidad) | {_s(v.quality)} |",
+              f"| Valoración | {_s(v.valuation)} |",
+              f"| **Atractivo fundamental** | **{_s(v.fundamental)}** |"]
+    else:
+        L += [f"| **Factores macro** | **{_s(v.fundamental)}** |"]
+    L += [
          f"| **Momento técnico** | **{_s(v.timing)}** |",
          f"| Riesgo | {_s(v.risk)} |",
          f"| Compuesta | {_s(v.composite)} |", ""]
@@ -59,49 +88,54 @@ def to_markdown(a: Analysis) -> str:
         L.append(f"| {LEVEL_LABELS.get(k, k)} | {fmt(x, 'pct') if k == 'riesgo_stop' else fmt(x, 'money')} |")
     L.append("")
 
-    L += ["## 1. Balance y cuentas", ""]
-    if a.ratios is not None and len(a.ratios):
-        r = a.ratios
-        rows = {"Ventas": cd.income.get("revenue"), "Beneficio neto": cd.income.get("net_income"),
-                "Flujo de caja libre": r["fcf"], "Deuda neta": r["net_debt"]}
-        hdr = [f"{d:%Y}" for d in r.index]
-        L += ["| (millones) | " + " | ".join(hdr) + " |", "|---|" + "---:|" * len(hdr)]
-        for name, ser in rows.items():
-            if ser is None:
-                continue
-            vals = ser.reindex(r.index)
-            L.append(f"| {name} | " + " | ".join("—" if not finite(x) else f"{x / 1e6:,.0f}".replace(",", " ") for x in vals) + " |")
-        pct_rows = {"Margen EBIT": "ebit_margin", "Margen neto": "net_margin", "ROE": "roe",
-                    "ROIC": "roic", "Deuda neta/EBITDA": "net_debt_ebitda",
-                    "Liquidez": "current_ratio", "Cobertura intereses": "interest_coverage"}
-        for name, key in pct_rows.items():
-            kind = "pct0" if key in ("ebit_margin", "net_margin", "roe", "roic") else "num"
-            L.append(f"| {name} | " + " | ".join(fmt(x, kind) for x in r[key]) + " |")
-        L.append("")
-    pio = a.piotroski
-    if pio.available:
-        L += [f"**F-score de Piotroski: {pio.score}/9** ({pio.available} pruebas con dato): "
-              + ", ".join(f"{'✓' if t else '✗' if t is not None else '?'} {PIOTROSKI_LABELS[k]}"
-                          for k, t in pio.tests.items()), ""]
-    L += _pillar_table(a.balance) + _pillar_table(a.profitability)
+    if a.macro is not None:
+        L += _macro_section(a)
+        n = 2
+    else:
+        n = 3
+        L += ["## 1. Balance y cuentas", ""]
+        if a.ratios is not None and len(a.ratios):
+            r = a.ratios
+            rows = {"Ventas": cd.income.get("revenue"), "Beneficio neto": cd.income.get("net_income"),
+                    "Flujo de caja libre": r["fcf"], "Deuda neta": r["net_debt"]}
+            hdr = [f"{d:%Y}" for d in r.index]
+            L += ["| (millones) | " + " | ".join(hdr) + " |", "|---|" + "---:|" * len(hdr)]
+            for name, ser in rows.items():
+                if ser is None:
+                    continue
+                vals = ser.reindex(r.index)
+                L.append(f"| {name} | " + " | ".join("—" if not finite(x) else f"{x / 1e6:,.0f}".replace(",", " ") for x in vals) + " |")
+            pct_rows = {"Margen EBIT": "ebit_margin", "Margen neto": "net_margin", "ROE": "roe",
+                        "ROIC": "roic", "Deuda neta/EBITDA": "net_debt_ebitda",
+                        "Liquidez": "current_ratio", "Cobertura intereses": "interest_coverage"}
+            for name, key in pct_rows.items():
+                kind = "pct0" if key in ("ebit_margin", "net_margin", "roe", "roic") else "num"
+                L.append(f"| {name} | " + " | ".join(fmt(x, kind) for x in r[key]) + " |")
+            L.append("")
+        pio = a.piotroski
+        if pio.available:
+            L += [f"**F-score de Piotroski: {pio.score}/9** ({pio.available} pruebas con dato): "
+                  + ", ".join(f"{'✓' if t else '✗' if t is not None else '?'} {PIOTROSKI_LABELS[k]}"
+                              for k, t in pio.tests.items()), ""]
+        L += _pillar_table(a.balance) + _pillar_table(a.profitability)
 
-    L += ["## 2. Valoración", ""]
-    if val.method:
-        L += [f"- Método: **{val.method}** → valor estimado **{fmt(val.fair_value, 'money')}** "
-              f"({fmt(val.margin, 'pct')} sobre el precio).",
-              f"- Coste del capital propio {fmt(val.ke, 'pct0')}; WACC {fmt(val.wacc, 'pct0')}; "
-              f"crecimiento a perpetuidad {fmt(val.gT, 'pct0')}."]
-    L += [f"- {n}" for n in val.notes] + [""]
-    if not val.sensitivity.empty:
-        g = val.sensitivity.columns
-        L += ["Sensibilidad del valor por acción (filas: tasa de descuento; columnas: g a perpetuidad):", "",
-              "| tasa \\ g | " + " | ".join(f"{x:.1%}" for x in g) + " |", "|---|" + "---:|" * len(g)]
-        for k, row in val.sensitivity.iterrows():
-            L.append(f"| {k:.1%} | " + " | ".join(fmt(x, "money") for x in row) + " |")
-        L.append("")
-    L += _pillar_table(val.pillar)
+        L += ["## 2. Valoración", ""]
+        if val.method:
+            L += [f"- Método: **{val.method}** → valor estimado **{fmt(val.fair_value, 'money')}** "
+                  f"({fmt(val.margin, 'pct')} sobre el precio).",
+                  f"- Coste del capital propio {fmt(val.ke, 'pct0')}; WACC {fmt(val.wacc, 'pct0')}; "
+                  f"crecimiento a perpetuidad {fmt(val.gT, 'pct0')}."]
+        L += [f"- {n}" for n in val.notes] + [""]
+        if not val.sensitivity.empty:
+            g = val.sensitivity.columns
+            L += ["Sensibilidad del valor por acción (filas: tasa de descuento; columnas: g a perpetuidad):", "",
+                  "| tasa \\ g | " + " | ".join(f"{x:.1%}" for x in g) + " |", "|---|" + "---:|" * len(g)]
+            for k, row in val.sensitivity.iterrows():
+                L.append(f"| {k:.1%} | " + " | ".join(fmt(x, "money") for x in row) + " |")
+            L.append("")
+        L += _pillar_table(val.pillar)
 
-    L += ["## 3. Análisis técnico", "",
+    L += [f"## {n}. Análisis técnico", "",
           f"Tendencia **{tech.trend}**. Soporte {fmt(tech.support, 'money')}, resistencia "
           f"{fmt(tech.resistance, 'money')}, ATR(14) {fmt(tech.atr, 'money')} "
           f"({fmt(tech.atr / tech.price, 'pct0')} del precio)."
@@ -109,7 +143,7 @@ def to_markdown(a: Analysis) -> str:
     L += [f"- {f}" for f in tech.flags] + ([""] if tech.flags else [])
     L += _pillar_table(tech.pillar)
 
-    L += ["## 4. Series temporales, rentabilidad y volatilidad", "",
+    L += [f"## {n + 1}. Series temporales, rentabilidad y volatilidad", "",
           "| Métrica | Valor |", "|---|---:|",
           f"| Rentabilidad anual compuesta ({s['n'] / 252:.1f} años) | {fmt(s['cagr'], 'pct')} |",
           f"| Volatilidad anual | {fmt(s['vol_annual'], 'pct0')} |",

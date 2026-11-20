@@ -10,9 +10,10 @@ from . import core, data, report
 
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(prog="python -m analyst",
-                                 description="Analiza una empresa cotizada y dice si comprar, vender o esperar.")
+                                 description="Analiza una empresa cotizada (o el oro, materias primas y divisas) y dice si comprar, vender o esperar.")
     ap.add_argument("ticker", help="Ticker de Yahoo: SAN.MC, ITX.MC, AAPL, ASML.AS… "
-                                   "(con --demo: DEMO-COMPRA, DEMO-ESPERA, DEMO-VENDE, DEMO-CARA)")
+                                   "; materias primas GC=F (oro), SI=F, CL=F; divisas EURUSD=X "
+                                   "(con --demo: DEMO-COMPRA, DEMO-ESPERA, DEMO-VENDE, DEMO-CARA, DEMO-ORO)")
     ap.add_argument("--demo", action="store_true", help="Datos sintéticos (sin red)")
     ap.add_argument("--years", type=int, default=5, help="Años de precios (por defecto 5)")
     ap.add_argument("--rf", type=float, default=None, help="Tipo libre de riesgo (fracción, p. ej. 0.03)")

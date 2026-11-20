@@ -107,11 +107,56 @@ Niveles: stop = soporte − 0.5 ATR si el soporte está a menos de 3 ATR, si no 
 objetivos = resistencia, valor estimado y precio objetivo de analistas por encima del precio;
 en ventas, la resistencia es el nivel que invalidaría la tesis bajista.
 
+## 7. Oro, materias primas y divisas
+
+Un ticker es **materia prima** si acaba en `=F` (futuros: `GC=F` oro, `SI=F` plata, `CL=F`
+petróleo), es un ticker de oro conocido (`XAUUSD=X`, `XAU=X`, `XAUEUR=X`, `MGC=F`) o Yahoo
+indica `quoteType` FUTURE/COMMODITY; es **divisa** si acaba en `=X` o `quoteType` CURRENCY. Para
+ellos no hay balance, rentabilidad ni valoración: se sustituyen por el pilar **Factores macro**.
+
+**Factores** (`data.MACRO_DRIVERS`), con el signo que espera la teoría:
+
+| Factor | Ticker | Oro | Otras materias primas | Divisas |
+|---|---|---|---|---|
+| Dólar (DXY) | `DX-Y.NYB` | − (oro en dólares) | − | sin prior |
+| Rendimiento del bono EE. UU. 10 a | `^TNX` | − (coste de oportunidad) | sin prior | sin prior |
+| Bonos ligados a la inflación | `TIP` | + (TIP sube cuando bajan los tipos reales) | — | — |
+| S&P 500 | `^GSPC` | sin prior | + (ciclo) | sin prior |
+| VIX | `^VIX` | + (activo refugio) | − | sin prior |
+| Plata | `SI=F` | sólo valor relativo | — | — |
+
+**Sensibilidad**: regresión de los log-rendimientos semanales del activo sobre la variación del
+factor en los últimos 2 años (104 semanas): r = a + β·Δf, con Δf = log-rendimiento (precios),
+variación en puntos (rendimientos; β se lee «por punto porcentual») o log-variación (VIX).
+
+**Efecto implícito** = β × movimiento del factor en las últimas 13 semanas: cuánto ha empujado
+ese factor al activo en el último trimestre. Puntúa `ramp(efecto, −4 %, +4 %)` y pesa
+min(|ρ|/0.4, 1): un factor con correlación baja apenas cuenta. Si el signo estimado contradice al
+esperado con |ρ| > 0.15 se marca **relación inusual** (cambio de régimen: no extrapolar).
+
+**Valor relativo**:
+
+| Indicador | Puntúa +1 | Puntúa −1 | Peso |
+|---|---|---|---|
+| Extensión: z del log-precio frente a su media y desviación de 3 años | z ≤ −1 | z ≥ 2 | 0.7 |
+| Ratio oro/plata en percentil de su historia (sólo oro) | ≤ 10 % (oro barato frente a plata) | ≥ 90 % | 0.5 |
+
+**Veredicto**: el eje de fondo A es la puntuación macro (en vez de calidad + valoración) y se
+aplica la misma matriz A × T. Compuesta = 0.40·macro + 0.45·técnico + 0.15·riesgo. No hay
+veto de solvencia ni aviso de resultados. Como no hay valor intrínseco ni objetivo de analistas,
+el objetivo de referencia es el percentil 84 % del cono de precios a 3 meses.
+
+Los bloques técnico y de series temporales son los mismos que para una acción; β y correlación
+frente al S&P 500 miden el carácter de refugio (β ≈ 0 o negativa en el oro).
+
 ## Limitaciones
 
 - Yahoo Finance da 4 ejercicios anuales y a veces partidas incompletas o con nombres distintos
   (`data.ALIASES`); un indicador sin dato se omite y los pesos se renormalizan (se muestra la
   cobertura de cada bloque).
+- Factores macro: relaciones estimadas en 2 años de datos semanales; cambian con el régimen
+  (p. ej. la relación oro–tipos reales se debilitó en 2022–2024 por las compras de bancos
+  centrales). No se modelan inventarios, curva de futuros ni posicionamiento (COT).
 - No hay comparación con el sector (el dashboard `dashboard/` sí la tiene para los múltiplos).
 - Umbrales heurísticos y sin backtest: el veredicto es un resumen ordenado de la evidencia, no
   una predicción.

@@ -19,6 +19,10 @@ Superposiciones: insolvencia (Altman < 1.81, cobertura < 1.5×, deuda neta/EBITD
 compra; sobrecompra/extensión convierte COMPRAR en ESPERAR (a un retroceso); resultados en menos
 de ``EARNINGS_DAYS`` días convierte COMPRAR en ESPERAR (a los resultados); volatilidad en máximos
 rebaja la convicción.
+
+Activos sin estados financieros (oro, materias primas, divisas): se pasa ``macro`` (pilar
+«Factores macro», ver ``macro.py``) y el atractivo de fondo es A = puntuación macro; calidad y
+valoración quedan sin dato y las reglas de solvencia y resultados no aplican.
 """
 
 from __future__ import annotations
@@ -37,6 +41,7 @@ EARNINGS_DAYS = 14
 QUALITY_WEIGHTS = {"Balance y solvencia": 0.45, "Rentabilidad y crecimiento": 0.55}
 FUNDAMENTAL_WEIGHTS = {"calidad": 0.5, "valoración": 0.5}
 COMPOSITE_WEIGHTS = {"calidad": 0.30, "valoración": 0.30, "técnico": 0.30, "riesgo": 0.10}
+MACRO_COMPOSITE_WEIGHTS = {"macro": 0.40, "técnico": 0.45, "riesgo": 0.15}
 
 
 @dataclass
@@ -75,14 +80,23 @@ def decide(balance: Pillar, profitability: Pillar, valuation: Pillar, technical:
            support: float, resistance: float, flags: list[str], fair_value: float,
            analyst_target: float, vol_pct: float, vol_trend: float,
            asof: pd.Timestamp, earnings_date: pd.Timestamp | None,
-           ex_dividend_date: pd.Timestamp | None = None) -> Verdict:
-    q = weighted({k: p.score for k, p in (("Balance y solvencia", balance),
-                                          ("Rentabilidad y crecimiento", profitability))},
-                 QUALITY_WEIGHTS)
-    v = valuation.score
-    a = weighted({"calidad": q, "valoración": v}, FUNDAMENTAL_WEIGHTS)
+           ex_dividend_date: pd.Timestamp | None = None, macro: Pillar | None = None) -> Verdict:
     t, r = technical.score, risk.score
-    comp = weighted({"calidad": q, "valoración": v, "técnico": t, "riesgo": r}, COMPOSITE_WEIGHTS)
+    if macro is None:
+        q = weighted({k: p.score for k, p in (("Balance y solvencia", balance),
+                                              ("Rentabilidad y crecimiento", profitability))},
+                     QUALITY_WEIGHTS)
+        v = valuation.score
+        a = weighted({"calidad": q, "valoración": v}, FUNDAMENTAL_WEIGHTS)
+        comp = weighted({"calidad": q, "valoración": v, "técnico": t, "riesgo": r}, COMPOSITE_WEIGHTS)
+        F, good = "Fundamentales", "Buena empresa, precio razonable y tendencia a favor."
+        pos, neg = "atractivos", "débiles"
+    else:
+        q = v = float("nan")
+        a = macro.score
+        comp = weighted({"macro": a, "técnico": t, "riesgo": r}, MACRO_COMPOSITE_WEIGHTS)
+        F, good = "Factores macro", "Factores macro a favor y tendencia alcista."
+        pos, neg = "a favor", "en contra"
     a = a if finite(a) else 0.0
     t = t if finite(t) else 0.0
 
@@ -105,11 +119,11 @@ def decide(balance: Pillar, profitability: Pillar, valuation: Pillar, technical:
     if a >= A_BUY:
         bias = "compra"
         if t >= T_UP:
-            action, head = "COMPRAR", "Buena empresa, precio razonable y tendencia a favor."
+            action, head = "COMPRAR", good
         elif t > T_DOWN:
-            action, head = "COMPRAR", "Fundamentales atractivos con técnico neutro: entrada escalonada."
+            action, head = "COMPRAR", f"{F} {pos} con técnico neutro: entrada escalonada."
         else:
-            action, head = "ESPERAR", ("Fundamentales atractivos pero el precio sigue en tendencia "
+            action, head = "ESPERAR", (f"{F} {pos} pero el precio sigue en tendencia "
                                        "bajista: esperar a que se estabilice.")
             if finite(sma50):
                 wait.append(f"Que el precio recupere la media de 50 sesiones ({fmt(sma50, 'money')}) "
@@ -123,21 +137,22 @@ def decide(balance: Pillar, profitability: Pillar, valuation: Pillar, technical:
     elif a <= A_SELL:
         bias = "venta"
         action = "VENDER"
-        head = ("Fundamentales débiles o valoración exigente; el rebote técnico es una ocasión para "
-                "reducir." if t >= T_UP else "Fundamentales débiles y precio sin apoyo técnico.")
+        head = ((f"{F} en contra; el rebote técnico es una ocasión para reducir." if macro is not None
+                 else "Fundamentales débiles o valoración exigente; el rebote técnico es una ocasión "
+                 "para reducir.") if t >= T_UP else f"{F} {neg} y precio sin apoyo técnico.")
         if oversold:
             wait.append("Está en sobreventa (" + "; ".join(oversold) + "): puede haber un rebote "
                         "técnico; vender de forma escalonada en él en vez de malvender hoy.")
     else:
         if t >= T_TACTICAL:
             bias, action = "compra", "COMPRAR"
-            head = "Fundamentales neutros; la tendencia es fuerte: compra táctica con stop."
+            head = f"{F} neutros; la tendencia es fuerte: compra táctica con stop."
         elif t <= -T_TACTICAL:
             bias, action = "venta", "VENDER"
-            head = "Fundamentales neutros y tendencia bajista clara."
+            head = f"{F} neutros y tendencia bajista clara."
         else:
             bias, action = "neutral", "MANTENER"
-            head = ("Sin ventaja clara: ni el precio ni los fundamentales dan una señal fuerte. "
+            head = (f"Sin ventaja clara: ni el precio ni los {F.lower()} dan una señal fuerte. "
                     "Quien la tenga, mantener; quien no, no hay prisa por entrar.")
             if finite(support) and finite(resistance):
                 wait.append(f"Una ruptura por encima de {fmt(resistance, 'money')} (resistencia) "
@@ -196,6 +211,6 @@ def decide(balance: Pillar, profitability: Pillar, valuation: Pillar, technical:
     if finite(resistance):
         lv["resistencia"] = resistance
 
-    pillars = [balance, profitability, valuation, technical, risk]
+    pillars = [balance, profitability, valuation, technical, risk] + ([macro] if macro else [])
     return Verdict(action, bias, head, conv, q, v, a, t, r, comp,
                    _top(pillars, True), _top(pillars, False), wait, warnings, lv)

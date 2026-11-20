@@ -1,6 +1,11 @@
 """Obtención de datos de una empresa: precios, índice de referencia, ``info``, estados
 financieros anuales y calendario (resultados, dividendo).
 
+Tipos de activo (``asset_type``): ``"equity"`` (acciones, el caso completo), ``"commodity"``
+(futuros ``=F`` como ``GC=F`` oro, ``SI=F`` plata, ``CL=F`` petróleo) y ``"fx"`` (divisas ``=X``
+como ``EURUSD=X``). Para los dos últimos no hay estados financieros: en su lugar se descargan
+los **factores macro** de ``MACRO_DRIVERS`` (dólar, tipos, S&P 500, VIX…).
+
 Fuente real: Yahoo Finance vía ``yfinance`` (importado de forma perezosa para que los tests no
 lo necesiten). Modo demo: empresas sintéticas con perfiles conocidos (``DEMO_PROFILES``).
 
@@ -68,6 +73,55 @@ BENCHMARKS = {".MC": "^IBEX", ".AS": "^AEX", ".PA": "^FCHI", ".DE": "^GDAXI", ".
 # Tipo libre de riesgo de respaldo (bono a 10 años) si no se puede descargar; editable en la app.
 RISK_FREE_FALLBACK = {"USD": 0.042, "EUR": 0.027, "GBP": 0.045, "CHF": 0.007}
 
+# --------------------------------------------------------------------------- activos no bursátiles
+GOLD_TICKERS = {"GC=F", "MGC=F", "XAUUSD=X", "XAU=X", "XAUEUR=X"}
+COMMODITY_QUOTE_TYPES = {"FUTURE", "COMMODITY"}
+FX_QUOTE_TYPES = {"CURRENCY"}
+
+# Factor macro: (ticker de Yahoo, tipo de serie, signo esperado de la relación con el activo).
+# Tipo: "price" (log-rendimientos), "yield" (variación en puntos de rendimiento; ^TNX cotiza en %)
+# o "level" (log-variación de un nivel como el VIX). "ratio" = sólo para valor relativo.
+# Signo esperado: +1 / −1 según la teoría económica, 0 sin prior; sólo se usa para avisar si la
+# relación estimada con los datos es la contraria («relación inusual»).
+MACRO_DRIVERS: dict[str, dict[str, tuple[str, str, int]]] = {
+    "gold": {
+        "Dólar (índice DXY)": ("DX-Y.NYB", "price", -1),
+        "Rendimiento del bono EE. UU. a 10 años": ("^TNX", "yield", -1),
+        "Bonos ligados a la inflación (TIP)": ("TIP", "price", +1),
+        "S&P 500": ("^GSPC", "price", 0),
+        "Volatilidad implícita (VIX)": ("^VIX", "level", +1),
+        "Plata": ("SI=F", "ratio", +1),
+    },
+    "commodity": {
+        "Dólar (índice DXY)": ("DX-Y.NYB", "price", -1),
+        "Rendimiento del bono EE. UU. a 10 años": ("^TNX", "yield", 0),
+        "S&P 500": ("^GSPC", "price", +1),
+        "Volatilidad implícita (VIX)": ("^VIX", "level", -1),
+    },
+    "fx": {
+        "Dólar (índice DXY)": ("DX-Y.NYB", "price", 0),
+        "Rendimiento del bono EE. UU. a 10 años": ("^TNX", "yield", 0),
+        "S&P 500": ("^GSPC", "price", 0),
+        "Volatilidad implícita (VIX)": ("^VIX", "level", 0),
+    },
+}
+
+
+def asset_type(ticker: str, info: dict | None = None) -> str:
+    """``"equity"``, ``"commodity"`` o ``"fx"`` según el sufijo del ticker o ``quoteType``."""
+    t = ticker.upper()
+    qt = str((info or {}).get("quoteType") or "").upper()
+    if t in GOLD_TICKERS or t.endswith("=F") or qt in COMMODITY_QUOTE_TYPES:
+        return "commodity"
+    if t.endswith("=X") or qt in FX_QUOTE_TYPES:
+        return "fx"
+    return "equity"
+
+
+def driver_set(ticker: str, kind: str) -> str:
+    """Clave de ``MACRO_DRIVERS`` para un activo no bursátil."""
+    return "gold" if ticker.upper() in GOLD_TICKERS or ticker.upper().startswith("DEMO-ORO") else kind
+
 
 def benchmark_for(ticker: str) -> str:
     for suffix, bench in BENCHMARKS.items():
@@ -118,6 +172,12 @@ class CompanyData:
     risk_free: float = 0.03
     demo: bool = False
     warnings: list[str] = field(default_factory=list)
+    asset_type: str = "equity"          # "equity" | "commodity" | "fx"
+    drivers: dict[str, pd.Series] = field(default_factory=dict)   # factor → serie (macro)
+
+    @property
+    def is_equity(self) -> bool:
+        return self.asset_type == "equity"
 
     @property
     def name(self) -> str:
@@ -179,6 +239,9 @@ def fetch(ticker: str, years: int = 5) -> CompanyData:
             return default
 
     info = dict(safe(lambda: tk.info, {}, "la ficha (info)"))
+    kind = asset_type(ticker, info)
+    if kind != "equity":
+        return _fetch_macro(yf, ticker, kind, prices, info, years, warnings, safe)
     income = normalize_statement(safe(lambda: tk.income_stmt, None, "la cuenta de resultados"), "income")
     balance = normalize_statement(safe(lambda: tk.balance_sheet, None, "el balance"), "balance")
     cashflow = normalize_statement(safe(lambda: tk.cashflow, None, "el estado de flujos"), "cashflow")
@@ -205,6 +268,32 @@ def fetch(ticker: str, years: int = 5) -> CompanyData:
         warnings.append("Yahoo no devuelve estados financieros para este valor.")
     return CompanyData(ticker, prices, info, income, balance, cashflow, bench_ticker, bench,
                        earnings, exdiv, rf, False, warnings)
+
+
+def _empty_statements() -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+    return tuple(pd.DataFrame(columns=list(ALIASES[k]), dtype=float)  # type: ignore[return-value]
+                 for k in ("income", "balance", "cashflow"))
+
+
+def _fetch_macro(yf, ticker, kind, prices, info, years, warnings, safe) -> CompanyData:
+    """Materia prima o divisa: sin estados financieros; se descargan los factores macro."""
+    drivers: dict[str, pd.Series] = {}
+    for name, (sym, _, _) in MACRO_DRIVERS[driver_set(ticker, kind)].items():
+        h = safe(lambda sym=sym: yf.Ticker(sym).history(period=f"{years}y", auto_adjust=True), None,
+                 f"el factor {name} ({sym})")
+        if h is not None and len(h) > 60:
+            drivers[name] = _clean_prices(h)["Close"]
+    bench = drivers.get("S&P 500")
+    if bench is None:
+        h = safe(lambda: yf.Ticker("^GSPC").history(period=f"{years}y", auto_adjust=True), None,
+                 "el índice ^GSPC")
+        bench = _clean_prices(h)["Close"] if h is not None and len(h) > 60 else None
+    tnx = drivers.get("Rendimiento del bono EE. UU. a 10 años")
+    rf = float(tnx.iloc[-1]) / 100.0 if tnx is not None else RISK_FREE_FALLBACK["USD"]
+    info.setdefault("currency", "USD")
+    inc, bal, cf = _empty_statements()
+    return CompanyData(ticker, prices, info, inc, bal, cf, "^GSPC", bench, None, None, rf, False,
+                       warnings, kind, drivers)
 
 
 # --------------------------------------------------------------------------- modo demo
@@ -309,9 +398,55 @@ def _demo_statements(prof: dict, rng: np.random.Generator, years: int = 4):
     return income, balance * 1e6, cashflow * 1e6
 
 
+def demo_gold(n_days: int = 1260, seed: int = 21) -> CompanyData:
+    """Oro sintético con factores macro de sensibilidad conocida (para tests y demo):
+
+    r_oro = −0.5·r_dólar − 0.04·Δ(rend. 10 a, en pp) + 0.03·Δln VIX + ruido; plata = 1.3·r_oro + ruido;
+    TIP = −0.07·Δ(rend.) + ruido. En los últimos 3 meses el dólar y los tipos bajan (viento a favor).
+    """
+    rng = np.random.default_rng(seed)
+    idx = pd.bdate_range(end=DEMO_TODAY, periods=n_days)
+    dt = 1 / 252
+    recent = np.arange(n_days) >= n_days - 63
+    r_dxy = rng.normal(0, 0.07 * np.sqrt(dt), n_days) + np.where(recent, -0.15, 0.0) * dt
+    shock = rng.normal(0, 0.6 * np.sqrt(dt), n_days) + np.where(recent, -1.5, 0.0) * dt
+    tnx, lvix = np.full(n_days, 4.0), np.zeros(n_days)
+    for t in range(1, n_days):  # Ornstein-Uhlenbeck (tipos en torno a 4 %, log VIX en torno a 0)
+        tnx[t] = tnx[t - 1] + 0.8 * (4.0 - tnx[t - 1]) * dt + shock[t]
+        lvix[t] = lvix[t - 1] * (1 - 3 * dt) + rng.normal(0, 0.9 * np.sqrt(dt))
+    d_tnx = np.diff(tnx, prepend=tnx[0])
+    vix = 18 * np.exp(lvix)
+    d_lvix = np.diff(np.log(vix), prepend=np.log(vix[0]))
+    bench_df = _demo_prices(np.random.default_rng(seed + 1), dict(drift=(0.08, 0.08), vol=0.16),
+                            n_days, 5_000.0)
+    factor = -0.5 * r_dxy - 0.04 * d_tnx + 0.03 * d_lvix
+    gold = _demo_prices(rng, dict(drift=(0.10, 0.10), vol=0.13), n_days, 1.0, market=factor)
+    gold[["Open", "High", "Low", "Close"]] *= 2650.0 / gold["Close"].iloc[-1]
+    r_gold = np.log(gold["Close"]).diff().fillna(0.0).to_numpy()
+    silver = 31.0 * np.exp(np.cumsum(1.3 * r_gold + rng.normal(0, 0.15 * np.sqrt(dt), n_days)))
+    tip = 108.0 * np.exp(np.cumsum(-0.07 * d_tnx + rng.normal(0, 0.02 * np.sqrt(dt), n_days)))
+    dxy = 100.0 * np.exp(np.cumsum(r_dxy))
+    drivers = {
+        "Dólar (índice DXY)": pd.Series(dxy, idx),
+        "Rendimiento del bono EE. UU. a 10 años": pd.Series(tnx, idx),
+        "Bonos ligados a la inflación (TIP)": pd.Series(tip, idx),
+        "S&P 500": bench_df["Close"],
+        "Volatilidad implícita (VIX)": pd.Series(vix, idx),
+        "Plata": pd.Series(silver, idx),
+    }
+    info = {"shortName": "Oro (demo)", "longName": "Oro, futuro continuo (demo)",
+            "quoteType": "FUTURE", "currency": "USD"}
+    inc, bal, cf = _empty_statements()
+    return CompanyData("DEMO-ORO", gold, info, inc, bal, cf, "DEMO-SP500", bench_df["Close"], None,
+                       None, float(tnx[-1]) / 100, True, [], "commodity", drivers)
+
+
 def demo(ticker: str = "DEMO-COMPRA", n_days: int = 1260, seed: int = 11) -> CompanyData:
     """Empresa sintética. Los tickers de ``DEMO_PROFILES`` tienen un perfil conocido (útil para
-    tests); cualquier otro recibe uno de ellos según un hash del nombre."""
+    tests); ``DEMO-ORO`` es una materia prima con factores macro (``demo_gold``); cualquier otro
+    recibe uno de los perfiles de empresa según un hash del nombre."""
+    if ticker.upper() == "DEMO-ORO":
+        return demo_gold(n_days)
     key = ticker.upper()
     if key not in DEMO_PROFILES:
         key = list(DEMO_PROFILES)[zlib.crc32(key.encode()) % len(DEMO_PROFILES)]

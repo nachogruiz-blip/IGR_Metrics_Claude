@@ -60,7 +60,7 @@ jobs:
       - run: pytest analisis_empresa/tests
       - name: La app arranca en modo demo
         run: |
-          ANALYST_DEMO=1 timeout 90 python -c "from streamlit.testing.v1 import AppTest; at = AppTest.from_file('analisis_empresa/app.py', default_timeout=60).run(); assert not at.exception, at.exception"
+          ANALYST_DEMO=1 timeout 90 python -c "from streamlit.testing.v1 import AppTest; at = AppTest.from_file('analisis_empresa/app.py', default_timeout=60).run(); assert not at.exception and len(at.title) == 1, at.exception"
 
   latex:
     name: Compilar LaTeX
