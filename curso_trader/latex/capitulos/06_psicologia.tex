@@ -1,0 +1,47 @@
+\chapter{Psicología, proceso y diario de trading}\label{cap:psico}
+
+\section{Sesgos que cuestan dinero}
+\begin{description}
+\item[Aversión a la pérdida y efecto disposición.] Vendemos rápido lo que gana y aguantamos lo que
+  pierde. Es exactamente lo contrario de «cortar pérdidas y dejar correr beneficios». Solución: stop y
+  objetivo definidos antes de entrar; mover el stop solo a favor.
+\item[Exceso de confianza.] Tras una racha ganadora se aumenta el tamaño. El tamaño lo fija la regla, no el ánimo.
+\item[Revenge trading.] Operar para «recuperar» una pérdida. Solución: límite de pérdida diaria que obliga a parar.
+\item[Sesgo de confirmación.] Buscar solo noticias que apoyan la posición. Escribe qué te haría cambiar de opinión.
+\item[Sesgo de resultado.] Juzgar una decisión por su resultado. Una buena operación puede perder dinero; una mala puede ganarlo.
+\item[FOMO.] Entrar tarde en un movimiento ya hecho, con el stop lejos y la relación beneficio/riesgo destruida.
+\end{description}
+
+\section{El plan de trading}
+Un plan escrito responde, para cada \emph{setup}:
+\begin{enumerate}
+\item \textbf{Contexto}: régimen, mercado, horario en que se opera.
+\item \textbf{Disparador}: condición exacta de entrada.
+\item \textbf{Invalidación}: dónde está el stop y por qué (nivel que demuestra que la idea era errónea).
+\item \textbf{Tamaño}: ec.~\eqref{eq:tamano} con el riesgo fijado.
+\item \textbf{Gestión}: objetivo, salida parcial, stop dinámico (ATR, mínimos crecientes), salida por tiempo.
+\item \textbf{Qué no hacer}: no operar en noticias de primer nivel si el setup no lo contempla, etc.
+\end{enumerate}
+
+\section{El diario de operaciones}
+El diario es el \emph{dataset} más valioso del trader. Cada operación registra fecha, activo, lado,
+entrada, stop, salida, tamaño, comisiones, setup y notas (qué viste, cómo te sentías). Con eso se
+calcula el resultado en $R$ y la esperanza por setup:
+\begin{lstlisting}
+python scripts/diario.py nueva --fichero diario.csv --simbolo EURUSD --clase fx --lado largo \
+   --entrada 1.0850 --stop 1.0825 --salida 1.0900 --tamano 200000 --setup ruptura
+python scripts/diario.py resumen --fichero diario.csv
+\end{lstlisting}
+El resumen marca las operaciones que perdieron más de $1{,}2R$ (stops saltados o movidos, el error más
+caro y más corregible). Revisa el diario cada semana: elimina los setups con esperanza negativa tras
+30--50 operaciones y aumenta el peso de los que funcionan.
+
+\begin{clave}
+El objetivo no es acertar, es \textbf{ejecutar el proceso}. Puntúa cada día por cumplimiento del plan
+(0--10), no por P\&L. A largo plazo el P\&L sigue al proceso.
+\end{clave}
+
+\section{Hábitos}
+Sueño, ejercicio y pausas no son consejos de autoayuda: la fatiga deteriora la toma de decisiones bajo
+riesgo. Define un horario de trabajo, no mires la cuenta fuera de él y para tras dos errores de
+disciplina en un mismo día.

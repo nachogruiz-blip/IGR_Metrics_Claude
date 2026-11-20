@@ -1,0 +1,8 @@
+latex/*.aux
+latex/*.log
+latex/*.out
+latex/*.toc
+latex/*.fls
+latex/*.fdb_latexmk
+# Datos personales (precios, diarios de operaciones): nunca al repo público
+datos/*.csv

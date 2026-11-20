@@ -1,0 +1,64 @@
+\chapter{Introducción: qué hace un trader profesional}\label{cap:intro}
+
+Un \emph{trader} profesional no es alguien que adivina hacia dónde va el precio. Es alguien que
+\textbf{toma riesgo de forma deliberada, medida y repetible} a cambio de una expectativa positiva, y que
+sobrevive lo suficiente como para que esa expectativa se materialice. La diferencia con el aficionado
+casi nunca está en la idea de entrada; está en el tamaño, en la disciplina para cortar pérdidas, en los
+costes y en el registro honesto de lo que funciona.
+
+\section{Los tipos de trader}
+\begin{description}
+\item[Sell-side (bancos, creadores de mercado).] Dan liquidez a clientes y ganan el diferencial
+  compra-venta (\emph{bid-ask}). Su problema principal es gestionar el inventario y cubrir el riesgo
+  que acumulan; sus límites se fijan en DV01, delta, vega y VaR.
+\item[Buy-side (fondos, gestoras, hedge funds).] Toman posiciones direccionales o de valor relativo para
+  generar rentabilidad. Se miden por Sharpe, drawdown y correlación con el mercado.
+\item[Prop trading y traders independientes.] Arriesgan capital propio (o de una firma que les fondea)
+  con reglas de pérdida diaria y \emph{drawdown} máximo muy estrictas.
+\item[Sistemáticos (\emph{quants}).] Codifican las reglas y dejan que un ordenador las ejecute; su
+  ventaja está en la investigación y en la ejecución, y su riesgo en el sobreajuste.
+\end{description}
+
+\section{La ecuación del trader}
+Si cada operación arriesga una unidad $1R$ (la pérdida si salta el stop), la \emph{esperanza} por
+operación es
+\begin{equation}\label{eq:esperanza}
+  E = p\cdot \bar G - (1-p)\cdot \bar P \qquad (\text{en } R),
+\end{equation}
+con $p$ la tasa de acierto, $\bar G$ la ganancia media y $\bar P$ la pérdida media (en $R$). El
+resultado anual es aproximadamente $E \times N \times (\text{riesgo por operación})$, con $N$ el número
+de operaciones. Todo el curso trata de mejorar uno de esos tres factores sin destruir los otros:
+\begin{itemize}
+\item subir $E$: mejores ideas, mejor ejecución, menos costes (capítulos~\ref{cap:micro}, \ref{cap:tecnico}, \ref{cap:equity}--\ref{cap:cripto});
+\item que $E$ sea \emph{real} y no un artefacto del backtest (capítulo~\ref{cap:backtest});
+\item elegir el riesgo por operación que maximiza el crecimiento sin arruinarse (capítulo~\ref{cap:riesgo});
+\item ejecutar el plan sin que las emociones lo rompan (capítulo~\ref{cap:psico}).
+\end{itemize}
+
+\begin{clave}
+Una tasa de acierto del 35~\% puede ser excelente si las ganancias medias son 3 veces las pérdidas
+($E = 0{,}35\cdot3 - 0{,}65 = 0{,}40R$). Un 80~\% de acierto puede ser ruinoso si cada pérdida es 5
+veces la ganancia media. \textbf{El acierto, solo, no significa nada.}
+\end{clave}
+
+\section{Cómo usar este curso}
+Cada capítulo combina teoría, fórmulas y un enlace a funciones de la librería \py{trader}
+(carpeta \py{curso\_trader/}). Las fórmulas que ves aquí son las que están implementadas y
+verificadas por los tests. Para instalar y comprobar:
+\begin{lstlisting}
+cd curso_trader
+pip install -r requirements.txt
+pytest tests                      # ~15 s, sin red
+python scripts/generar_figuras.py # regenera las figuras de este PDF
+\end{lstlisting}
+Los scripts de \py{scripts/} están pensados para el día a día (capítulo~\ref{cap:rutina}):
+tamaño de posición, hoja premercado, informe de riesgo, backtest, diario de operaciones y
+calculadoras por clase de activo. Todos funcionan en modo demostración con datos sintéticos y aceptan
+tus propios CSV.
+
+\paragraph{Estructura.} La parte~I cubre lo común a todos los mercados (microestructura, estadística,
+análisis técnico, riesgo, backtesting y psicología). La parte~II recorre las clases de activo:
+\textbf{renta variable (equity)}, \textbf{divisas (FX)}, \textbf{materias primas (commodities)}, y además
+\textbf{renta fija}, \textbf{opciones y volatilidad} y \textbf{cripto}, porque un trader de cualquier
+mesa necesita entender tipos de interés y opciones. La parte~III convierte todo en una rutina diaria y
+un plan de estudio de 12 semanas.

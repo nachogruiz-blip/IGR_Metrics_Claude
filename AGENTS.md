@@ -42,3 +42,8 @@ Antes de modificarlo, lee `analisis_empresa/AGENTS.md`. Las reglas de LaTeX/figu
 ## Estudio de vídeo (`estudio_video/`)
 Proyecto independiente (sus propias dependencias y tests: `pytest estudio_video/tests`).
 Antes de modificarlo, lee `estudio_video/AGENTS.md`. Las reglas de LaTeX/figuras de arriba no le aplican.
+
+## Curso de trader (`curso_trader/`)
+Proyecto independiente (sus propias dependencias y tests: `pytest curso_trader/tests`).
+Antes de modificarlo, lee `curso_trader/AGENTS.md` (incluye la sección «Estado»). Las reglas de LaTeX/figuras
+de arriba no le aplican; tiene las suyas (su PDF es `curso_trader/latex/main.pdf`).

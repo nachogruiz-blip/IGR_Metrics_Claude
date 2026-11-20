@@ -1,0 +1,64 @@
+\chapter{La rutina diaria con los scripts}\label{cap:rutina}
+
+\section{Antes de la sesión (30--45 min)}
+\begin{enumerate}
+\item \textbf{Calendario}: datos macro con hora y consenso, bancos centrales, resultados de empresas,
+  inventarios (EIA), vencimientos de opciones y futuros.
+\item \textbf{Contexto}: qué hicieron Asia y Europa, futuros de índices, dólar, bonos a 10 años, crudo,
+  oro, VIX. ¿Régimen de riesgo (\emph{risk-on}) o de aversión (\emph{risk-off})?
+\item \textbf{Hoja premercado}: niveles, volatilidad y régimen de tu lista de seguimiento.
+\begin{lstlisting}
+python scripts/premercado.py --csv datos/SPY.csv --csv datos/EURUSD.csv --csv datos/CL.csv
+\end{lstlisting}
+  Imprime el checklist, las sesiones FX abiertas, ATR, volatilidad, RSI, distancia a las medias,
+  pivotes, máximos/mínimos de 20 sesiones y el rango esperado del día.
+\item \textbf{Escenarios si/entonces}: «si rompe 1,0900 con volumen tras el IPC, compro con stop 1,0870».
+\item \textbf{Riesgo}: revisa el riesgo abierto y la cartera.
+\begin{lstlisting}
+python scripts/informe_riesgo.py --csv datos/cartera.csv --pos SPY=50000 --pos TLT=-20000 --pos GLD=15000
+\end{lstlisting}
+\end{enumerate}
+
+\section{Durante la sesión}
+\begin{itemize}
+\item Calcula el tamaño \emph{antes} de enviar la orden:
+\begin{lstlisting}
+python scripts/tamano_posicion.py futuro --capital 250000 --riesgo 0.75 --simbolo CL --entrada 74.2 --stop 72.6
+python scripts/tamano_posicion.py fx --capital 20000 --par USDJPY --tipo 151.2 --stop-pips 40
+\end{lstlisting}
+\item Envía stop y objetivo con la entrada (orden bracket).
+\item Calculadoras rápidas: opciones, IV, movimiento esperado, forward, cruces, curva, crack, bonos, funding
+  (\py{scripts/calculadoras.py --help}).
+\item Respeta el límite de pérdida diaria.
+\end{itemize}
+
+\section{Después de la sesión}
+\begin{enumerate}
+\item Anota cada operación en el diario (\py{scripts/diario.py nueva}).
+\item Puntúa el cumplimiento del plan del día.
+\item Semanalmente: \py{scripts/diario.py resumen}, revisión de setups y de errores.
+\item Mensualmente: re-evalúa estrategias sistemáticas con \py{scripts/backtest.py} y compara el
+  resultado real con el esperado.
+\end{enumerate}
+
+\section{Datos}
+Los scripts leen CSV con columna de fecha y \texttt{open, high, low, close[, volume]} (o una columna por
+activo para el informe de riesgo). Puedes exportarlos desde tu bróker o plataforma; si instalas
+\texttt{yfinance}, \py{trader.data.download("SPY")} descarga históricos diarios. Sin
+\texttt{--csv}, todo funciona con datos sintéticos para practicar.
+
+\section{Mapa de scripts}
+\begin{table}[h]\centering\small
+\begin{tabularx}{\textwidth}{lX}
+\toprule
+Script & Para qué \\ \midrule
+\py{premercado.py} & Checklist, sesiones FX, niveles y régimen de cada activo. \\
+\py{tamano\_posicion.py} & Tamaño por riesgo: acciones, FX, futuros, ATR, cripto (con aviso de liquidación). \\
+\py{informe\_riesgo.py} & Vol, VaR/ES, contribuciones, correlaciones y estrés de la cartera. \\
+\py{backtest.py} & Backtest de SMA, Donchian, RSI y pares con costes, métricas y gráfico. \\
+\py{diario.py} & Diario de operaciones en CSV y estadísticas en $R$ por setup. \\
+\py{calculadoras.py} & Opciones, IV, movimiento esperado, forward FX, cruces, curva, crack, bonos, funding. \\
+\py{generar\_figuras.py} & Regenera las figuras de este PDF. \\
+\bottomrule
+\end{tabularx}
+\end{table}

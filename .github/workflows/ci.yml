@@ -73,6 +73,17 @@ jobs:
       - run: pip install -r estudio_video/requirements.txt
       - run: pytest estudio_video/tests
 
+  curso_trader:
+    name: Tests del curso de trader
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r curso_trader/requirements.txt
+      - run: pytest curso_trader/tests
+
   latex:
     name: Compilar LaTeX
     runs-on: ubuntu-latest
@@ -88,12 +99,15 @@ jobs:
         run: cd latex && latexmk -pdf -interaction=nonstopmode -halt-on-error main.tex
       - name: Guía teórica
         run: cd latex/guia && latexmk -pdf -interaction=nonstopmode -halt-on-error main.tex
+      - name: Curso de trader
+        run: cd curso_trader/latex && latexmk -pdf -interaction=nonstopmode -halt-on-error main.tex
       - name: Sin referencias rotas
         run: |
-          ! grep -E "LaTeX Warning: (Reference|Citation).*undefined" latex/main.log latex/guia/main.log
+          ! grep -E "LaTeX Warning: (Reference|Citation).*undefined" latex/main.log latex/guia/main.log curso_trader/latex/main.log
       - uses: actions/upload-artifact@v4
         with:
           name: pdfs
           path: |
             latex/main.pdf
             latex/guia/main.pdf
+            curso_trader/latex/main.pdf
