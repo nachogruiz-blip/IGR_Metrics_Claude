@@ -35,7 +35,16 @@ def cmd_crear(a) -> int:
     if a.guion:
         sb = Storyboard.from_json(Path(a.guion).read_text(encoding="utf-8"))
     else:
-        sb = plan_from_text(a.texto, use_ai=a.ia, fps=a.fps)
+        texto = a.texto
+        if a.voz:
+            from .voice import dictate
+
+            texto = dictate()
+            print(f"Has dicho: {texto}")
+            if not texto:
+                print("No se reconoció nada.", file=sys.stderr)
+                return 1
+        sb = plan_from_text(texto, use_ai=a.ia, fps=a.fps)
     out = Path(a.salida or f"salidas/{_slug(sb.title)}.mp4")
     print(f"Guion: {len(sb.scenes)} escenas, {sb.duration:.1f} s, {sb.width}x{sb.height}")
     for i, s in enumerate(sb.scenes, 1):
@@ -70,7 +79,8 @@ def _look_from_args(a) -> Look:
 def cmd_camara(a) -> int:
     from .camera import live
 
-    live(camera=a.camara, look=_look_from_args(a), engine=a.motor, use_ai=a.ia, outdir=a.carpeta)
+    live(camera=a.camara, look=_look_from_args(a), engine=a.motor, use_ai=a.ia, outdir=a.carpeta,
+         voice=a.voz, wake_word=a.palabra_clave, label=not a.sin_marca)
     return 0
 
 
@@ -80,7 +90,7 @@ def cmd_procesar(a) -> int:
     look = _look_from_args(a)
     out = a.salida or str(Path(a.video).with_name(Path(a.video).stem + "_editado.mp4"))
     print(f"Look: {look.describe()}")
-    process_video(a.video, out, look, engine=a.motor)
+    process_video(a.video, out, look, engine=a.motor, label=not a.sin_marca)
     print(f"Vídeo creado: {out}")
     return 0
 
@@ -119,6 +129,7 @@ def build_parser() -> argparse.ArgumentParser:
     c.add_argument("--musica", help="archivo de audio de fondo")
     c.add_argument("--fps", type=int, default=25)
     c.add_argument("--ia", action="store_true", help="usar Claude para escribir el guion")
+    c.add_argument("--voz", action="store_true", help="dictar la descripción por el micrófono")
     c.set_defaults(func=cmd_crear)
 
     g = sub.add_parser("guion", help="ver/guardar el guion sin renderizar")
@@ -138,9 +149,13 @@ def build_parser() -> argparse.ArgumentParser:
         s.add_argument("--cara", help="efecto de cara o ruta a imagen PNG (careta)")
         s.add_argument("--motor", default="auto", choices=["auto", "mediapipe", "opencv"])
         s.add_argument("--ia", action="store_true", help="usar Claude para entender las órdenes")
+        s.add_argument("--sin-marca", action="store_true",
+                       help="no añadir la marca visible «Modificado con IA» (los metadatos la llevan siempre)")
         if name == "camara":
             s.add_argument("--camara", type=int, default=0, help="índice de la cámara")
             s.add_argument("--carpeta", default="salidas", help="dónde guardar fotos y grabaciones")
+            s.add_argument("--voz", action="store_true", help="dar órdenes hablando (Vosk, sin conexión)")
+            s.add_argument("--palabra-clave", help="sólo obedecer frases que empiecen así (p. ej. «estudio»)")
             s.set_defaults(func=cmd_camara)
         else:
             s.set_defaults(func=cmd_procesar)
@@ -167,7 +182,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
-    if args.orden_principal == "crear" and not (args.texto or args.guion):
+    if args.orden_principal == "crear" and not (args.texto or args.guion or args.voz):
         print("Indica un texto o --guion", file=sys.stderr)
         return 2
     return args.func(args)

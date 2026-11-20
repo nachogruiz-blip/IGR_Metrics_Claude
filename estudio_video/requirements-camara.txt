@@ -6,3 +6,6 @@ opencv-python>=4.8
 mediapipe>=0.10.14
 # Opcional: entender órdenes libres con Claude (necesita ANTHROPIC_API_KEY)
 anthropic>=0.70
+# Órdenes por voz sin conexión (en Linux además: sudo apt install libportaudio2)
+vosk>=0.3.45
+sounddevice>=0.4

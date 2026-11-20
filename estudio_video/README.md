@@ -60,6 +60,7 @@ Enter; se acumulan:
 | `quita la cara` / `quítame el fondo` / `quita todo` | deshace |
 
 Teclas en la ventana: `1`–`9` looks rápidos, `0` original, `r` grabar/parar, `f` foto, `q` salir.
+También por orden: «graba», «para», «haz una foto», «salir».
 Las fotos y vídeos se guardan en `salidas/`.
 
 **Efectos** (cuerpo o cara): dibujo, boceto, neon, termico, pixel, difuminar, oro, robot,
@@ -75,6 +76,20 @@ python -m videostudio camara --fondo mi_salon.jpg --cara mi_avatar.png   # PNG c
 
 Sin MediaPipe (`--motor opencv`) funciona igual pero el recorte de la persona usa una foto
 del fondo vacío: sal del encuadre 2 s al arrancar.
+
+### Órdenes por voz
+
+```bash
+python -m videostudio camara --voz                       # di «ponme en la playa», «cara de robot», «graba»…
+python -m videostudio camara --voz --palabra-clave estudio  # sólo obedece «estudio, …» (evita falsos disparos)
+python -m videostudio crear --voz                        # dicta el vídeo entero
+```
+
+El reconocimiento es **local** (Vosk): el audio no sale del ordenador. La primera vez se
+descarga el modelo de español (~40 MB). Al dictar un vídeo, Vosk no pone signos: di «dos
+puntos» tras el título, «punto» o «siguiente escena» entre escenas y termina con «fin del
+vídeo» (o calla 3 s). Ejemplo: «un viaje dos puntos despegamos punto vemos las estrellas
+punto volvemos a casa fin del vídeo».
 
 ## 3. Aplicar un look a un vídeo ya grabado
 
@@ -105,6 +120,13 @@ traduce órdenes libres («quiero parecer un personaje de videojuego en una gala
 efectos disponibles. Si no hay clave, conexión o respuesta válida, vuelve solo a las reglas
 sin red. Usa la opción de *fallback* del servidor para que una negativa del modelo se reintente
 con otro modelo.
+
+## Privacidad, derechos de imagen y de autor
+
+El repositorio es **público**, pero tus vídeos no: se guardan en `salidas/` (ignorado por git)
+y la cámara y el micrófono se procesan en tu ordenador. Los vídeos con efectos llevan la marca
+«Modificado con IA» y metadatos de contenido sintético. Detalles (consentimiento de otras
+personas, música, licencias): [DERECHOS.md](DERECHOS.md).
 
 ## Qué hace y qué no
 

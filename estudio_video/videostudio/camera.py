@@ -22,6 +22,19 @@ from .looks import Look, parse_look, vocabulary
 from .segment import Box, OpenCVSegmenter, Segmenter, make_segmenter, median_background
 
 GHOST_ALPHA = 0.45
+LABEL = "Modificado con IA"
+
+
+def label_frame(frame: np.ndarray, text: str = LABEL) -> np.ndarray:
+    """Marca visible discreta (esquina inferior derecha) que avisa de que la imagen está alterada."""
+    out = frame.copy()
+    h, w = out.shape[:2]
+    scale = max(0.35, min(w, h) / 900)
+    (tw, th), _ = cv2.getTextSize(text, cv2.FONT_HERSHEY_SIMPLEX, scale, 1)
+    x, y = w - tw - 8, h - 8
+    cv2.rectangle(out, (x - 4, y - th - 4), (x + tw + 4, y + 4), (0, 0, 0), -1)
+    cv2.putText(out, text, (x, y), cv2.FONT_HERSHEY_SIMPLEX, scale, (255, 255, 255), 1, cv2.LINE_AA)
+    return out
 
 
 class Resolved:
@@ -140,13 +153,15 @@ def _read_frames(path: str | Path):
 
 
 def process_video(src: str | Path, out: str | Path, look: Look, engine: str = "auto",
-                  max_width: int | None = 1280) -> Path:
+                  max_width: int | None = 1280, label: bool = True) -> Path:
     """Aplica ``look`` a todo el vídeo ``src`` y guarda ``out`` (conserva el audio original).
+
+    ``label`` añade la marca visible «Modificado con IA» (los metadatos la llevan siempre).
 
     Con ``engine="opencv"`` el fondo de referencia es la mediana del vídeo (cámara fija).
     """
     from .edit import has_audio
-    from .render import ffmpeg_exe, write_video
+    from .render import AI_NOTICE, ffmpeg_exe, write_video
 
     frames, fps, w, h = _read_frames(src)
     scale = min(1.0, max_width / w) if max_width else 1.0
@@ -166,14 +181,20 @@ def process_video(src: str | Path, out: str | Path, look: Look, engine: str = "a
     out = Path(out)
     tmp = out.with_suffix(".sin_audio.mp4")
     try:
-        write_video((tr(resize(f), i / fps) for i, f in enumerate(frames)), tmp, W, H, int(round(fps)))
+        def gen():
+            for i, f in enumerate(frames):
+                o = tr(resize(f), i / fps)
+                yield label_frame(o) if label and tr.look != Look() else o
+
+        write_video(gen(), tmp, W, H, int(round(fps)))
     finally:
         seg.close()
     if has_audio(src):
         import subprocess
 
         subprocess.run([ffmpeg_exe(), "-y", "-loglevel", "error", "-i", str(tmp), "-i", str(src), "-map", "0:v",
-                        "-map", "1:a", "-c:v", "copy", "-c:a", "aac", "-shortest", str(out)], check=True)
+                        "-map", "1:a", "-c:v", "copy", "-c:a", "aac", "-shortest", "-metadata",
+                        f"comment={AI_NOTICE}", str(out)], check=True)
         tmp.unlink()
     else:
         tmp.replace(out)
@@ -195,11 +216,12 @@ PRESETS = {
 
 HELP = """\
 Cámara del estudio de vídeo
-  Escribe órdenes en ESTA terminal y pulsa Enter, por ejemplo:
+  Escribe órdenes en ESTA terminal y pulsa Enter (o dilas en voz alta con --voz), por ejemplo:
     ponme en la playa
     cara de robot y cuerpo de dibujo animado
     llévame al espacio con cara de alien
     desenfoca el fondo / quita la cara / quita todo
+    graba / para / haz una foto / salir
   Teclas en la ventana: 1-9 looks rápidos · 0 original · r grabar/parar · f foto · q salir
 """
 
@@ -209,10 +231,19 @@ def _stdin_reader(q: "queue.Queue[str]") -> None:
         q.put(line.strip())
 
 
+KEY_ACTIONS = {ord("q"): "salir", 27: "salir", ord("f"): "foto", ord("r"): "grabar_o_parar"}
+
+
 def live(camera: int = 0, look: Look | None = None, engine: str = "auto", use_ai: bool = False,
-         outdir: str | Path = "salidas", width: int = 960) -> None:  # pragma: no cover - necesita cámara
-    """Bucle en directo con la cámara web. Las grabaciones/fotos se guardan en ``outdir``."""
+         outdir: str | Path = "salidas", width: int = 960, voice: bool = False,
+         wake_word: str | None = None, label: bool = True) -> None:  # pragma: no cover - necesita cámara
+    """Bucle en directo con la cámara web. Las grabaciones/fotos se guardan en ``outdir``.
+
+    Órdenes escritas en la terminal o, con ``voice=True``, habladas (Vosk, sin conexión).
+    ``label`` añade «Modificado con IA» a fotos y vídeos guardados cuando hay un look activo.
+    """
     from .render import write_video
+    from .voice import VoiceListener, voice_action
 
     cap = cv2.VideoCapture(camera)
     if not cap.isOpened():
@@ -229,6 +260,7 @@ def live(camera: int = 0, look: Look | None = None, engine: str = "auto", use_ai
     print(f"Look actual: {tr.look.describe()}")
     q: "queue.Queue[str]" = queue.Queue()
     threading.Thread(target=_stdin_reader, args=(q,), daemon=True).start()
+    listener = VoiceListener(q.put, wake_word=wake_word).start() if voice else None
 
     outdir = Path(outdir)
     outdir.mkdir(parents=True, exist_ok=True)
@@ -237,6 +269,10 @@ def live(camera: int = 0, look: Look | None = None, engine: str = "auto", use_ai
     fps_est = 20.0
     last = time.time()
     win = "Estudio de video (q para salir)"
+
+    def stamp() -> str:
+        return time.strftime("%Y%m%d_%H%M%S")
+
     try:
         while True:
             ok, f = cap.read()
@@ -245,47 +281,62 @@ def live(camera: int = 0, look: Look | None = None, engine: str = "auto", use_ai
             f = cv2.flip(f, 1)
             if f.shape[1] > width:
                 f = cv2.resize(f, (width, int(f.shape[0] * width / f.shape[1])))
-            rgb = cv2.cvtColor(f, cv2.COLOR_BGR2RGB)
-            outf = tr(rgb, time.time() - t0)
+            outf = tr(cv2.cvtColor(f, cv2.COLOR_BGR2RGB), time.time() - t0)
+            saved = label_frame(outf) if label and tr.look != Look() else outf
+
+            actions: list[str] = []
             while not q.empty():
                 cmd = q.get()
-                if cmd:
-                    try:
-                        tr.set_look(parse_look(cmd, tr.look, use_ai=use_ai))
-                        print(f"→ {tr.look.describe()}")
-                    except (KeyError, FileNotFoundError) as e:
-                        print(f"No entendí: {e}")
+                if not cmd:
+                    continue
+                act = voice_action(cmd)
+                if act:
+                    actions.append(act)
+                    continue
+                try:
+                    tr.set_look(parse_look(cmd, tr.look, use_ai=use_ai))
+                    print(f"→ {tr.look.describe()}")
+                except (KeyError, FileNotFoundError) as e:
+                    print(f"No entendí: {e}")
+
             if recording is not None:
-                recording.append(outf)
-            show = cv2.cvtColor(outf, cv2.COLOR_RGB2BGR)
-            label = tr.look.describe() + ("   ● REC" if recording is not None else "")
-            cv2.putText(show, label, (10, 25), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 0), 3)
-            cv2.putText(show, label, (10, 25), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 1)
+                recording.append(saved)
+            show = cv2.cvtColor(saved, cv2.COLOR_RGB2BGR)
+            text = tr.look.describe() + ("   ● REC" if recording is not None else "")
+            cv2.putText(show, text, (10, 25), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 0), 3)
+            cv2.putText(show, text, (10, 25), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 1)
             cv2.imshow(win, show)
             now = time.time()
             fps_est = 0.9 * fps_est + 0.1 / max(now - last, 1e-3)
             last = now
+
             k = cv2.waitKey(1) & 0xFF
-            if k in (ord("q"), 27):
-                break
             if k in PRESETS:
                 tr.set_look(PRESETS[k])
                 print(f"→ {tr.look.describe()}")
-            elif k == ord("f"):
-                p = outdir / f"foto_{time.strftime('%Y%m%d_%H%M%S')}.png"
-                cv2.imwrite(str(p), show)
-                print(f"Foto guardada: {p}")
-            elif k == ord("r"):
-                if recording is None:
+            elif k in KEY_ACTIONS:
+                act = KEY_ACTIONS[k]
+                actions.append(act if act != "grabar_o_parar" else ("grabar" if recording is None else "parar"))
+
+            if "salir" in actions:
+                break
+            for act in actions:
+                if act == "foto":
+                    p = outdir / f"foto_{stamp()}.png"
+                    cv2.imwrite(str(p), cv2.cvtColor(saved, cv2.COLOR_RGB2BGR))
+                    print(f"Foto guardada: {p}")
+                elif act == "grabar" and recording is None:
                     recording = []
-                    print("Grabando… (r para parar)")
-                else:
-                    p = outdir / f"video_{time.strftime('%Y%m%d_%H%M%S')}.mp4"
-                    hh, ww = (s // 2 * 2 for s in recording[0].shape[:2])  # H.264 exige tamaño par
+                    print("Grabando… (r o «para» para terminar)")
+                elif act == "parar" and recording:
+                    p = outdir / f"video_{stamp()}.mp4"
+                    hh, ww = (d // 2 * 2 for d in recording[0].shape[:2])  # H.264 exige tamaño par
                     write_video((r[:hh, :ww] for r in recording), p, ww, hh, max(1, int(round(fps_est))))
                     print(f"Vídeo guardado: {p}")
                     recording = None
     finally:
+        if listener is not None:
+            listener.stop()
         cap.release()
         seg.close()
         cv2.destroyAllWindows()

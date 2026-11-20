@@ -105,14 +105,25 @@ def frames(sb: Storyboard) -> Iterator[np.ndarray]:
         t0 += scene.duration
 
 
-def write_video(frame_iter, out: str | Path, w: int, h: int, fps: int, audio: str | Path | None = None) -> Path:
-    """Escribe fotogramas RGB a MP4 mediante una tubería a ffmpeg (opcionalmente con audio)."""
+AI_NOTICE = "Contenido generado o modificado con IA (estudio_video)"
+
+
+def write_video(frame_iter, out: str | Path, w: int, h: int, fps: int, audio: str | Path | None = None,
+                notice: str | None = AI_NOTICE) -> Path:
+    """Escribe fotogramas RGB a MP4 mediante una tubería a ffmpeg (opcionalmente con audio).
+
+    ``notice`` se guarda en los metadatos del archivo (campo *comment*) para que quede
+    constancia de que el contenido es sintético o manipulado (transparencia, Reglamento UE de IA,
+    art. 50). ``None`` lo omite.
+    """
     out = Path(out)
     out.parent.mkdir(parents=True, exist_ok=True)
     cmd = [ffmpeg_exe(), "-y", "-loglevel", "error", "-f", "rawvideo", "-pix_fmt", "rgb24",
            "-s", f"{w}x{h}", "-r", str(fps), "-i", "-"]
     if audio:
         cmd += ["-i", str(audio), "-shortest", "-c:a", "aac"]
+    if notice:
+        cmd += ["-metadata", f"comment={notice}"]
     cmd += ["-c:v", "libx264", "-pix_fmt", "yuv420p", "-preset", "veryfast", "-crf", "22",
             "-movflags", "+faststart", str(out)]
     proc = subprocess.Popen(cmd, stdin=subprocess.PIPE, stderr=subprocess.PIPE)

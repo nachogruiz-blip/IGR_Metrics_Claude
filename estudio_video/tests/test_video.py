@@ -70,3 +70,12 @@ def test_cli_guion(capsys):
     assert main(["guion", "vídeo cuadrado de 6 segundos: uno. dos"]) == 0
     d = json.loads(capsys.readouterr().out)
     assert d["width"] == d["height"] == 1080 and len(d["scenes"]) == 3
+
+
+def test_metadatos_de_ia(clip):
+    import subprocess
+
+    from videostudio.render import AI_NOTICE, ffmpeg_exe
+
+    r = subprocess.run([ffmpeg_exe(), "-hide_banner", "-i", str(clip)], capture_output=True, text=True)
+    assert AI_NOTICE in r.stderr
