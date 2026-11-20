@@ -1,0 +1,6 @@
+# Núcleo (generar vídeos desde texto, editar, procesar archivos de vídeo)
+numpy>=1.24
+pillow>=10.1
+opencv-python-headless>=4.8
+imageio-ffmpeg>=0.4.9
+pytest>=7

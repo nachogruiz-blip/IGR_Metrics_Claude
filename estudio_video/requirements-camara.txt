@@ -1,0 +1,8 @@
+# Extra para la cámara en directo y la segmentación con IA.
+# opencv-python (con ventana) sustituye a opencv-python-headless:
+#   pip uninstall -y opencv-python-headless && pip install -r requirements-camara.txt
+-r requirements.txt
+opencv-python>=4.8
+mediapipe>=0.10.14
+# Opcional: entender órdenes libres con Claude (necesita ANTHROPIC_API_KEY)
+anthropic>=0.70

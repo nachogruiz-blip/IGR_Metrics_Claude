@@ -38,3 +38,7 @@ Antes de modificarlo, lee `dashboard/AGENTS.md`. Las reglas de LaTeX/figuras de 
 ## Analizador de empresas (`analisis_empresa/`)
 Proyecto independiente (sus propias dependencias y tests: `pytest analisis_empresa/tests`).
 Antes de modificarlo, lee `analisis_empresa/AGENTS.md`. Las reglas de LaTeX/figuras de arriba no le aplican.
+
+## Estudio de vídeo (`estudio_video/`)
+Proyecto independiente (sus propias dependencias y tests: `pytest estudio_video/tests`).
+Antes de modificarlo, lee `estudio_video/AGENTS.md`. Las reglas de LaTeX/figuras de arriba no le aplican.

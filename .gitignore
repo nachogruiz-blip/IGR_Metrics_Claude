@@ -20,3 +20,4 @@ latex/guia/*.toc
 latex/guia/*.fls
 latex/guia/*.fdb_latexmk
 latex/guia/capitulos/*.aux
+estudio_video/salidas/
