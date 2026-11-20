@@ -42,3 +42,7 @@ Antes de modificarlo, lee `analisis_empresa/AGENTS.md`. Las reglas de LaTeX/figu
 ## Estudio de vídeo (`estudio_video/`)
 Proyecto independiente (sus propias dependencias y tests: `pytest estudio_video/tests`).
 Antes de modificarlo, lee `estudio_video/AGENTS.md`. Las reglas de LaTeX/figuras de arriba no le aplican.
+
+## Comparador de precios (`comparador_precios/`)
+Proyecto independiente (sus propias dependencias y tests: `pytest comparador_precios/tests`).
+Antes de modificarlo, lee `comparador_precios/CLAUDE.md`. Las reglas de LaTeX/figuras de arriba no le aplican.

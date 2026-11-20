@@ -21,6 +21,7 @@ visualización, un documento teórico en LaTeX y documentación bibliográfica.
 | `dashboard/` | App Streamlit independiente de seguimiento de acciones: indicadores técnicos y fundamentales, señal y perspectiva a 1–3 meses ([README](dashboard/README.md)) |
 | `analisis_empresa/` | Analizador independiente de una empresa (balance, fundamentales, valoración DCF, técnico, series temporales/GARCH) o del oro, materias primas y divisas (factores macro), con veredicto Comprar / Vender / Esperar ([README](analisis_empresa/README.md)) |
 | `estudio_video/` | Estudio de vídeo independiente: crea vídeos desde texto, edita (recortar, unir, música, rótulos…) y transforma la cámara (entorno, cuerpo y cara) con órdenes en español ([README](estudio_video/README.md)) |
+| `comparador_precios/` | Comparador de precios independiente: busca las tiendas que venden un producto con precio final, fiabilidad, opiniones, problemas reportados, vendedor oficial y cupones ([README](comparador_precios/README.md)) |
 | `AGENTS.md` | Instrucciones para agentes de IA que trabajen en el repo |
 
 ## Instalación y uso

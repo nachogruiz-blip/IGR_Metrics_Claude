@@ -1,0 +1,5 @@
+{"shopping_results":[
+ {"title":"Sony WH-1000XM5","source":"TiendaCuatro","link":"https://www.tiendacuatro.example/xm5","price":"289,00 €","extracted_price":289.0,"delivery":"Envío gratis","rating":4.7,"reviews":5120},
+ {"title":"Sony WH-1000XM5 reacondicionado","source":"Renuevo","link":"https://renuevo.example/xm5","price":"199,00 €","extracted_price":199,"second_hand_condition":"reacondicionado"},
+ {"title":"Sin precio","source":"X","link":"https://x.example"}
+]}
