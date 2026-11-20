@@ -30,3 +30,8 @@ Proyecto: cálculo de Malliavin y aplicaciones en finanzas (teoría en LaTeX + l
 - `latex/guia/` es la transcripción de la guía: reproduce su contenido, pero **corrige** las erratas y errores
   del original (no se conservan). Cada corrección se anota en `latex/guia/ERRATAS.md`.
 - Recompilar `latex/main.pdf` tras cambiar `latex/` y comprometer el PDF.
+
+## Dashboard de acciones (`dashboard/`)
+Proyecto independiente de la librería (sus propias dependencias y tests: `pytest dashboard/tests`).
+Antes de modificarlo, lee `dashboard/AGENTS.md`. Las reglas de LaTeX/figuras de arriba no le aplican.
+

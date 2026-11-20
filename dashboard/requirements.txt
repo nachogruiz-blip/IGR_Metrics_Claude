@@ -1,0 +1,9 @@
+# Dependencias del dashboard (independientes de la librería malliavin)
+streamlit>=1.50
+plotly>=5.20
+yfinance>=0.2.40
+pandas>=2.0
+numpy>=1.24
+scipy>=1.10
+matplotlib>=3.7
+pytest>=7
