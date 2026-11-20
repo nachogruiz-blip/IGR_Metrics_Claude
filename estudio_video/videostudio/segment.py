@@ -129,7 +129,8 @@ class OpenCVSegmenter(Segmenter):
     def __init__(self, reference: np.ndarray | None = None, threshold: float = 28.0) -> None:
         self.reference = None if reference is None else reference.astype(np.float32)
         self.threshold = threshold
-        self._haar = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_frontalface_default.xml")
+        self._haar = None  # se carga al primer uso: OpenCV 5 «headless» ya no trae Haar
+        self._haar_missing = False
 
     def person_mask(self, rgb: np.ndarray, t_ms: int) -> np.ndarray:
         if self.reference is None or self.reference.shape != rgb.shape:
@@ -140,9 +141,23 @@ class OpenCVSegmenter(Segmenter):
         m = cv2.morphologyEx(m, cv2.MORPH_CLOSE, np.ones((15, 15), np.uint8))
         return cv2.GaussianBlur(m.astype(np.float32), (9, 9), 0)
 
+    def _load_haar(self):
+        if self._haar is None and not self._haar_missing:
+            data = getattr(cv2, "data", None)
+            if hasattr(cv2, "CascadeClassifier") and data is not None:
+                self._haar = cv2.CascadeClassifier(data.haarcascades + "haarcascade_frontalface_default.xml")
+            else:
+                self._haar_missing = True
+                print("[aviso] Esta versión de OpenCV no incluye el detector Haar de caras; "
+                      "instala mediapipe (requirements-camara.txt) para los efectos de cara.")
+        return self._haar
+
     def faces(self, rgb: np.ndarray, t_ms: int) -> list[Box]:
+        haar = self._load_haar()
+        if haar is None:
+            return []
         gray = cv2.cvtColor(rgb, cv2.COLOR_RGB2GRAY)
-        found = self._haar.detectMultiScale(gray, 1.15, 5, minSize=(40, 40))
+        found = haar.detectMultiScale(gray, 1.15, 5, minSize=(40, 40))
         return [Box(int(x), int(y), int(w), int(h)) for x, y, w, h in found]
 
 
