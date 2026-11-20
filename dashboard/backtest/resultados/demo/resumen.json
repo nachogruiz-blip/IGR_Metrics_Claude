@@ -1,0 +1,198 @@
+{
+  "config": {
+    "tickers": [
+      "AAPL",
+      "MSFT",
+      "NVDA",
+      "GOOGL",
+      "ASML.AS",
+      "SAN.MC",
+      "ITX.MC",
+      "IBE.MC",
+      "BBVA.MC"
+    ],
+    "benchmarks": {
+      ".MC": "^IBEX",
+      ".AS": "^STOXX50E",
+      ".PA": "^STOXX50E",
+      ".DE": "^STOXX50E",
+      ".MI": "^STOXX50E",
+      "default": "^GSPC"
+    },
+    "start": "2012-01-01",
+    "end": null,
+    "warmup": 260,
+    "horizons": [
+      21,
+      63
+    ],
+    "cost_bps": 10.0,
+    "name": "demo"
+  },
+  "meta": {
+    "generado": "2026-11-20 07:04 UTC",
+    "python": "3.13.18",
+    "numpy": "2.5.3",
+    "pandas": "3.0.5",
+    "origen_datos": "sintéticos (demo, semilla fija)",
+    "sha256_datos": "",
+    "comando": "python -m stockdash.backtest --demo"
+  },
+  "metricas": {
+    "observaciones": 972,
+    "valores": 9,
+    "desde": "2017-12-29",
+    "hasta": "2026-11-20",
+    "ic_1m": {
+      "media": 0.2655660377358491,
+      "desv": 0.31904511024300475,
+      "t": 8.569853023145173,
+      "fechas": 106
+    },
+    "ic_3m": {
+      "media": 0.6586538461538461,
+      "desv": 0.16795586775272714,
+      "t": 39.99251540512932,
+      "fechas": 104
+    },
+    "ic_exceso_3m": {
+      "media": 0.6216346153846154,
+      "desv": 0.19049529220474176,
+      "t": 33.27879652547129,
+      "fechas": 104
+    },
+    "por_senal": [
+      {
+        "signal": "Compra fuerte",
+        "casos": 415,
+        "r_1m_media": 0.026609187813413447,
+        "r_3m_media": 0.09849425433619032,
+        "exceso_3m_medio": 0.09893790713651024,
+        "acierto": 0.9530864197530864
+      },
+      {
+        "signal": "Comprar",
+        "casos": 196,
+        "r_1m_media": 0.029997901165901942,
+        "r_3m_media": 0.07135757877444109,
+        "exceso_3m_medio": 0.071428596539643,
+        "acierto": 0.6269430051813472
+      },
+      {
+        "signal": "Mantener",
+        "casos": 133,
+        "r_1m_media": 0.00037899510111614375,
+        "r_3m_media": 0.0026842451353322094,
+        "exceso_3m_medio": 0.0056937301199471635,
+        "acierto": 0.5564516129032258
+      },
+      {
+        "signal": "Vender",
+        "casos": 114,
+        "r_1m_media": -0.034057952740836485,
+        "r_3m_media": -0.07815932818017014,
+        "exceso_3m_medio": -0.08171293624408629,
+        "acierto": 0.18095238095238095
+      },
+      {
+        "signal": "Venta fuerte",
+        "casos": 114,
+        "r_1m_media": -0.0017153518028245637,
+        "r_3m_media": -0.0609190408643167,
+        "exceso_3m_medio": -0.053933477102339734,
+        "acierto": 0.11009174311926606
+      }
+    ],
+    "por_perspectiva": [
+      {
+        "outlook": "Alcista",
+        "casos": 557,
+        "r_1m_media": 0.030552167587812578,
+        "r_3m_media": 0.09881834138486814,
+        "exceso_3m_medio": 0.09895704520473234,
+        "acierto": 0.90625
+      },
+      {
+        "outlook": "Lateral",
+        "casos": 198,
+        "r_1m_media": -5.817181999595691e-05,
+        "r_3m_media": 0.0001745146388242226,
+        "exceso_3m_medio": 0.0022195091192587224,
+        "acierto": 0.7407407407407407
+      },
+      {
+        "outlook": "Bajista",
+        "casos": 217,
+        "r_1m_media": -0.018764120206485227,
+        "r_3m_media": -0.07212824525531544,
+        "exceso_3m_medio": -0.06970016289353295,
+        "acierto": 0.8817733990147784
+      }
+    ],
+    "calibracion": [
+      {
+        "tramo": "< 40 %",
+        "casos": 73,
+        "p_media": 0.3852838786354202,
+        "frecuencia_subida": 0.1643835616438356
+      },
+      {
+        "tramo": "40–45 %",
+        "casos": 106,
+        "p_media": 0.422681985131441,
+        "frecuencia_subida": 0.05660377358490566
+      },
+      {
+        "tramo": "45–50 %",
+        "casos": 88,
+        "p_media": 0.4813755286170412,
+        "frecuencia_subida": 0.5568181818181818
+      },
+      {
+        "tramo": "50–55 %",
+        "casos": 146,
+        "p_media": 0.5173486654724321,
+        "frecuencia_subida": 0.3835616438356164
+      },
+      {
+        "tramo": "55–60 %",
+        "casos": 166,
+        "p_media": 0.5790313905378036,
+        "frecuencia_subida": 0.8734939759036144
+      },
+      {
+        "tramo": "≥ 60 %",
+        "casos": 357,
+        "p_media": 0.6293791876531633,
+        "frecuencia_subida": 0.9495798319327731
+      }
+    ],
+    "cobertura_rango_1m": 0.8469601677148847,
+    "cobertura_rango_3m": 0.9081196581196581,
+    "carteras": {
+      "senal": {
+        "cagr": 0.3939839599739623,
+        "vol": 0.07917870364613747,
+        "sharpe": 4.291900088786777,
+        "max_drawdown": -0.035548873158464445,
+        "meses": 107
+      },
+      "universo": {
+        "cagr": 0.17427319011566933,
+        "vol": 0.0653422131809213,
+        "sharpe": 2.5070482393215645,
+        "max_drawdown": -0.05701168276449364,
+        "meses": 107
+      },
+      "dif_quintiles": {
+        "cagr": 0.5060875062955985,
+        "vol": 0.146051011919487,
+        "sharpe": 2.922371932452055,
+        "max_drawdown": -0.07444480186971925,
+        "meses": 107
+      },
+      "meses_invertido": 1.0,
+      "rotacion_media": 0.2978193146417446
+    }
+  }
+}
