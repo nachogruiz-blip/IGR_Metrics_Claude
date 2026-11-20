@@ -18,6 +18,7 @@ visualización, un documento teórico en LaTeX y documentación bibliográfica.
 | `latex/` | Compañero numérico de la guía PDF (`main.tex`, capítulos, `referencias.bib`, `main.pdf`) |
 | `latex/guia/` | Fuente LaTeX de la guía teórica, reconstruida desde el PDF (23 capítulos + apéndices) |
 | `docs/` | [Mapa PDF → código](docs/mapa_pdf.md), [guía de la librería](docs/guia_libreria.md), [bibliografía comentada](docs/bibliografia.md), [chuleta de teoría](docs/teoria_resumen.md), [PDF de teoría](docs/pdf/Calculo_de_Malliavin_corregido.pdf) |
+| `dashboard/` | App Streamlit independiente de seguimiento de acciones: indicadores técnicos y fundamentales, señal y perspectiva a 1–3 meses ([README](dashboard/README.md)) |
 | `AGENTS.md` | Instrucciones para agentes de IA que trabajen en el repo |
 
 ## Instalación y uso

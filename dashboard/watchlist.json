@@ -1,0 +1,11 @@
+{
+  "tickers": ["AAPL", "MSFT", "NVDA", "GOOGL", "ASML.AS", "SAN.MC", "ITX.MC", "IBE.MC", "BBVA.MC"],
+  "benchmarks": {
+    ".MC": "^IBEX",
+    ".AS": "^STOXX50E",
+    ".PA": "^STOXX50E",
+    ".DE": "^STOXX50E",
+    ".MI": "^STOXX50E",
+    "default": "^GSPC"
+  }
+}
