@@ -20,6 +20,7 @@ visualización, un documento teórico en LaTeX y documentación bibliográfica.
 | `docs/` | [Mapa PDF → código](docs/mapa_pdf.md), [guía de la librería](docs/guia_libreria.md), [bibliografía comentada](docs/bibliografia.md), [chuleta de teoría](docs/teoria_resumen.md), [PDF de teoría](docs/pdf/Calculo_de_Malliavin_corregido.pdf) |
 | `dashboard/` | App Streamlit independiente de seguimiento de acciones: indicadores técnicos y fundamentales, señal y perspectiva a 1–3 meses ([README](dashboard/README.md)) |
 | `analisis_empresa/` | Analizador independiente de una empresa (balance, fundamentales, valoración DCF, técnico, series temporales/GARCH) o del oro, materias primas y divisas (factores macro), con veredicto Comprar / Vender / Esperar ([README](analisis_empresa/README.md)) |
+| `estudio_video/` | Estudio de vídeo independiente: crea vídeos desde texto, edita (recortar, unir, música, rótulos…) y transforma la cámara (entorno, cuerpo y cara) con órdenes en español ([README](estudio_video/README.md)) |
 | `AGENTS.md` | Instrucciones para agentes de IA que trabajen en el repo |
 
 ## Instalación y uso

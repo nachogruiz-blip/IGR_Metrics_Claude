@@ -20,3 +20,18 @@ latex/guia/*.toc
 latex/guia/*.fls
 latex/guia/*.fdb_latexmk
 latex/guia/capitulos/*.aux
+estudio_video/salidas/
+# estudio_video: nunca subir vídeos, fotos ni audio personales (el repo es público)
+estudio_video/**/*.mp4
+estudio_video/**/*.mov
+estudio_video/**/*.avi
+estudio_video/**/*.mkv
+estudio_video/**/*.webm
+estudio_video/**/*.gif
+estudio_video/**/*.png
+estudio_video/**/*.jpg
+estudio_video/**/*.jpeg
+estudio_video/**/*.wav
+estudio_video/**/*.mp3
+estudio_video/**/*.m4a
+!estudio_video/ejemplos/*
