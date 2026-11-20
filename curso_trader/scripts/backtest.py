@@ -4,6 +4,7 @@
   python scripts/backtest.py --csv datos/SPY.csv --estrategia donchian --coste 2 --vol-objetivo 0.10
   python scripts/backtest.py --estrategia rsi
   python scripts/backtest.py --estrategia pares      # par sintético cointegrado
+  python scripts/backtest.py --estrategia sig --ventana 20   # ridge sobre la signatura (curso §15.5)
 """
 import argparse
 
@@ -17,8 +18,9 @@ from trader import data, equity, performance as perf, plotting
 
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--csv"); ap.add_argument("--estrategia", choices=["sma", "donchian", "rsi", "pares"], default="sma")
+    ap.add_argument("--csv"); ap.add_argument("--estrategia", choices=["sma", "donchian", "rsi", "pares", "sig"], default="sma")
     ap.add_argument("--rapida", type=int, default=20); ap.add_argument("--lenta", type=int, default=100)
+    ap.add_argument("--ventana", type=int, default=20, help="ventana de la signatura en sesiones (estrategia sig)")
     ap.add_argument("--coste", type=float, default=1.0, help="coste por unidad de rotación en pb (def. 1)")
     ap.add_argument("--vol-objetivo", type=float, help="escala la posición a esta vol anual (p. ej. 0.10)")
     ap.add_argument("--grafico", default="backtest", help="nombre del PNG en figuras/ ('' para no guardar)")
@@ -44,6 +46,10 @@ def main(argv=None):
         close = ohlc["close"]
         if args.estrategia == "sma":
             pos = bt.sma_crossover(close, args.rapida, args.lenta)
+        elif args.estrategia == "sig":
+            train = min(500, len(close) // 2)  # con históricos cortos, entrena con la primera mitad
+            pos = bt.signature_momentum(close, window=args.ventana, train=train)
+            print("Estrategia «sig»: posición 0 durante las primeras sesiones de entrenamiento (walk-forward).")
         elif args.estrategia == "donchian":
             pos = bt.donchian_breakout(ohlc)
         else:

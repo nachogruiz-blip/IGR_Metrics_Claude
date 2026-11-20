@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 from trader import backtest as bt
 from trader import commodities as cm
 from trader import data, equity, indicators as ind, options as op, performance as perf, plotting, rates, risk
+from trader import signature as sg
 
 S = plotting.SERIES
 
@@ -180,10 +181,38 @@ def f11_opciones():
     plotting.save(fig, "f11_opciones")
 
 
+def f12_signaturas():
+    x = np.cumsum(np.random.default_rng(31).normal(0, 1, 9))
+    ll = sg.lead_lag(x)
+    qv = 0.5 * np.sum(np.diff(x) ** 2)
+    area = sg.levy_area(ll)[0, 1]
+    fig, (a1, a2) = plt.subplots(1, 2, figsize=(8.5, 3.6))
+    a1.fill(np.r_[ll[:, 1], ll[0, 1]], np.r_[ll[:, 0], ll[0, 0]], color=S[0], alpha=0.15)
+    a1.plot(ll[:, 1], ll[:, 0], color=S[0], marker="o", ms=3, label="Camino lead-lag")
+    lo, hi = x.min() - 0.3, x.max() + 0.3
+    a1.plot([lo, hi], [lo, hi], ":", color=S[5], lw=0.8, label="Diagonal (lead = lag)")
+    a1.set_xlabel("Copia retrasada (lag)"); a1.set_ylabel("Copia adelantada (lead)")
+    a1.set_title(f"Área de Lévy {area:.2f} = ½·Σ(Δx)² = {qv:.2f}".replace(".", ",")); a1.legend(loc="upper left")
+    rhos = np.linspace(-0.6, 0.6, 7)
+    rng = np.random.default_rng(32)
+    est, err = [], []
+    for rho in rhos:
+        rx = rng.standard_normal(5001)
+        ry = rho * rx[:-1] + np.sqrt(1 - rho**2) * rng.standard_normal(5000)
+        sc, se = sg.lead_lag_score(rx[1:], ry, window=20)
+        est.append(sc); err.append(2 * se)
+    a2.plot(rhos, rhos, "--", color=S[1], label="Esperanza teórica (= ρ)")
+    a2.errorbar(rhos, est, yerr=err, fmt="o", color=S[0], capsize=3, label="Estimación ± 2 e.t. (5000 sesiones)")
+    a2.axhline(0, color="k", lw=0.8)
+    a2.set_xlabel("ρ en r_B(t) = ρ·r_A(t−1) + ruido"); a2.set_ylabel("Puntuación de liderazgo A→B")
+    a2.set_title("Área de Lévy por ventanas de 20 sesiones"); a2.legend(loc="upper left")
+    plotting.save(fig, "f12_signaturas")
+
+
 def main():
     plotting.setup()
     for fn in (f01_indicadores, f02_colas, f03_kelly, f04_ruina, f05_backtest, f06_sobreajuste, f07_pares,
-               f08_carry, f09_curvas, f10_bono, f11_opciones):
+               f08_carry, f09_curvas, f10_bono, f11_opciones, f12_signaturas):
         fn()
         print("ok", fn.__name__)
 

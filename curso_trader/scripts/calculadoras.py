@@ -1,4 +1,4 @@
-"""Calculadoras rápidas por clase de activo (curso §7–§12).
+"""Calculadoras rápidas por clase de activo (curso §7–§12) y de liderazgo con signaturas (§15).
 
   python scripts/calculadoras.py opcion --spot 100 --strike 105 --dias 30 --vol 25 --tipo-interes 4
   python scripts/calculadoras.py iv --precio 2.35 --spot 100 --strike 105 --dias 30 --tipo-interes 4
@@ -9,13 +9,18 @@
   python scripts/calculadoras.py crack --crudo 75 --gasolina 2.35 --gasoleo 2.55
   python scripts/calculadoras.py bono --cupon 4.25 --tir 4.4 --anos 10
   python scripts/calculadoras.py funding --tasa 0.01 --spot 65000 --futuro 66200 --dias 90
+  python scripts/calculadoras.py liderazgo --csv datos/cierres.csv --a SPY --b EWJ --ventana 20
+  python scripts/calculadoras.py liderazgo            # demo: B sigue a A con un periodo de retraso
 """
 import argparse
+
+import numpy as np
 
 import _comun  # noqa: F401
 from _comun import fmt, pct, table
 from trader import commodities as cm
-from trader import crypto, fx, options as op, rates
+from trader import crypto, data, fx, options as op, rates
+from trader import signature as sg
 
 
 def main(argv=None):
@@ -47,6 +52,10 @@ def main(argv=None):
     b.add_argument("--frecuencia", type=int, default=2)
     fu = sub.add_parser("funding"); fu.add_argument("--tasa", type=float, required=True, help="%% por 8 h")
     fu.add_argument("--spot", type=float); fu.add_argument("--futuro", type=float); fu.add_argument("--dias", type=float)
+    li = sub.add_parser("liderazgo", help="¿qué activo se mueve antes? (área de Lévy, curso §15.4)")
+    li.add_argument("--csv", help="CSV con fecha + una columna de cierre por activo")
+    li.add_argument("--a"); li.add_argument("--b")
+    li.add_argument("--ventana", type=int, default=20, help="sesiones por ventana (def. 20)")
     a = ap.parse_args(argv)
 
     if a.cmd == "opcion":
@@ -91,6 +100,26 @@ def main(argv=None):
         print(f"Funding anualizado: {pct(crypto.annualized_funding(a.tasa / 100))} (lo pagan los largos si es > 0)")
         if a.spot and a.futuro and a.dias:
             print(f"Base anualizada del futuro: {pct(crypto.annualized_basis(a.spot, a.futuro, a.dias))}")
+    elif a.cmd == "liderazgo":
+        if a.csv:
+            df = data.load_prices(a.csv)
+            na, nb = a.a or df.columns[0], a.b or df.columns[1]
+            r = np.log(df[[na, nb]]).diff().dropna()
+            ra, rb = r[na].to_numpy(), r[nb].to_numpy()
+        else:
+            na, nb = "A", "B"
+            rng = np.random.default_rng(15)
+            x = rng.standard_normal(2001)
+            ra, rb = x[1:], 0.4 * x[:-1] + np.sqrt(1 - 0.4**2) * rng.standard_normal(2000)
+            print("Demo sintético: r_B(t) = 0,4·r_A(t−1) + ruido → puntuación esperada 0,40.")
+        score, se = sg.lead_lag_score(ra, rb, a.ventana)
+        lead = na if score > 0 else nb
+        print(table([("Puntuación A→B", fmt(score, 3)), ("Error típico", fmt(se, 3)), ("z", fmt(score / se, 2)),
+                     ("Correlación simultánea", fmt(float(np.corrcoef(ra, rb)[0, 1]), 3))], ("Medida", "Valor")))
+        if abs(score) > 2 * se:
+            print(f"{lead} tiende a moverse antes (|z| > 2). Comprueba que no es un artefacto de horarios de cierre distintos.")
+        else:
+            print("Sin liderazgo significativo (|z| ≤ 2).")
 
 
 if __name__ == "__main__":

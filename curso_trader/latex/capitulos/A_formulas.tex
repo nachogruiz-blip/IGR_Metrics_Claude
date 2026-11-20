@@ -27,5 +27,9 @@ $\Delta P$ & $-D_{\text{mod}}P\Delta y+\frac12CP\Delta y^2$ · \py{rates.price\_
 Black--Scholes & $Se^{-qT}N(d_1)-Ke^{-rT}N(d_2)$ · \py{options.bs\_price} \\
 Movimiento esperado & $S\sigma\sqrt{d/365}$ · \py{options.expected\_move} \\
 Funding anual & $\text{tasa}\cdot(24/h)\cdot365$ · \py{crypto.annualized\_funding} \\
+Signatura nivel 2 & $S^{ij}=\sum_k (C_k^i+\tfrac12\Delta_k^i)\Delta_k^j$ · \py{signature.signature} \\
+Área de Lévy & $A^{ij}=\tfrac12(S^{ij}-S^{ji})$ · \py{signature.levy\_area} \\
+Área lead-lag & $\tfrac12\sum_k(\Delta x_k)^2$ · \py{signature.lead\_lag} \\
+Liderazgo & $\E=\rho_{x\to y}(1)-\rho_{y\to x}(1)$ (desfase 1) · \py{signature.lead\_lag\_score} \\
 \bottomrule
 \end{tabularx}

@@ -17,10 +17,12 @@ CASES = [
     ["informe_riesgo.py"],
     ["backtest.py", "--estrategia", "rsi", "--grafico", ""],
     ["backtest.py", "--estrategia", "pares", "--grafico", ""],
+    ["backtest.py", "--estrategia", "sig", "--grafico", ""],
     ["calculadoras.py", "iv", "--precio", "3", "--spot", "100", "--strike", "100", "--dias", "30"],
     ["calculadoras.py", "cruce", "--par", "EURJPY", "--cotiza", "EURUSD=1.1", "--cotiza", "USDJPY=150"],
     ["calculadoras.py", "crack", "--crudo", "75", "--gasolina", "2.3", "--gasoleo", "2.5"],
     ["calculadoras.py", "movimiento", "--spot", "5000", "--vol", "15", "--dias", "7"],
+    ["calculadoras.py", "liderazgo"],
 ]
 
 

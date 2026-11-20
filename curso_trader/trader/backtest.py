@@ -94,3 +94,11 @@ def walk_forward_splits(n: int, train: int, test: int) -> list[tuple[slice, slic
         out.append((slice(start, start + train), slice(start + train, start + train + test)))
         start += test
     return out
+
+
+def signature_momentum(close: pd.Series, window: int = 20, depth: int = 2, train: int = 500,
+                       refit: int = 63) -> pd.Series:
+    """Posiciones ±1 de la regresión ridge sobre rasgos de signatura (curso §15.5, ``signature.sig_momentum``)."""
+    from .signature import sig_momentum
+
+    return sig_momentum(close, window=window, depth=depth, train=train, refit=refit)

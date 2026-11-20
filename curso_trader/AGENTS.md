@@ -9,6 +9,10 @@ consola en **español**; identificadores en inglés. `CLAUDE.md` es un enlace a 
 - **Hecho (v0.1, nov. 2026)**: PDF de 46 págs. (`latex/main.pdf`, 15 capítulos + formulario + glosario
   + bibliografía); librería `trader/` con 14 módulos; 6 scripts de uso diario + generador de figuras;
   11 figuras; 55 tests (~15 s, sin red).
+- **Hecho (v0.2, nov. 2026)**: ampliación de signaturas de caminos (parte IV, `15_signaturas.tex`, cap. 16 del
+  PDF): `trader/signature.py` (signatura exacta hasta nivel 3 por Chen, área de Lévy, lead-lag, canal de tiempo,
+  puntuación de liderazgo, estrategia ridge walk-forward), `--estrategia sig` en `backtest.py`,
+  `calculadoras.py liderazgo`, figura `f12_signaturas`. PDF de 52 págs.; 12 figuras; 74 tests (~18 s).
 - **Pendiente / ideas**: capítulo de opciones con sonrisa SVI y P&L de gamma scalping simulado;
   índices de volatilidad (VIX, curva de futuros VIX); renta fija con curva cero bootstrap y futuros de
   bonos (CTD, factor de conversión); estacionalidad real con datos; app Streamlit opcional que envuelva
@@ -22,7 +26,7 @@ consola en **español**; identificadores en inglés. `CLAUDE.md` es un enlace a 
 | `trader/indicators.py` | SMA/EMA, RSI y ATR de Wilder, Bollinger, MACD, Donchian (sin día actual), pivotes, vol realizada | §3 |
 | `trader/risk.py` | Tamaño por stop/ATR, vol targeting, Kelly, ruina (MC vectorizado), VaR/ES, drawdown, contribuciones | §4 |
 | `trader/performance.py` | CAGR, Sharpe, Sortino, Calmar, PSR, máximo Sharpe esperado, estadísticas por operación | §5 |
-| `trader/backtest.py` | `backtest` sin look-ahead, estrategias SMA/Donchian/RSI, vol targeting, `trades`, walk-forward | §5 |
+| `trader/backtest.py` | `backtest` sin look-ahead, estrategias SMA/Donchian/RSI/signatura, vol targeting, `trades`, walk-forward | §5 |
 | `trader/journal.py` | Diario CSV, P&L, 1R y múltiplo R, resumen por setup | §6, §13 |
 | `trader/equity.py` | MCO, beta/CAPM, factores, momentum 12-1, gaps, pares (β, half-life, ADF, z-score) | §7 |
 | `trader/fx.py` | Pips, valor del pip, lotes, cruces vía USD, arbitraje triangular, CIP/forward, carry, PPA, sesiones | §8 |
@@ -30,6 +34,7 @@ consola en **español**; identificadores en inglés. `CLAUDE.md` es un enlace a 
 | `trader/rates.py` | Precio, TIR, duración, convexidad, DV01, cobertura DV01 | §10 |
 | `trader/options.py` | BSM, Black-76, Garman–Kohlhagen, griegas, IV, movimiento esperado, payoffs | §11 |
 | `trader/crypto.py` | Funding y base anualizados, cash & carry, precio de liquidación | §12 |
+| `trader/signature.py` | Signatura (Chen, niveles 1–3), log-signatura 2, área de Lévy, lead-lag, `add_time`, `lead_lag_score`, `window_features`, `sig_momentum` | §15 |
 | `trader/plotting.py` | `setup()`, `save()`, paleta `SERIES` | figuras |
 | `scripts/` | CLIs diarios: `premercado`, `tamano_posicion`, `informe_riesgo`, `backtest`, `diario`, `calculadoras`; `generar_figuras` | §13 |
 | `latex/` | `main.tex` + `capitulos/NN_*.tex`; figuras desde `../figuras` | — |

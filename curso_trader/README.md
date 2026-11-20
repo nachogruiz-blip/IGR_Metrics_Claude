@@ -4,9 +4,10 @@ Curso autocontenido para aprender a operar de forma profesional en **renta varia
 **divisas (FX)**, **materias primas (commodities)**, además de **renta fija**, **opciones/volatilidad**
 y **cripto**. Combina:
 
-- 📘 **PDF del curso**: [`latex/main.pdf`](latex/main.pdf) (46 págs.): microestructura, estadística,
+- 📘 **PDF del curso**: [`latex/main.pdf`](latex/main.pdf) (52 págs.): microestructura, estadística,
   análisis técnico, gestión del riesgo y tamaño de posición, backtesting y sobreajuste, psicología,
-  un capítulo por clase de activo, rutina diaria, plan de 12 semanas, formulario y glosario.
+  un capítulo por clase de activo, rutina diaria, plan de 12 semanas, formulario y glosario; ampliación
+  opcional sobre signaturas de caminos (liderazgo entre activos con el área de Lévy, rasgos para modelos lineales).
 - 🐍 **Librería `trader/`**: cada fórmula del PDF implementada y verificada por tests.
 - 🛠️ **Scripts de uso diario** (`scripts/`), que funcionan con tus CSV o, sin argumentos, con datos sintéticos.
 
@@ -28,9 +29,9 @@ pytest tests                    # ~15 s, sin red
 | `premercado.py` | Checklist, sesiones FX abiertas, ATR, vol, RSI, régimen, pivotes y rango esperado |
 | `tamano_posicion.py` | Tamaño por riesgo: `accion`, `fx`, `futuro`, `atr`, `cripto` |
 | `informe_riesgo.py` | Vol de cartera, VaR/ES normal e histórico, contribuciones, correlaciones, estrés |
-| `backtest.py` | SMA, Donchian, RSI(2), pares; costes, vol targeting, métricas, PSR, gráfico |
+| `backtest.py` | SMA, Donchian, RSI(2), pares, signatura (`sig`); costes, vol targeting, métricas, PSR, gráfico |
 | `diario.py` | Diario de operaciones (`nueva`, `resumen`, `demo`) con estadísticas en R por setup |
-| `calculadoras.py` | `opcion`, `iv`, `movimiento`, `forward`, `cruce`, `curva`, `crack`, `bono`, `funding` |
+| `calculadoras.py` | `opcion`, `iv`, `movimiento`, `forward`, `cruce`, `curva`, `crack`, `bono`, `funding`, `liderazgo` |
 | `generar_figuras.py` | Regenera las figuras del PDF |
 
 ```bash
