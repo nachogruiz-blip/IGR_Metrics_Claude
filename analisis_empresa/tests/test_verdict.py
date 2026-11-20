@@ -74,3 +74,18 @@ def test_cli_demo(tmp_path, capsys):
     out = tmp_path / "x.md"
     assert main(["DEMO-ESPERA", "--demo", "--out", str(out)]) == 0
     assert "ESPERAR" in out.read_text(encoding="utf-8")
+
+
+def test_without_statements_only_price_drives_the_verdict():
+    import numpy as np
+
+    from analyst.data import ALIASES
+
+    cd = data.demo("DEMO-COMPRA")
+    for k in ("income", "balance", "cashflow"):
+        setattr(cd, k, pd.DataFrame(columns=list(ALIASES[k]), dtype=float))
+    cd.info = {"shortName": "Sin cuentas", "currency": "EUR"}
+    a = core.analyze(cd)
+    assert np.isnan(a.verdict.quality) and np.isnan(a.verdict.valuation)
+    assert a.verdict.action == "COMPRAR" and a.verdict.bias == "compra"   # técnico fuerte
+    report.to_markdown(a)

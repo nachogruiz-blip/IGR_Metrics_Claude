@@ -173,7 +173,7 @@ with c3:
         st.caption(f"Próximos resultados: {cd.earnings_date:%d/%m/%Y}")
 
 tabs = st.tabs(["Balance y cuentas", "Valoración", "Técnico", "Series temporales", "Informe",
-                "Metodología"])
+                "Guía de uso", "Metodología"])
 
 # --------------------------------------------------------------------------- balance
 with tabs[0]:
@@ -391,4 +391,6 @@ with tabs[4]:
                        mime="text/markdown")
     st.markdown(md)
 with tabs[5]:
+    st.markdown((HERE / "GUIA_USO.md").read_text(encoding="utf-8"))
+with tabs[6]:
     st.markdown((HERE / "METODOLOGIA.md").read_text(encoding="utf-8"))

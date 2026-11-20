@@ -17,6 +17,9 @@ Guía para agentes de IA (y personas) que modifiquen `analisis_empresa/`. Proyec
 | `analyst/verdict.py` | Matriz A×T, reglas de timing/veto, niveles → `Verdict` | importar streamlit/yfinance |
 | `analyst/core.py` | Orquesta todo → `Analysis` | — |
 | `analyst/report.py` | Informe Markdown (CLI y descarga) | — |
+| `GUIA_USO.md` | Guía para el usuario (se muestra en la pestaña «Guía de uso») | — |
+| `METODOLOGIA.md` | Fórmulas, umbrales y matriz de decisión (pestaña «Metodología») | — |
+| `ejemplos/` | Informes de los perfiles demo | editarse a mano (se regeneran) |
 
 Flujo: `data.fetch`/`data.demo` → `core.analyze` → `Analysis` (pilares + `Verdict`) →
 `app.py` / `report.to_markdown`.
@@ -54,6 +57,8 @@ arranca la app en modo demo con `streamlit.testing`.
 - **Nuevo indicador**: calcularlo en su módulo, añadir un `Item(key, etiqueta, valor,
   puntuación, formato, lectura, peso)` al pilar, test con valor cerrado y fila en
   `METODOLOGIA.md`.
+- **Tras cambiar umbrales, pesos o el informe**: regenerar `ejemplos/` (comando en
+  `GUIA_USO.md` §5) y revisar que la tabla de ejemplos de la guía sigue siendo cierta.
 - **Cambiar la decisión**: constantes `A_BUY`, `A_SELL`, `T_UP`, `T_DOWN`, `T_TACTICAL`,
   `EARNINGS_DAYS` y pesos en `verdict.py`; actualizar la tabla de `METODOLOGIA.md` y
   `test_decision_matrix`.

@@ -202,7 +202,9 @@ def _pillar(info, r, price, rf, fin, margin, method, fcf0, mcap) -> Pillar:
     pil.items.append(Item("peg", "PEG (PER / crecimiento)", peg,
                           piecewise(peg, [0.5, 1.0, 1.5, 2.5], [1, 0.5, -0.2, -1]) if finite(peg) and peg > 0 else float("nan"),
                           "num", "< 1: crecimiento barato", 0.5))
-    dy = (info.get("dividendRate") or 0) / price if price > 0 else float("nan")
+    # Sin dato de dividendo (Yahoo lo omite si no paga) no se puntúa: no pagar no es malo en sí.
+    dr = info.get("dividendRate")
+    dy = dr / price if finite(dr) and price > 0 else float("nan")
     pil.items.append(Item("dividend_yield", "Rentabilidad por dividendo", dy,
                           piecewise(dy, [0.0, 0.02, 0.05, 0.08], [-0.2, 0.2, 0.6, 0.3]), "pct0",
                           "> 8 % a menudo anticipa un recorte", 0.3))

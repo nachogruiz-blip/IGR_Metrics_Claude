@@ -19,7 +19,14 @@ Le das un ticker (mercado español, europeo o estadounidense) y analiza la **emp
 El **veredicto** combina atractivo fundamental (¿buena empresa a buen precio?) y momento técnico
 (¿acompaña el precio?), y aplica reglas de *timing*: resultados inminentes, sobrecompra,
 solvencia y régimen de volatilidad. Da los disparadores a vigilar y niveles de entrada, stop y
-objetivos. Detalle en [`METODOLOGIA.md`](METODOLOGIA.md).
+objetivos.
+
+- **[Guía de uso](GUIA_USO.md)**: instalación, tickers por mercado, cómo leer el veredicto, las
+  puntuaciones, los niveles y cada pestaña, casos especiales (banca, pérdidas) y problemas
+  frecuentes.
+- **[Metodología](METODOLOGIA.md)**: fórmulas, umbrales y reglas de decisión.
+- **[Ejemplos](ejemplos/)**: informes completos de las cuatro situaciones típicas (comprar,
+  esperar a confirmación, vender, esperar a resultados).
 
 Es independiente de la librería `malliavin` y del dashboard `dashboard/` del repositorio.
 
@@ -58,6 +65,7 @@ referencia se elige por sufijo (`data.BENCHMARKS`). Perfiles demo: `DEMO-COMPRA`
 - **Series temporales**: volatilidad realizada/EWMA/GARCH, distribución de rendimientos frente a
   la normal, caídas, rentabilidad anual, estacionalidad, cono y estadísticos.
 - **Informe**: el mismo informe que la CLI, descargable en Markdown.
+- **Guía de uso** y **Metodología**: la documentación, dentro de la app.
 
 ## Estructura
 
@@ -75,7 +83,9 @@ analisis_empresa/
     report.py            Informe Markdown
     __main__.py          CLI
   tests/                 Identidades y valores cerrados, escenarios demo, CLI
+  GUIA_USO.md            Cómo usarlo e interpretar el resultado
   METODOLOGIA.md         Explicación de indicadores, umbrales y veredicto
+  ejemplos/              Informes generados con los perfiles demo
   AGENTS.md              Guía para agentes que modifiquen el proyecto
 ```
 
