@@ -31,7 +31,20 @@ para la fuerza relativa se elige por sufijo (`benchmarks` en `watchlist.json`).
 - **Ficha del valor**: señal, perspectiva y rangos; gráfico de precio con SMA50/200, Bollinger y
   cono de estimación a 3 meses, volumen, RSI y MACD; puntuación por bloques; qué indicadores
   empujan a favor y en contra; tablas de detalle con valor, puntuación y lectura de cada uno.
-- **Metodología**: pesos, umbrales y limitaciones ([`METODOLOGIA.md`](METODOLOGIA.md)).
+- **Metodología**: pesos, umbrales, medianas sectoriales y limitaciones
+  ([`METODOLOGIA.md`](METODOLOGIA.md)), y los informes de backtest guardados.
+
+## Backtest
+
+```bash
+cd dashboard
+python -m stockdash.backtest --name watchlist            # descarga, guarda datos e informe
+python -m stockdash.backtest --name watchlist --offline  # reproduce con los datos guardados
+```
+
+Evalúa la señal técnica mes a mes (IC, rentabilidad por señal, acierto de la perspectiva,
+calibración de P(subida), cobertura de rangos y carteras con costes). Detalles en
+[`backtest/README.md`](backtest/README.md).
 
 ## Estructura
 
@@ -39,16 +52,21 @@ para la fuerza relativa se elige por sufijo (`benchmarks` en `watchlist.json`).
 dashboard/
   app.py               Interfaz Streamlit
   stockdash/
-    technical.py       SMA/EMA, RSI, MACD, Bollinger, ATR, ADX, OBV, volatilidad; snapshot()
+    technical.py       SMA/EMA, RSI, MACD, Bollinger, ATR, ADX, OBV, volatilidad; features() causal
     fundamental.py     Normaliza yfinance.info (fracciones, múltiplos, PER negativo, consenso)
+    sectors.py         Medianas de múltiplos por sector y valoración relativa
     scoring.py         Catálogo de indicadores y umbrales, agregación, señal y perspectiva
     data.py            Descarga (yfinance, perezosa), watchlist, generador sintético para demo
-  tests/               Identidades de indicadores y escenarios sintéticos (alcista, bajista, …)
+    backtest.py        Backtest replicable (CLI: python -m stockdash.backtest)
+  backtest/            README, datos guardados (datos/) e informes (resultados/)
+  tests/               Indicadores, puntuación, sectores, causalidad y backtest
   watchlist.json       Lista de seguimiento
+  AGENTS.md            Guía para agentes que modifiquen el dashboard
 ```
 
 Para ajustar el modelo, todos los umbrales y pesos están como datos en `stockdash/scoring.py`
-(`TECHNICAL`, `FUNDAMENTAL`, `TECH_BLOCKS`, `FUND_BLOCKS`, `SIGNALS`, `KAPPA`).
+(`TECHNICAL`, `FUNDAMENTAL`, `TECH_BLOCKS`, `FUND_BLOCKS`, `SIGNALS`, `KAPPA`) y en
+`stockdash/sectors.py` (medianas sectoriales). Antes de tocar nada, leer [`AGENTS.md`](AGENTS.md).
 
-> Herramienta de apoyo, no asesoramiento financiero. Los umbrales son heurísticos y no están
-> validados con backtest.
+> Herramienta de apoyo, no asesoramiento financiero. Los umbrales son heurísticos; el backtest
+> de la parte técnica está preparado pero aún no se ha ejecutado con datos reales.

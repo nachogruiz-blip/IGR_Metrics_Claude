@@ -91,3 +91,39 @@ def test_watchlist_helpers():
     b = data.DEFAULT_CONFIG["benchmarks"]
     assert data.benchmark_for("SAN.MC", b) == "^IBEX"
     assert data.benchmark_for("AAPL", b) == "^GSPC"
+
+
+# --------------------------------------------------------------------------- valoración sectorial
+from stockdash import sectors  # noqa: E402
+
+
+def test_relative_multiple_log_symmetric():
+    f = sectors.relative_multiple(20.0)
+    assert f(20.0) == pytest.approx(0.0)
+    assert f(20.0 / sectors.SPREAD) == pytest.approx(1.0)
+    assert f(20.0 * sectors.SPREAD) == pytest.approx(-1.0)
+    assert f(-3.0) == -1.0 and np.isnan(f(np.nan))
+
+
+def _pe_score(sector, pe=30.0):
+    px = data.demo_prices(["A"])["A"]
+    fund = {"sector": sector, "pe_forward": pe, "ev_ebitda": 12.0, "ps": 2.0, "pb": 1.0}
+    a = scoring.assess(technical.snapshot(px), fund)
+    return {c.key: c for c in a.contributions}
+
+
+def test_same_per_scores_differently_by_sector():
+    tech = _pe_score("Technology")["pe_forward"]
+    bank = _pe_score("Financial Services")["pe_forward"]
+    assert tech.score == pytest.approx(-np.log(30 / 25) / np.log(sectors.SPREAD))
+    assert bank.score == -1.0  # PER 30 en banca (mediana 12) es caro
+    assert tech.reference == "mediana sector 25.0×"
+
+
+def test_sector_specific_multiples_apply():
+    bank = _pe_score("Financial Services")
+    assert "ev_ebitda" not in bank and "ps" not in bank and "pb" in bank
+    tech = _pe_score("Technology")
+    assert "pb" not in tech and "ev_ebitda" in tech
+    unknown = _pe_score("Desconocido")["pe_forward"]
+    assert unknown.reference == "mediana sector 18.0×"  # mercado en general

@@ -3,7 +3,9 @@
 Esquema
 -------
 1. Cada indicador se transforma en una puntuación en [-1, 1] (+1 = muy favorable) mediante una
-   función lineal a tramos con umbrales fijos (``Indicator.score``).
+   función lineal a tramos con umbrales fijos (``Indicator.score``). Excepción: los múltiplos
+   de valoración (PER, EV/EBITDA, P/ventas, P/VC) se puntúan **frente a la mediana de su sector**
+   (``sectors.py``); ``Indicator.score`` es sólo el respaldo si no se pasa sector.
 2. Los indicadores se agrupan en bloques. Dentro de cada bloque se promedian con pesos; los que
    faltan (NaN) se excluyen y los pesos se renormalizan.
 3. Puntuación técnica T = media ponderada de los bloques técnicos; fundamental F, ídem.
@@ -25,6 +27,8 @@ from math import erf, sqrt
 from typing import Callable
 
 import numpy as np
+
+from . import sectors
 
 
 # --------------------------------------------------------------------------- funciones de puntuación
@@ -117,18 +121,22 @@ TECH_BLOCKS = {"Tendencia": 0.35, "Momentum": 0.30, "Osciladores": 0.15, "Volume
 # --------------------------------------------------------------------------- catálogo fundamental
 FUNDAMENTAL: list[Indicator] = [
     # Valoración
+    # PER, EV/EBITDA, P/ventas y P/VC: en ``assess`` se puntúan relativos al sector
+    # (sectors.py); los umbrales absolutos de abajo son el respaldo sin sector.
     Indicator("pe_forward", "PER estimado", "Valoración", 1.0, positive_multiple(35, 10), "x",
-              "Precio / beneficio esperado 12m. ≤0 = pérdidas."),
+              "Precio / beneficio esperado 12m, frente a la mediana del sector. ≤0 = pérdidas."),
     Indicator("pe_trailing", "PER histórico", "Valoración", 0.6, positive_multiple(40, 12), "x",
-              "Precio / beneficio de los últimos 12 meses."),
+              "Precio / beneficio de los últimos 12 meses, frente a la mediana del sector."),
     Indicator("peg", "PEG", "Valoración", 0.6, positive_multiple(3.0, 1.0), "x",
               "PER / crecimiento del BPA. <1 barato respecto a su crecimiento."),
     Indicator("ev_ebitda", "EV/EBITDA", "Valoración", 0.8, positive_multiple(25, 7), "x",
-              "Valor empresa / EBITDA; neutral a la estructura de capital."),
+              "Valor empresa / EBITDA frente al sector; no aplica a banca."),
     Indicator("fcf_yield", "Rentab. flujo caja libre", "Valoración", 1.0, ramp(0.0, 0.07), "pct",
               "FCF / capitalización."),
     Indicator("ps", "Precio / ventas", "Valoración", 0.4, positive_multiple(12, 1.5), "x",
-              "Útil cuando no hay beneficios."),
+              "Frente al sector; útil cuando no hay beneficios."),
+    Indicator("pb", "Precio / valor contable", "Valoración", 0.8, positive_multiple(4.0, 0.8),
+              "x", "Sólo puntúa en financieras e inmobiliarias, frente a su sector."),
     # Calidad
     Indicator("roe", "ROE", "Calidad", 1.0, ramp(0.0, 0.25), "pct",
               "Beneficio / fondos propios."),
@@ -175,6 +183,7 @@ class Contribution:
     impact: float  # aportación a la puntuación compuesta
     fmt: str
     help: str
+    reference: str = ""  # p. ej. «mediana sector 25.0×» para los múltiplos relativos
 
 
 @dataclass
@@ -196,12 +205,20 @@ class Assessment:
     contributions: list[Contribution] = field(default_factory=list)
 
 
-def _aggregate(values: dict[str, float], catalog: list[Indicator], blocks: dict[str, float]):
-    """Devuelve (puntuación, {bloque: puntuación}, cobertura, {key: (score, peso efectivo)})."""
+def _aggregate(values: dict[str, float], catalog: list[Indicator], blocks: dict[str, float],
+               overrides: dict[str, Callable[[float], float] | None] | None = None):
+    """Devuelve (puntuación, {bloque: puntuación}, cobertura, {key: (score, peso efectivo)}).
+
+    ``overrides`` sustituye la función de puntuación de algunos indicadores (valoración relativa
+    al sector); un valor ``None`` significa «no aplica» y el indicador se omite.
+    """
+    overrides = overrides or {}
     per_block: dict[str, list[tuple[Indicator, float]]] = {b: [] for b in blocks}
     n_ok = 0
-    for ind in catalog:
-        s = ind.score(values.get(ind.key, np.nan))
+    applicable = [i for i in catalog if not (i.key in overrides and overrides[i.key] is None)]
+    for ind in applicable:
+        scorer = overrides.get(ind.key) or ind.score
+        s = scorer(values.get(ind.key, np.nan))
         if np.isfinite(s):
             per_block[ind.block].append((ind, s))
             n_ok += 1
@@ -221,7 +238,7 @@ def _aggregate(values: dict[str, float], catalog: list[Indicator], blocks: dict[
         wsum = sum(i.weight for i, _ in items)
         for ind, s in items:
             eff[ind.key] = (s, blocks[b] / bw_total * ind.weight / wsum)
-    return float(total), block_scores, n_ok / len(catalog), eff
+    return float(total), block_scores, n_ok / len(applicable), eff
 
 
 def _phi(x: float) -> float:
@@ -254,7 +271,10 @@ def assess(tech: dict[str, float], fund: dict[str, float] | None,
         fund["rec_mean"] = np.nan
 
     T, tb, cov_t, eff_t = _aggregate(tech, TECHNICAL, TECH_BLOCKS)
-    F, fb, cov_f, eff_f = _aggregate(fund, FUNDAMENTAL, FUND_BLOCKS)
+    sector = fund.get("sector")
+    F, fb, cov_f, eff_f = _aggregate(fund, FUNDAMENTAL, FUND_BLOCKS,
+                                     sectors.relative_scorers(sector))
+    medians = sectors.sector_medians(sector)
     w_t = w_tech if np.isfinite(F) else 1.0
     w_f = 1.0 - w_t
     S = w_t * T + (w_f * F if np.isfinite(F) else 0.0)
@@ -264,9 +284,11 @@ def assess(tech: dict[str, float], fund: dict[str, float] | None,
         for ind in catalog:
             if ind.key in eff:
                 s, we = eff[ind.key]
+                ref = (f"mediana sector {medians[ind.key]:.1f}×"
+                       if src is fund and medians.get(ind.key) else "")
                 contributions.append(Contribution(ind.key, ind.label, ind.block,
                                                   src.get(ind.key, np.nan), s, s * we * w,
-                                                  ind.fmt, ind.help))
+                                                  ind.fmt, ind.help, ref))
     contributions.sort(key=lambda c: c.impact)
 
     # ------------------------------------------------------------------ perspectiva 1–3 meses

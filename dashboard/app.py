@@ -330,10 +330,14 @@ with tab_ficha:
     def detail(catalog, values):
         by_key = {c.key: c for c in a.contributions}
         out = []
+        rel = scoring.sectors.relative_scorers(f.get("sector"))
         for ind_ in catalog:
+            if ind_.key in rel and rel[ind_.key] is None:
+                continue  # múltiplo no significativo en este sector
             c = by_key.get(ind_.key)
             out.append({"Bloque": ind_.block, "Indicador": ind_.label,
                         "Valor": fmt(values.get(ind_.key, np.nan), ind_.fmt),
+                        "Referencia": c.reference if c else "",
                         "Puntuación": c.score if c else np.nan,
                         "Aporte": c.impact if c else np.nan, "Lectura": ind_.help})
         dfx = pd.DataFrame(out)
@@ -349,7 +353,10 @@ with tab_ficha:
                    f"{s['atr']:.2f} ({s['atr_pct']:.1%}) · volatilidad 3m {s['vol_63']:.0%} · "
                    f"rango 52 semanas {s['low_52w']:.2f} – {s['high_52w']:.2f}")
     with d2:
+        st.caption(f"Sector: {f['sector']} — los múltiplos se comparan con su mediana sectorial.")
         st.dataframe(detail(scoring.FUNDAMENTAL, f), hide_index=True, width="stretch",
+                     column_config={"Referencia": st.column_config.TextColumn(width="medium"),
+                                    "Indicador": st.column_config.TextColumn(width="medium")},
                      height=36 * (len(scoring.FUNDAMENTAL) + 1) + 4)
         st.caption(f"Rentabilidad por dividendo {fmt(f['div_yield'], 'pct')} · P/VC "
                    f"{fmt(f['pb'], 'x')} · analistas {f['n_analysts']:.0f}"
@@ -357,4 +364,20 @@ with tab_ficha:
 
 # --------------------------------------------------------------------------- metodología
 with tab_metodo:
-    st.markdown((Path(__file__).resolve().parent / "METODOLOGIA.md").read_text(encoding="utf-8"))
+    here = Path(__file__).resolve().parent
+    st.markdown((here / "METODOLOGIA.md").read_text(encoding="utf-8"))
+
+    st.markdown("### Backtests guardados")
+    runs = sorted(p_ for p_ in (here / "backtest" / "resultados").glob("*/INFORME.md"))
+    if not runs:
+        st.caption("Aún no hay backtests. Ver dashboard/backtest/README.md.")
+    else:
+        names = [r.parent.name for r in runs]
+        default = next((i for i, n in enumerate(names) if n != "demo"), 0)
+        chosen = runs[st.selectbox("Backtest", range(len(runs)), index=default,
+                                   format_func=lambda i: names[i])]
+        body = [ln for ln in chosen.read_text(encoding="utf-8").splitlines()
+                if not ln.startswith("![")]
+        st.markdown("\n".join(body))
+        for png in sorted(chosen.parent.glob("*.png")):
+            st.image(str(png), width=720)

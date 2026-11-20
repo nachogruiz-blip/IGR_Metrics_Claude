@@ -131,8 +131,8 @@ def demo_info(ticker: str, price: float, seed: int = 0) -> dict[str, Any]:
     pe = float(rng.uniform(8, 45))
     target = price * float(rng.uniform(0.85, 1.35))
     return {
-        "shortName": f"{ticker} (demo)", "sector": rng.choice(["Tecnología", "Banca", "Consumo",
-                                                                "Utilities"]),
+        "shortName": f"{ticker} (demo)", "sector": str(rng.choice(["Technology", "Financial Services",
+                                                        "Consumer Cyclical", "Utilities"])),
         "industry": "—", "currency": "EUR" if "." in ticker else "USD",
         "currentPrice": price, "marketCap": 1e11, "trailingPE": pe, "forwardPE": pe * 0.85,
         "trailingPegRatio": float(rng.uniform(0.6, 3.5)),

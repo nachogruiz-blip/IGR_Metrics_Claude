@@ -116,76 +116,56 @@ def indicator_frame(df: pd.DataFrame) -> pd.DataFrame:
 
 
 # --------------------------------------------------------------------------- foto actual
-def _ret(c: pd.Series, n: int) -> float:
-    return float(c.iloc[-1] / c.iloc[-1 - n] - 1.0) if len(c) > n else np.nan
+def features(df: pd.DataFrame, bench_close: pd.Series | None = None) -> pd.DataFrame:
+    """Todas las variables de ``snapshot`` como series temporales (una fila por sesión).
 
-
-def _last(s: pd.Series) -> float:
-    return float(s.iloc[-1]) if len(s) and pd.notna(s.iloc[-1]) else np.nan
-
-
-def snapshot(df: pd.DataFrame, bench_close: pd.Series | None = None) -> dict[str, float]:
-    """Valores actuales de todos los indicadores técnicos que alimentan la puntuación.
-
-    ``bench_close`` (opcional) es el cierre del índice de referencia para la fuerza relativa.
+    Cada fila usa **sólo información hasta esa fecha** (ventanas móviles y suavizados causales),
+    así que el backtest puede leer la fila *t* sin sesgo de anticipación; ``tests`` lo verifica
+    comparando con ``snapshot`` sobre el histórico truncado.
     """
     df = df.dropna(subset=["Close"])
     c = df["Close"]
     ind = indicator_frame(df)
-    price = float(c.iloc[-1])
-    s50, s200 = _last(ind["sma50"]), _last(ind["sma200"])
-    s50_prev = float(ind["sma50"].iloc[-22]) if len(ind) > 22 else np.nan
-
-    window = df.iloc[-TRADING_DAYS:]
-    hi52, lo52 = float(window["High"].max()), float(window["Low"].min())
-    vol63, vol252 = _last(ind["vol63"]), _last(realized_vol(c, TRADING_DAYS))
-
-    o = ind["obv"]
-    avg_vol = float(df["Volume"].iloc[-21:].mean()) if len(df) > 21 else np.nan
-    obv_slope = (float(o.iloc[-1] - o.iloc[-22]) / (21 * avg_vol)
-                 if len(o) > 22 and avg_vol > 0 else np.nan)
-    v20, v100 = df["Volume"].iloc[-20:].mean(), df["Volume"].iloc[-100:].mean()
-
-    ret_3m = _ret(c, 63)
-    rel = np.nan
+    f = pd.DataFrame(index=df.index)
+    f["price"] = c
+    for name, n in (("chg_1d", 1), ("ret_1m", 21), ("ret_3m", 63), ("ret_6m", 126),
+                    ("ret_12m", 252)):
+        f[name] = c / c.shift(n) - 1.0
+    f["mom_12_1"] = c.shift(21) / c.shift(252) - 1.0
+    f["sma50"], f["sma200"] = ind["sma50"], ind["sma200"]
+    f["dist_sma50"] = c / ind["sma50"] - 1.0
+    f["dist_sma200"] = c / ind["sma200"] - 1.0
+    f["sma50_vs_200"] = ind["sma50"] / ind["sma200"] - 1.0
+    f["sma50_slope"] = ind["sma50"] / ind["sma50"].shift(21) - 1.0
+    f["rsi"] = ind["rsi"]
+    f["macd"], f["macd_signal"] = ind["macd"], ind["signal"]
+    f["macd_hist_pct"] = 100.0 * ind["hist"] / c
+    f["bb_pctb"] = ind["pctb"]
+    f["adx"], f["plus_di"], f["minus_di"] = ind["adx"], ind["plus_di"], ind["minus_di"]
+    f["di_balance"] = ((ind["plus_di"] - ind["minus_di"])
+                       / (ind["plus_di"] + ind["minus_di"]).replace(0.0, np.nan))
+    f["atr"] = ind["atr"]
+    f["atr_pct"] = ind["atr"] / c
+    f["vol_63"] = ind["vol63"]
+    f["vol_252"] = realized_vol(c, TRADING_DAYS)
+    f["vol_ratio"] = f["vol_63"] / f["vol_252"]
+    f["high_52w"] = df["High"].rolling(TRADING_DAYS, min_periods=1).max()
+    f["low_52w"] = df["Low"].rolling(TRADING_DAYS, min_periods=1).min()
+    f["dd_52w"] = c / f["high_52w"] - 1.0
+    avg_vol = df["Volume"].rolling(21, min_periods=21).mean()
+    f["obv_slope"] = (ind["obv"] - ind["obv"].shift(21)) / (21 * avg_vol.replace(0.0, np.nan))
+    f["volume_ratio"] = (df["Volume"].rolling(20, min_periods=1).mean()
+                         / df["Volume"].rolling(100, min_periods=1).mean())
+    f["rel_strength_3m"] = np.nan
     if bench_close is not None:
         b = bench_close.dropna().reindex(c.index).ffill()
-        if b.notna().sum() > 64:
-            rel = ret_3m - _ret(b, 63)
+        f["rel_strength_3m"] = f["ret_3m"] - (b / b.shift(63) - 1.0)
+    return f
 
-    pdi, mdi = _last(ind["plus_di"]), _last(ind["minus_di"])
-    return {
-        "price": price,
-        "chg_1d": _ret(c, 1),
-        "ret_1m": _ret(c, 21),
-        "ret_3m": ret_3m,
-        "ret_6m": _ret(c, 126),
-        "ret_12m": _ret(c, 252),
-        "mom_12_1": (float(c.iloc[-22] / c.iloc[-253] - 1.0) if len(c) > 253 else np.nan),
-        "sma50": s50,
-        "sma200": s200,
-        "dist_sma50": price / s50 - 1.0,
-        "dist_sma200": price / s200 - 1.0,
-        "sma50_vs_200": s50 / s200 - 1.0,
-        "sma50_slope": s50 / s50_prev - 1.0,
-        "rsi": _last(ind["rsi"]),
-        "macd": _last(ind["macd"]),
-        "macd_signal": _last(ind["signal"]),
-        "macd_hist_pct": 100.0 * _last(ind["hist"]) / price,
-        "bb_pctb": _last(ind["pctb"]),
-        "adx": _last(ind["adx"]),
-        "plus_di": pdi,
-        "minus_di": mdi,
-        "di_balance": (pdi - mdi) / (pdi + mdi) if (pdi + mdi) > 0 else np.nan,
-        "atr": _last(ind["atr"]),
-        "atr_pct": _last(ind["atr"]) / price,
-        "vol_63": vol63,
-        "vol_252": vol252,
-        "vol_ratio": vol63 / vol252 if vol252 > 0 else np.nan,
-        "high_52w": hi52,
-        "low_52w": lo52,
-        "dd_52w": price / hi52 - 1.0,
-        "rel_strength_3m": rel,
-        "obv_slope": obv_slope,
-        "volume_ratio": float(v20 / v100) if v100 > 0 else np.nan,
-    }
+
+def snapshot(df: pd.DataFrame, bench_close: pd.Series | None = None) -> dict[str, float]:
+    """Valores actuales (última sesión) de todos los indicadores técnicos que alimentan la
+    puntuación. ``bench_close`` (opcional) es el cierre del índice de referencia para la fuerza
+    relativa."""
+    row = features(df, bench_close).iloc[-1]
+    return {k: float(v) for k, v in row.items()}
