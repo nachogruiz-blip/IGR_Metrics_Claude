@@ -1,0 +1,25 @@
+\chapter{Cripto: perpetuos, funding y base}\label{cap:cripto}
+
+Las criptomonedas se negocian 24/7, con volatilidades de 50--80~\% anual y correlación creciente con
+los activos de riesgo. El instrumento dominante es el \textbf{futuro perpetuo}: no vence y se ancla al
+contado mediante un pago periódico entre largos y cortos, el \emph{funding}.
+\begin{itemize}
+\item Si el perpetuo cotiza por encima del contado, el funding es positivo: \textbf{los largos pagan a
+  los cortos}. Funding anualizado $= \text{tasa}\times(24/8)\times365$ (\py{crypto.annualized\_funding}):
+  un 0,01~\% cada 8 horas son casi un 11~\% anual.
+\item Futuros con vencimiento: base anualizada $(F/S-1)\cdot365/d$ (\py{annualized\_basis}).
+\item \textbf{Cash and carry}: comprar contado y vender futuro captura la base (\py{cash\_and\_carry\_pnl})
+  con riesgo de contraparte y de margen en la pata corta.
+\end{itemize}
+
+\paragraph{Liquidación.} Con apalancamiento $L$ en margen aislado, la liquidación de un largo llega
+aproximadamente en $E(1-1/L+mm)$ (\py{crypto.liquidation\_price}). Con 20x, un movimiento del 5~\% en
+contra liquida la posición. La regla del curso aplica igual: el tamaño se fija por el stop, y la
+liquidación debe quedar \emph{mucho} más lejos que el stop (el script \py{tamano\_posicion.py cripto}
+avisa si no es así).
+
+\begin{aviso}
+Riesgos propios: contraparte (quiebras de plataformas), custodia, cascadas de liquidaciones en fines de
+semana con poca liquidez, manipulación en activos pequeños y regulación cambiante. Diversifica
+plataformas y no dejes en ellas más capital del que necesitas como margen.
+\end{aviso}

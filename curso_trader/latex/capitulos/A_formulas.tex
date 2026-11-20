@@ -1,0 +1,31 @@
+\chapter{Formulario}\label{ap:formulas}
+\small
+\begin{tabularx}{\textwidth}{lX}
+\toprule
+Concepto & Fórmula · función \\ \midrule
+Esperanza & $E = p\bar G-(1-p)\bar P$ · \py{performance.trade\_stats} \\
+Tamaño por stop & $N=\lfloor\rho C/(|E-S|v)\rfloor$ · \py{risk.position\_size\_stop} \\
+Vol targeting & $w=\min(\sigma^*/\hat\sigma, L)$ · \py{risk.vol\_target\_weight} \\
+Kelly & $f^*=p-(1-p)/b$; $\mu/\sigma^2$ · \py{risk.kelly\_fraction} \\
+VaR / ES normal & $-\mu-\sigma\Phi^{-1}(1-\alpha)$; $-\mu+\sigma\varphi(\Phi^{-1}(\alpha))/(1-\alpha)$ \\
+Contribución al riesgo & $RC_i=w_i(\Sigma w)_i/\sigma_p$ · \py{risk.risk\_contributions} \\
+Sharpe & $\sqrt P\,\bar r/s$ · \py{performance.sharpe} \\
+PSR & $\Phi\big((\widehat{SR}-SR^*)\sqrt{n-1}/\sqrt{1-\gamma_3\widehat{SR}+\frac{\gamma_4-1}4\widehat{SR}^2}\big)$ \\
+RSI & $100-100/(1+RS)$ · \py{indicators.rsi} \\
+True range & $\max(H-L,|H-C_{-1}|,|L-C_{-1}|)$ · \py{indicators.atr} \\
+Pivotes & $P=(H+L+C)/3$, $R_1=2P-L$, $S_1=2P-H$ \\
+Beta & $\operatorname{Cov}(r_i,r_m)/\operatorname{Var}(r_m)$ · \py{equity.beta} \\
+Vida media AR(1) & $-\ln2/\ln(1+b)$ · \py{equity.half\_life} \\
+Valor del pip & $\text{pip}\cdot\text{lotes}\cdot10^5$ (en cotizada) · \py{fx.pip\_value} \\
+Forward FX & $S(1+r_qT)/(1+r_bT)$ · \py{fx.forward\_rate} \\
+Carry FX & $[(1+r_bT)S_1-(1+r_qT)S_0]/S_0$ · \py{fx.carry\_return} \\
+Coste de carry & $F=Se^{(r+u-y)T}$ · \py{commodities.cost\_of\_carry\_forward} \\
+Roll yield & $\ln(F_1/F_2)/(T_2-T_1)$ · \py{commodities.roll\_yield} \\
+Crack 3:2:1 & $(2\,RB\cdot42+HO\cdot42-3\,CL)/3$ · \py{commodities.crack\_spread\_321} \\
+Duración mod. & $D_{\text{mac}}/(1+y/f)$ · \py{rates.modified\_duration} \\
+$\Delta P$ & $-D_{\text{mod}}P\Delta y+\frac12CP\Delta y^2$ · \py{rates.price\_change\_approx} \\
+Black--Scholes & $Se^{-qT}N(d_1)-Ke^{-rT}N(d_2)$ · \py{options.bs\_price} \\
+Movimiento esperado & $S\sigma\sqrt{d/365}$ · \py{options.expected\_move} \\
+Funding anual & $\text{tasa}\cdot(24/h)\cdot365$ · \py{crypto.annualized\_funding} \\
+\bottomrule
+\end{tabularx}

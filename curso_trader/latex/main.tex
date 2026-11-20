@@ -1,0 +1,76 @@
+\documentclass[11pt,a4paper,openany]{book}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish,es-noshorthands,es-tabla]{babel}
+\usepackage{lmodern}
+\usepackage[margin=2.4cm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage[most]{tcolorbox}
+\usepackage{listings}
+\usepackage[hidelinks]{hyperref}
+\graphicspath{{../figuras/}}
+\setlist{itemsep=2pt,topsep=4pt}
+\decimalpoint
+
+\definecolor{azul}{HTML}{1f4e79}
+\definecolor{rojo}{HTML}{c0504d}
+\definecolor{verde}{HTML}{4f9a5b}
+\definecolor{fondo}{HTML}{f4f6f9}
+
+\newtcolorbox{clave}[1][Idea clave]{colback=azul!5,colframe=azul,fonttitle=\bfseries,title=#1,breakable}
+\newtcolorbox{aviso}[1][Cuidado]{colback=rojo!5,colframe=rojo,fonttitle=\bfseries,title=#1,breakable}
+\newtcolorbox{practica}[1][En la práctica]{colback=verde!5,colframe=verde,fonttitle=\bfseries,title=#1,breakable}
+\newtcolorbox{ejercicios}{colback=fondo,colframe=black!40,fonttitle=\bfseries,title=Ejercicios,breakable}
+
+\lstset{basicstyle=\ttfamily\small,backgroundcolor=\color{fondo},frame=single,rulecolor=\color{black!20},
+  breaklines=true,columns=fullflexible,keepspaces=true,
+  literate={á}{{\'a}}1 {é}{{\'e}}1 {í}{{\'i}}1 {ó}{{\'o}}1 {ú}{{\'u}}1 {ñ}{{\~n}}1 {·}{{$\cdot$}}1 {Á}{{\'A}}1}
+\newcommand{\py}[1]{\texttt{#1}}
+\newcommand{\E}{\mathbb{E}}
+
+\title{\Huge\bfseries Curso de Trader Profesional\\[6pt]
+\Large Riesgo, ejecución y estrategia en renta variable, divisas, materias primas,\\ renta fija, opciones y cripto\\[14pt]
+\normalsize con la librería Python \texttt{trader} y scripts de uso diario}
+\author{IGR Metrics}
+\date{Edición 1 · noviembre de 2026}
+
+\begin{document}
+\sloppy\emergencystretch=3em
+\frontmatter
+\maketitle
+\begin{tcolorbox}[colback=white,colframe=black!50,title=Aviso]
+Este curso es material educativo. No es asesoramiento financiero ni una recomendación de inversión.
+Operar con apalancamiento puede hacer perder más que el capital depositado. Los ejemplos usan datos
+sintéticos; ninguna cifra es una predicción ni un resultado real.
+\end{tcolorbox}
+\tableofcontents
+\mainmatter
+\input{capitulos/00_introduccion}
+\part{Fundamentos comunes a todos los mercados}
+\input{capitulos/01_microestructura}
+\input{capitulos/02_estadistica}
+\input{capitulos/03_tecnico}
+\input{capitulos/04_riesgo}
+\input{capitulos/05_backtesting}
+\input{capitulos/06_psicologia}
+\part{Clases de activo}
+\input{capitulos/07_equity}
+\input{capitulos/08_fx}
+\input{capitulos/09_commodities}
+\input{capitulos/10_renta_fija}
+\input{capitulos/11_opciones}
+\input{capitulos/12_cripto}
+\part{Práctica diaria}
+\input{capitulos/13_rutina}
+\input{capitulos/14_plan_estudio}
+\appendix
+\input{capitulos/A_formulas}
+\input{capitulos/B_glosario}
+\backmatter
+\input{capitulos/bibliografia}
+\end{document}

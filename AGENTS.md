@@ -46,3 +46,8 @@ Antes de modificarlo, lee `estudio_video/AGENTS.md`. Las reglas de LaTeX/figuras
 ## Comparador de precios (`comparador_precios/`)
 Proyecto independiente (sus propias dependencias y tests: `pytest comparador_precios/tests`).
 Antes de modificarlo, lee `comparador_precios/CLAUDE.md`. Las reglas de LaTeX/figuras de arriba no le aplican.
+
+## Curso de trader (`curso_trader/`)
+Proyecto independiente (sus propias dependencias y tests: `pytest curso_trader/tests`).
+Antes de modificarlo, lee `curso_trader/AGENTS.md` (incluye la sección «Estado»). Las reglas de LaTeX/figuras
+de arriba no le aplican; tiene las suyas (su PDF es `curso_trader/latex/main.pdf`).

@@ -1,0 +1,85 @@
+\chapter{Microestructura y ejecución}\label{cap:micro}
+
+\section{El libro de órdenes}
+Un mercado electrónico es un \textbf{libro de órdenes limitadas}: a cada precio hay una cola de
+órdenes de compra (\emph{bid}) y de venta (\emph{ask} u \emph{offer}). El mejor bid y el mejor ask
+forman la horquilla (\emph{spread}); el precio medio es $m = (b+a)/2$. Quien envía una orden a mercado
+\emph{cruza} el spread y paga liquidez; quien deja una orden limitada la \emph{provee} y espera.
+
+\begin{table}[h]\centering\small
+\begin{tabularx}{\textwidth}{lX}
+\toprule
+Orden & Uso \\ \midrule
+Mercado & Ejecución inmediata al precio disponible. Riesgo: deslizamiento (\emph{slippage}) en libros finos o en noticias. \\
+Limitada & Precio máximo (compra) o mínimo (venta). Riesgo: no ejecutarse justo cuando el precio se va. \\
+Stop (stop-market) & Se convierte en orden a mercado al tocar el nivel. Garantiza salida, no precio (\emph{gaps}). \\
+Stop-limit & Se convierte en limitada al tocar el nivel. Garantiza precio, no salida: peligrosa para stops de protección. \\
+OCO / bracket & Objetivo y stop enlazados: si se ejecuta uno se cancela el otro. \\
+Iceberg & Muestra solo una parte del tamaño. \\
+Validez & DAY, GTC (hasta cancelar), IOC (lo que se pueda ya), FOK (todo o nada), MOC/LOC (al cierre). \\
+\bottomrule
+\end{tabularx}
+\caption{Tipos de orden habituales.}
+\end{table}
+
+\section{Costes de transacción}
+El coste total de una operación tiene tres partes:
+\begin{equation}
+\text{coste} = \underbrace{\tfrac12\,\text{spread}}_{\text{explícito}} + \text{comisiones} + \underbrace{\text{impacto}}_{\text{implícito}} .
+\end{equation}
+El impacto de mercado de una orden grande crece aproximadamente con la \textbf{raíz cuadrada} del
+tamaño relativo al volumen diario (ley empírica de la raíz cuadrada):
+\begin{equation}\label{eq:impacto}
+\frac{\Delta P}{P} \approx Y\,\sigma_{\text{diaria}}\sqrt{\frac{Q}{V}},\qquad Y\approx 0{,}5\text{--}1,
+\end{equation}
+donde $Q$ es la cantidad y $V$ el volumen diario. Ejemplo: con $\sigma_{\text{diaria}}=2~\%$ y una orden
+del 1~\% del volumen diario, el impacto ronda $0{,}1$--$0{,}2~\%$: \emph{más que el spread} de una acción
+líquida. Por eso las órdenes grandes se trocean con algoritmos:
+\begin{itemize}
+\item \textbf{TWAP}: reparte la orden uniformemente en el tiempo.
+\item \textbf{VWAP}: reparte según el perfil de volumen intradía (más al principio y al final de la sesión).
+\item \textbf{POV}: participa en un porcentaje fijo del volumen que va apareciendo.
+\item \textbf{Implementation shortfall}: minimiza la diferencia con el precio de decisión, equilibrando impacto y riesgo de esperar.
+\end{itemize}
+
+\begin{practica}
+Mide tu ejecución: anota el \emph{precio de decisión} (cuando decides operar) y el precio medio de
+ejecución. La diferencia, en puntos básicos, es tu \emph{slippage}. En el backtest
+(\py{trader.backtest.backtest}, argumento \py{cost\_bps}) usa un coste igual o mayor al que realmente
+pagas; si la estrategia deja de funcionar con el doble de coste, no tiene margen de seguridad.
+\end{practica}
+
+\section{Sesiones y liquidez}
+\begin{itemize}
+\item \textbf{Acciones}: subasta de apertura, sesión continua, subasta de cierre (el cierre concentra
+  el 10--20~\% del volumen en EE.~UU. y es el precio de referencia de índices y fondos). Pre y
+  post-mercado con poca liquidez.
+\item \textbf{FX}: mercado OTC 24 horas de domingo noche a viernes noche; liquidez máxima en el solape
+  Londres--Nueva York (aprox. 12--16~h UTC). Fixing WM/Reuters de las 16:00 de Londres.
+  \py{trader.fx.open\_sessions(hora\_utc)} dice qué sesiones están abiertas.
+\item \textbf{Futuros}: casi 24 horas en Globex/ICE, pero el volumen se concentra en el horario del
+  mercado físico (\emph{pit hours}). El precio de liquidación diario (\emph{settlement}) fija el margen.
+\item \textbf{Cripto}: 24/7, con liquidez fragmentada entre plataformas.
+\end{itemize}
+
+\section{Apalancamiento y margen}
+En futuros, CFD, FX al contado con broker y perpetuos de cripto no pagas el nocional, sino un
+\textbf{margen inicial} (típicamente 3--15~\% del nocional). Si las pérdidas reducen la cuenta por debajo
+del \textbf{margen de mantenimiento}, el broker pide más fondos (\emph{margin call}) o liquida. El
+apalancamiento efectivo de la cuenta es
+\[
+\text{apalancamiento} = \frac{\sum_i |\text{nocional}_i|}{\text{capital}} ,
+\]
+y es lo que hay que vigilar, no el margen exigido: un margen del 5~\% permite 20x, lo que no significa
+que debas usarlo. \py{scripts/informe\_riesgo.py} lo calcula para tu cartera.
+
+\begin{ejercicios}
+\begin{enumerate}
+\item Una acción cotiza a 49,98 / 50,02. Compras 2000 acciones a mercado y vendes a mercado al cabo de
+  un rato sin que el precio medio se mueva. ¿Cuánto has perdido por el spread? ¿Y en pb del nocional?
+\item Con la ecuación~\eqref{eq:impacto} ($Y=0{,}7$, $\sigma=1{,}8~\%$) estima el impacto de comprar el
+  5~\% del volumen diario. ¿Cuántos días tendrías que repartir la orden para que el impacto diario sea
+  menor que 10 pb?
+\item ¿Por qué un stop-limit puede no protegerte en un gap de apertura?
+\end{enumerate}
+\end{ejercicios}
