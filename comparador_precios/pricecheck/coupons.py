@@ -18,7 +18,7 @@ from .models import Coupon
 
 # palabra clave (sin distinguir mayúsculas) + código en MAYÚSCULAS/dígitos
 _CODE = re.compile(
-    r"(?i:c[óo]digo(?:\s+(?:de\s+)?(?:descuento|promocional|promo))?|cup[óo]n|coupon|promo\s?code|code)"
+    r"\b(?i:c[óo]digo(?:\s+(?:de\s+)?(?:descuento|promocional|promo))?|cup[óo]n|coupon|promo\s?code|code)"
     r"\s*[:\-–]?\s*[\"“'«]?([A-Z0-9][A-Z0-9_\-]{3,19})\b"
 )
 _PCT = re.compile(r"(?<![\d.,])(\d{1,2}(?:[.,]\d)?)\s?%\s*(?i:de\s+)?(?i:descuento|dto\.?|off|menos|rebaja)")

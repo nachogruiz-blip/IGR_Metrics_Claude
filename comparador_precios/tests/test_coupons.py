@@ -16,6 +16,10 @@ def test_amount_and_minimum_purchase():
     assert c[0].saving(40.0) == 0.0 and c[0].saving(60.0) == 5.0
 
 
+def test_keyword_must_be_a_whole_word():
+    assert extract_coupons("Barcode ABC1234 en la caja", source="t", verified=True) == []
+
+
 def test_stopwords_and_lowercase_are_not_codes():
     assert extract_coupons("Código postal 28001 y cupón DESCUENTO para todos", source="t", verified=True) == []
     assert extract_coupons("introduce tu code aquí", source="t", verified=True) == []

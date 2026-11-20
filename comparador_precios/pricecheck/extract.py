@@ -265,6 +265,11 @@ def match_score(query: str, title: str | None) -> float:
     q, t = tokens(query), tokens(title or "")
     if not q:
         return 0.0
-    if any(any(c.isdigit() for c in tok) and tok not in t for tok in q):
+    joined = re.sub(r"[^a-z0-9]", "", (title or "").lower())   # «WH-1000 XM5» → «wh1000xm5»
+
+    def present(tok: str) -> bool:
+        return tok in t or (len(tok) >= 2 and tok in joined)
+
+    if any(any(c.isdigit() for c in tok) and not present(tok) for tok in q):
         return 0.0
-    return len(q & t) / len(q)
+    return sum(present(tok) for tok in q) / len(q)

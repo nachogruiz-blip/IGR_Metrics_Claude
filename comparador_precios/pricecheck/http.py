@@ -27,9 +27,11 @@ class FetchError(RuntimeError):
 
 
 class Fetcher(Protocol):
-    def get_text(self, url: str, params: dict | None = None, headers: dict | None = None) -> str: ...
+    def get_text(self, url: str, params: dict | None = None, headers: dict | None = None,
+                 api: bool = False) -> str: ...
 
-    def get_json(self, url: str, params: dict | None = None, headers: dict | None = None) -> Any: ...
+    def get_json(self, url: str, params: dict | None = None, headers: dict | None = None,
+                 api: bool = True) -> Any: ...
 
 
 def full_url(url: str, params: dict | None) -> str:
@@ -77,12 +79,15 @@ class HttpFetcher:
             time.sleep(wait)
 
     # ------------------------------------------------------------------ API
-    def get_text(self, url: str, params: dict | None = None, headers: dict | None = None) -> str:
+    def get_text(self, url: str, params: dict | None = None, headers: dict | None = None,
+                 api: bool = False) -> str:
+        """``api=True`` para APIs documentadas (con o sin clave): robots.txt regula rastreadores
+        de páginas, no clientes de una API, y algunas lo prohíben todo para su web."""
         key = full_url(url, params)
         hit = self._cache.get(key)
         if hit and time.time() - hit[0] < CACHE_TTL:
             return hit[1]
-        if not self._allowed(key):
+        if not api and not self._allowed(key):
             raise FetchError(f"robots.txt no permite leer {key}")
         self._throttle(urlsplit(key).netloc)
         try:
@@ -94,8 +99,9 @@ class HttpFetcher:
         self._cache[key] = (time.time(), r.text)
         return r.text
 
-    def get_json(self, url: str, params: dict | None = None, headers: dict | None = None) -> Any:
-        txt = self.get_text(url, params, headers)
+    def get_json(self, url: str, params: dict | None = None, headers: dict | None = None,
+                 api: bool = True) -> Any:
+        txt = self.get_text(url, params, headers, api=api)
         try:
             return json.loads(txt)
         except json.JSONDecodeError as e:
@@ -110,7 +116,8 @@ class FakeFetcher:
         self.routes = routes
         self.calls: list[str] = []
 
-    def get_text(self, url: str, params: dict | None = None, headers: dict | None = None) -> str:
+    def get_text(self, url: str, params: dict | None = None, headers: dict | None = None,
+                 api: bool = False) -> str:
         key = full_url(url, params)
         self.calls.append(key)
         match = max((p for p in self.routes if key.startswith(p)), key=len, default=None)
@@ -121,5 +128,6 @@ class FakeFetcher:
             raise val
         return val
 
-    def get_json(self, url: str, params: dict | None = None, headers: dict | None = None) -> Any:
-        return json.loads(self.get_text(url, params, headers))
+    def get_json(self, url: str, params: dict | None = None, headers: dict | None = None,
+                 api: bool = True) -> Any:
+        return json.loads(self.get_text(url, params, headers, api=api))

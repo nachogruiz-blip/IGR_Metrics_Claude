@@ -23,6 +23,10 @@ def test_marketplace_seller_variants():
     assert classify("amazon.es", "Sony", "Amazon EU S.à r.l.").status == "marketplace_directo"
     assert classify("amazon.es", "Sony", "Sony Official Store").status == "oficial"
     assert classify("amazon.es", "Sony", "GadgetsXYZ").status == "marketplace_tercero"
+    # la marca o la plataforma deben aparecer como palabra, no como trozo de otra
+    assert classify("amazon.es", "LG", "Bulgaria Goods").status == "marketplace_tercero"
+    assert classify("amazon.es", "LG", "LG Electronics").status == "oficial"
+    assert classify("amazon.es", "Sony", "Amazonas Electrónica").status == "marketplace_tercero"
 
 
 def test_retailer_unknown_and_lookalike():

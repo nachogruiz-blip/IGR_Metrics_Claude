@@ -86,7 +86,13 @@ Una fuente que falla **nunca** tumba el informe: se anota en `PriceReport.errors
 7. La demo sólo usa marcas y dominios **ficticios** (`.example`): no atribuir quejas a empresas reales.
 8. Ninguna clave de API ni dato personal en código, UI, logs o peticiones: claves sólo por
    variables de entorno (`SERPAPI_KEY`, `BRAVE_API_KEY`); el User-Agent es genérico.
-9. La app arranca en modo demo (`tests/test_app.py`; se comprueba el título porque `AppTest` no
+9. `HttpFetcher` respeta robots.txt para **páginas** (`get_text`) pero no para **APIs**
+   (`get_json`, o `get_text(..., api=True)`): SerpAPI, Brave y RDAP son APIs documentadas.
+10. Coincidencias por palabra completa: marca en el nombre del vendedor («LG» ≠ «Bulgaria»),
+    plataforma («Amazon» ≠ «Amazonas»), palabra clave de cupón («code» ≠ «barcode»). El modelo
+    se compara también sin separadores («WH1000XM5» = «WH-1000XM5»).
+11. El precio anómalo se calcula sólo entre ofertas de producto nuevo.
+12. La app arranca en modo demo (`tests/test_app.py`; se comprueba el título porque `AppTest` no
    informa de errores de sintaxis en `at.exception`).
 
 ## Recetas
@@ -123,6 +129,9 @@ icono + texto (✅ 🟡 🟠 ⛔), nunca sólo color; nunca doble eje Y. La app 
   Shopping, JSON-LD de schema.org/Trustpilot y RDAP, y probado con fixtures, **no con las webs
   reales**. Al probarlo de verdad, lo primero que puede fallar es el HTML de DuckDuckGo
   (`parse_ddg`) y Trustpilot (puede servir los datos en `__NEXT_DATA__` en vez de JSON-LD).
+- DuckDuckGo HTML puede prohibirse en su robots.txt o limitar peticiones: entonces el error
+  aparece en «Fuentes que fallaron» con la sugerencia de usar `BRAVE_API_KEY`/`SERPAPI_KEY`.
+  Sin claves una búsqueda hace 2 + 2·N consultas al buscador a 1 pet./s: tarda ~30 s.
 - Muchas tiendas grandes bloquean robots o renderizan el precio con JavaScript: no aparecerán sin
   `SERPAPI_KEY`. No hay navegador headless (decisión deliberada: dependencias ligeras).
 - Problemas clasificados por palabras clave (ES/EN): falsos positivos/negativos posibles.

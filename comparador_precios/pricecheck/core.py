@@ -95,7 +95,11 @@ def check(query: str, sources: Sources, *, brand: str | None = None,
         brands = Counter(o.brand.strip().lower() for o in offers if o.brand)
         brand = brands.most_common(1)[0][0] if brands else sources.registry.guess_brand(query)
 
-    med, flags = anomalies([o.total for o in offers])
+    new_idx = [i for i, o in enumerate(offers) if o.condition == "nuevo"]
+    med, new_flags = anomalies([offers[i].total for i in new_idx])
+    flags = [False] * len(offers)
+    for i, f in zip(new_idx, new_flags):
+        flags[i] = f
     domains = sorted({o.domain for o in offers})
     https_by_dom = {o.domain: o.url.startswith("https://") for o in offers}
 

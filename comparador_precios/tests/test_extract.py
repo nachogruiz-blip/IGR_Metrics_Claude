@@ -40,3 +40,5 @@ def test_match_score_requires_model_tokens():
     assert match_score("Sony WH-1000XM5", "Auriculares Sony WH-1000XM5 Negro") == 1.0
     assert match_score("Sony WH-1000XM5", "Sony WH-1000XM4") == 0.0          # otro modelo
     assert match_score("Sony WH-1000XM5", "Funda rígida para auriculares Sony") == 0.0
+    assert match_score("Sony WH-1000XM5", "SONY WH1000XM5 Auriculares") == 1.0   # sin guion
+    assert match_score("Sony WH-1000XM5", "Sony WH-1000 XM5") == 1.0

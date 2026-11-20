@@ -48,6 +48,12 @@ def test_demo_include_used():
     assert any("externo" in w for w in used.reliability.warnings)
 
 
+def test_used_offers_are_not_price_anomalies():
+    r = core.check(DEMO_QUERY, demo_sources(), brand=DEMO_BRAND, include_used=True)
+    assert not by_dom(r, "mercadoglobal.example", "AudioDeals Shop").price_anomaly
+    assert by_dom(r, "chollazo-outlet.example").price_anomaly
+
+
 def test_markdown_report(demo):
     md = to_markdown(demo)
     assert "Mejor opción fiable" in md and "ficticios" in md and "AURORA10" in md
@@ -110,3 +116,21 @@ def test_live_pipeline_with_fake_fetcher(monkeypatch):
     assert uno.official.status == "desconocido"
     assert any("tiendados" in e for e in r.errors)
     assert by_dom(r, "tiendatres.example").reliability.level == "baja"    # sin opiniones
+
+
+def test_http_fetcher_skips_robots_for_apis(monkeypatch):
+    """robots.txt se consulta para páginas, no para APIs (SerpAPI, Brave, RDAP)."""
+    from pricecheck.http import HttpFetcher
+
+    f = HttpFetcher()
+    seen = []
+
+    class Resp:
+        status_code, text = 200, '{"ok": 1}'
+
+    monkeypatch.setattr(f._s, "get", lambda url, **kw: seen.append(url) or Resp())
+    monkeypatch.setattr(f, "_allowed", lambda url: False)       # robots.txt lo prohíbe todo
+    monkeypatch.setattr("pricecheck.http.MIN_INTERVAL", 0.0)
+    assert f.get_json("https://api.example/x") == {"ok": 1}
+    with pytest.raises(FetchError, match="robots"):
+        f.get_text("https://tienda.example/p")

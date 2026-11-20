@@ -98,9 +98,10 @@ def classify(domain: str, brand: str | None, marketplace_seller: str | None = No
             return OfficialStatus("marketplace_tercero",
                                   f"{dom} es un marketplace y no consta quién vende: compruébalo en la ficha")
         s = seller.lower()
-        if brand and slug(brand) and slug(brand) in slug(seller):
+        words = [slug(w) for w in re.split(r"[\s\-_./]+", seller) if slug(w)]
+        if brand and slug(brand) and slug(brand) in words:
             return OfficialStatus("oficial", f"Tienda oficial de {brand} dentro de {dom} (vendedor «{seller}»)")
-        if any(name in s for name in own):
+        if any(re.search(r"\b" + re.escape(name) + r"\b", s) for name in own):
             return OfficialStatus("marketplace_directo", f"Vendido por la propia plataforma ({seller})")
         return OfficialStatus("marketplace_tercero", f"Vendedor externo «{seller}» dentro de {dom}")
     if dom in reg.retailers:

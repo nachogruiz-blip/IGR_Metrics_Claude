@@ -175,7 +175,8 @@ def discover_offers(query: str, search, fetcher: Fetcher, max_shops: int = 12,
         try:
             results += search(q)
         except FetchError as e:
-            errors.append(f"Buscador: {e}")
+            errors.append(f"Buscador ({getattr(search, 'name', '?')}): {e}. Si persiste, define "
+                          "BRAVE_API_KEY o SERPAPI_KEY (ver README)")
     cands = shop_candidates(results, max_shops)
 
     def visit(r: SearchResult):
