@@ -13,8 +13,9 @@ from __future__ import annotations
 import re
 from typing import Callable, Iterable
 
+from .conditions import mentions_service
 from .extract import parse_price
-from .models import Coupon
+from .models import Coupon, finite
 
 # palabra clave (sin distinguir mayúsculas) + código en MAYÚSCULAS/dígitos
 _CODE = re.compile(
@@ -65,8 +66,65 @@ def extract_coupons(text: str, *, source: str, verified: bool, url: str | None =
                 continue
             seen.add(key)
             out.append(Coupon(description=sent.strip()[:200], code=code, pct=pct, amount=amt,
-                              min_purchase=mn, source=source, url=url, verified=verified))
+                              min_purchase=mn, source=source, url=url, verified=verified,
+                              requires_service=mentions_service(sent)))
     return out
+
+
+# --------------------------------------------------------------------------- ¿ya aplicado?
+# Frases que dicen que el precio mostrado ya lleva el descuento.
+_APPLIED_TXT = re.compile(
+    r"ya\s+(?:aplicad|incluid|descontad|rebajad)|precio\s+(?:final\s+)?(?:con|usando|aplicando)\s+(?:el\s+)?"
+    r"(?:c[óo]digo|cup[óo]n)|(?:descuento|c[óo]digo|cup[óo]n)\s+(?:ya\s+)?(?:aplicado|incluido)\s+en\s+el\s+precio|"
+    r"precio\s+(?:ya\s+)?rebajado|price\s+(?:with|after)\s+(?:code|coupon)|already\s+applied", re.I)
+_EUROS = re.compile(r"(\d{1,3}(?:[.\s]\d{3})*(?:,\d{1,2})?|\d+(?:[.,]\d{1,2})?)\s?€|€\s?(\d+(?:[.,]\d{1,2})?)")
+APPLIED_TOL = 0.01      # 1 % (mínimo 0,50 €) de tolerancia al comparar precios
+
+
+def _close(a: float, b: float) -> bool:
+    return abs(a - b) <= max(APPLIED_TOL * max(a, b), 0.5)
+
+
+def euro_amounts(text: str) -> list[float]:
+    vals = (parse_price(m.group(1) or m.group(2)) for m in _EUROS.finditer(text))
+    return [v for v in vals if v]
+
+
+def already_applied(c: Coupon, price: float, list_price: float | None = None) -> bool:
+    """¿El precio mostrado ya incluye el descuento ``c``? (caso real: el precio de la ficha venía
+    rebajado y además se anunciaba el código; restarlo otra vez daba un precio inexistente).
+
+    Señales, cualquiera basta:
+    1. La frase lo dice («precio con el código», «descuento ya aplicado»).
+    2. La frase menciona un importe ≈ ``price`` (el precio rebajado aparece junto al código).
+    3. Hay un precio de referencia R (tachado/«antes»/PVP, o un importe de la frase mayor que el
+       precio) tal que R − ahorro(R) ≈ ``price``, o la rebaja visible R − price ya cubre al menos
+       el 90 % del ahorro del cupón (el descuento ya está reflejado).
+    En la duda se prefiere NO restar: sobrestimar el precio es mejor que prometer uno que no existe.
+    """
+    if _APPLIED_TXT.search(c.description):
+        return True
+    amounts = euro_amounts(c.description)
+    if c.min_purchase is not None:
+        amounts = [a for a in amounts if not _close(a, c.min_purchase)]
+    if finite(c.amount):
+        amounts = [a for a in amounts if not _close(a, c.amount)]
+    if any(_close(a, price) for a in amounts):
+        return True
+    refs = [r for r in amounts + ([list_price] if finite(list_price) else []) if r > price * (1 + APPLIED_TOL)]
+    for r in refs:
+        sv = c.saving(r)
+        if sv > 0 and (_close(r - sv, price) or (r - price) >= 0.9 * sv):
+            return True
+    return False
+
+
+def mark_applied(coupons: list[Coupon], price: float, list_price: float | None = None) -> list[Coupon]:
+    """Marca ``applied`` en los cupones cuyo descuento ya está en ``price``. Devuelve la lista."""
+    for c in coupons:
+        if c.code and not c.applied:
+            c.applied = already_applied(c, price, list_price)
+    return coupons
 
 
 def search_coupons(domain: str, search: Callable[[str], list], *, limit: int = 10) -> list[Coupon]:
@@ -85,5 +143,8 @@ def dedupe(coupons: list[Coupon]) -> list[Coupon]:
     for c in coupons:
         key = (c.code, c.pct, c.amount)
         if key not in best or (c.verified and not best[key].verified):
+            if key in best:  # conserva lo averiguado sobre la otra copia
+                c.applied |= best[key].applied
+                c.requires_service |= best[key].requires_service
             best[key] = c
     return list(best.values())

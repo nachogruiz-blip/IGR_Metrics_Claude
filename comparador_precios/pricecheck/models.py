@@ -61,6 +61,8 @@ class Offer:
     page_rating: float | None = None        # valoración del PRODUCTO en la ficha (0–5)
     page_rating_count: int | None = None
     source: str = ""                 # de dónde salió la oferta (proveedor)
+    list_price: float | None = None  # precio de referencia/tachado («antes 239,99 €»), si consta
+    tied_service: str | None = None  # el precio exige contratar algo (tarifa, fibra…): motivo
 
     @property
     def total(self) -> float:
@@ -79,6 +81,13 @@ class Coupon:
     source: str = ""
     url: str | None = None
     verified: bool = False
+    applied: bool = False            # el precio mostrado YA incluye este descuento (no restar)
+    requires_service: bool = False   # exige contratar un servicio (tarifa, fibra…): no se resta
+
+    @property
+    def usable(self) -> bool:
+        """Puede restarse del precio: tiene código, no está ya aplicado y no exige contratar nada."""
+        return bool(self.code) and not self.applied and not self.requires_service
 
     def saving(self, price: float) -> float:
         if self.min_purchase is not None and price < self.min_purchase:
@@ -157,10 +166,17 @@ class Assessment:
     reliability: Reliability
     price_anomaly: bool = False
 
+    @property
+    def requires_service(self) -> bool:
+        """El precio sólo vale contratando otro servicio (telefonía, fibra, suscripción…)."""
+        return self.offer.tied_service is not None
+
     def best_coupon(self, verified_only: bool = False) -> Coupon | None:
-        """Mejor cupón CON CÓDIGO. Los descuentos sin código anunciados en la ficha se
-        consideran ya incluidos en el precio mostrado (no se restan dos veces)."""
-        cands = [c for c in self.coupons if c.code and (c.verified or not verified_only)]
+        """Mejor cupón CON CÓDIGO que se pueda restar. Los descuentos sin código anunciados en la
+        ficha, y los cupones cuyo efecto ya se ve en el precio (``applied``), se consideran
+        incluidos en el precio mostrado: no se restan dos veces. Los que exigen contratar un
+        servicio tampoco se restan."""
+        cands = [c for c in self.coupons if c.usable and (c.verified or not verified_only)]
         cands = [c for c in cands if c.saving(self.offer.price) > 0]
         return max(cands, key=lambda c: c.saving(self.offer.price), default=None)
 

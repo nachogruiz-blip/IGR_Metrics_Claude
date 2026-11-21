@@ -9,10 +9,11 @@ from __future__ import annotations
 import os
 from collections import Counter
 from concurrent.futures import ThreadPoolExecutor
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from typing import Callable
 
-from .coupons import dedupe, extract_coupons, search_coupons
+from .conditions import tied_service
+from .coupons import dedupe, extract_coupons, mark_applied, search_coupons
 from .http import FetchError, Fetcher, HttpFetcher
 from .models import Assessment, Coupon, Offer, PriceReport, Reputation, finite
 from .official import Registry, classify
@@ -73,6 +74,13 @@ def _dedupe_offers(pairs: list[tuple[Offer, str]]) -> list[tuple[Offer, str]]:
     return list(best.values())
 
 
+def recommend(assessments: list[Assessment]) -> Assessment | None:
+    """Menor precio final con fiabilidad Alta/Media, no marcada sin stock y sin servicio ligado."""
+    trusted = [a for a in assessments if a.reliability.level in ("alta", "media")
+               and a.offer.in_stock is not False and not a.requires_service]
+    return min(trusted, key=lambda a: a.final_price, default=None)
+
+
 def check(query: str, sources: Sources, *, brand: str | None = None,
           official_domains: tuple[str, ...] = (), include_used: bool = False,
           currency: str = "EUR") -> PriceReport:
@@ -90,12 +98,16 @@ def check(query: str, sources: Sources, *, brand: str | None = None,
             kept.append((o, t))
     pairs = _dedupe_offers(kept)
     offers = [o for o, _ in pairs]
+    for o, t in pairs:
+        if o.tied_service is None:
+            o.tied_service = tied_service(o.domain, o.title, t)
 
     if brand is None:
         brands = Counter(o.brand.strip().lower() for o in offers if o.brand)
         brand = brands.most_common(1)[0][0] if brands else sources.registry.guess_brand(query)
 
-    new_idx = [i for i, o in enumerate(offers) if o.condition == "nuevo"]
+    # la mediana y las anomalías sólo entre productos nuevos con precio «de tienda»
+    new_idx = [i for i, o in enumerate(offers) if o.condition == "nuevo" and o.tied_service is None]
     med, new_flags = anomalies([offers[i].total for i in new_idx])
     flags = [False] * len(offers)
     for i, f in zip(new_idx, new_flags):
@@ -123,17 +135,27 @@ def check(query: str, sources: Sources, *, brand: str | None = None,
     for (o, text), anomalous in zip(pairs, flags):
         rep, cps = info[o.domain]
         page_cps = extract_coupons(text, source="ficha del vendedor", verified=True, url=o.url) if text else []
+        # copias: el mismo cupón de agregador puede estar ya aplicado en una tienda y no en otra
+        cps = [replace(c) for c in cps]
+        coupons = mark_applied(dedupe(page_cps + cps), o.price, o.list_price)
         status = classify(o.domain, brand, o.marketplace_seller, registry=sources.registry,
                           official_domains=official_domains)
         rel = reliability(rep, status, price_anomaly=anomalous)
-        assessments.append(Assessment(offer=o, reputation=rep, official=status,
-                                      coupons=dedupe(page_cps + cps), reliability=rel,
-                                      price_anomaly=anomalous))
-    assessments.sort(key=lambda a: (a.final_price, -a.reliability.score if finite(a.reliability.score) else 0.0))
+        if o.tied_service:
+            rel.warnings.insert(0, "Precio condicionado a contratar un servicio (tarifa, fibra…): "
+                                   "no es comparable y se excluye de la recomendación y de la mediana. "
+                                   + o.tied_service)
+        assessments.append(Assessment(offer=o, reputation=rep, official=status, coupons=coupons,
+                                      reliability=rel, price_anomaly=anomalous))
+    assessments.sort(key=lambda a: (a.requires_service, a.final_price,
+                                    -a.reliability.score if finite(a.reliability.score) else 0.0))
 
-    trusted = [a for a in assessments if a.reliability.level in ("alta", "media") and a.offer.in_stock is not False]
-    recommended = min(trusted, key=lambda a: a.final_price, default=None)
-    cheapest = assessments[0] if assessments else None
+    recommended = recommend(assessments)
+    cheapest = next((a for a in assessments if not a.requires_service), None)
+    tied = sum(a.requires_service for a in assessments)
+    if tied:
+        notes.append(f"{tied} oferta(s) exigen contratar un servicio (telefonía, fibra, suscripción…): "
+                     "se muestran al final y no cuentan para la mediana ni la recomendación.")
     if not offers:
         notes.append("No se encontró ninguna oferta del producto. Prueba con el modelo exacto "
                      "(p. ej. «Sony WH-1000XM5») o revisa los errores de las fuentes.")

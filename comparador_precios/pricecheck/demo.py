@@ -6,7 +6,10 @@ Resultados esperados (vigilados por ``tests/test_core.py``):
 - ``mercadoglobal.example`` vendido por la plataforma → recomendada (la fiable más barata).
 - ``chollazo-outlet.example`` → «riesgo»: precio anómalo + dominio de 45 días + fraude.
 - ``tecnoprecio.example`` → «baja»: muchas quejas de entrega y devoluciones.
-- ``audiofan.example`` → sin opiniones ⇒ como mucho «baja».
+- ``audiofan.example`` → sin opiniones ⇒ como mucho «baja». Su ficha anuncia FAN10 (−10 %) pero
+  el precio ya viene rebajado («Antes 372,22 €» × 0,9 = 335 €): el cupón NO se resta otra vez.
+- ``telered.example`` → 49 € «al contratar tu tarifa Fibra + Móvil»: marcada como ligada a un
+  servicio, fuera de la mediana, de «la más barata» y de la recomendación aunque sea fiable.
 - Vendedor externo reacondicionado en el marketplace → excluido salvo ``include_used``.
 """
 
@@ -51,7 +54,11 @@ def _offers() -> list[tuple[Offer, str]]:
                shipping=0.0, in_stock=True, title=t, brand="Aurora", source="demo"),
          "¡Liquidación! 55% de descuento sólo hoy."),
         (Offer("AudioFan", "audiofan.example", "https://audiofan.example/aurora-x5", 335.0, shipping=3.5,
-               in_stock=None, title=t, brand="Aurora", source="demo"), ""),
+               in_stock=None, title=t, brand="Aurora", source="demo"),
+         "Antes 372,22 €. Ahora 335,00 € con un 10% de descuento usando el código FAN10."),
+        (Offer("TeleRed", "telered.example", "https://telered.example/moviles/aurora-x5", 49.0, shipping=0.0,
+               in_stock=True, title=t, brand="Aurora", source="demo"),
+         "Llévate los Aurora X5 por 49 € al contratar tu tarifa Fibra + Móvil. Permanencia de 12 meses."),
     ]
 
 
@@ -80,6 +87,8 @@ _REPUTATION = {
     "chollazo-outlet.example": Reputation("chollazo-outlet.example", 1.4, 38, 20,
                                           _issues("fraude", 5) + _issues("entrega", 4), 45,
                                           sources=["Trustpilot (demo)", "RDAP (demo)"]),
+    "telered.example": Reputation("telered.example", 4.1, 9000, 40, _issues("atencion", 2), 8000,
+                                  sources=["Trustpilot (demo)", "RDAP (demo)"]),
     "audiofan.example": Reputation("audiofan.example", None, 0, 0, [], 1200, sources=["RDAP (demo)"]),
 }
 

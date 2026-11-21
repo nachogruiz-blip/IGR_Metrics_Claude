@@ -17,7 +17,7 @@ import streamlit as st
 
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
-from pricecheck import core, report  # noqa: E402
+from pricecheck import core, report, stats  # noqa: E402
 from pricecheck.models import ISSUE_LABELS, LEVEL_STYLE, PriceReport, finite  # noqa: E402
 
 # --------------------------------------------------------------------------- estilo
@@ -110,16 +110,27 @@ tab_cmp, tab_det, tab_met = st.tabs(["Comparativa", "Detalle por tienda", "Metod
 # --------------------------------------------------------------------------- comparativa
 with tab_cmp:
     if R.assessments:
+        AS = R.assessments
+        st.markdown("Marca en **Incluir** las ofertas que quieres comparar y elige los estadísticos: "
+                    "todo se recalcula al momento. Por defecto quedan fuera las que exigen contratar un "
+                    "servicio y las de segunda mano.")
+        k1, k2 = st.columns([3, 1])
+        chosen = k1.multiselect("Estadísticos", list(stats.STATS), default=list(stats.DEFAULT_STATS))
+        base = k2.selectbox("Calcular sobre", list(stats.BASES), index=0,
+                            help="Precio final = precio + envío − cupón verificado que no esté ya aplicado")
         rows = []
-        for a in R.assessments:
+        for a, inc in zip(AS, stats.default_selection(AS)):
             o = a.offer
             rows.append({
+                "Incluir": inc,
                 "Tienda": report.seller_label(o),
                 "Precio": o.price,
+                "Antes": o.list_price,
                 "Envío": o.shipping,
                 "Precio final": a.final_price,
                 "Fiabilidad": a.reliability.score if finite(a.reliability.score) else None,
                 "Nivel": a.reliability.label,
+                "Condiciones": report.conditions_txt(a),
                 "Opiniones tienda": report.rating_txt(a),
                 "Problemas reportados": report.issues_txt(a),
                 "Vendedor": a.official.label,
@@ -128,33 +139,60 @@ with tab_cmp:
                 "Enlace": o.url,
             })
         df = pd.DataFrame(rows)
-        st.dataframe(df, hide_index=True, width="stretch", column_config={
-            "Precio": st.column_config.NumberColumn(format="%.2f €"),
-            "Envío": st.column_config.NumberColumn(format="%.2f €", help="vacío = desconocido"),
-            "Precio final": st.column_config.NumberColumn(format="%.2f €",
-                                                          help="Precio + envío − cupón con código visto en la web"),
-            "Fiabilidad": st.column_config.ProgressColumn(min_value=0, max_value=100, format="%.0f"),
-            "Enlace": st.column_config.LinkColumn(display_text="abrir"),
-        })
+        edited = st.data_editor(
+            df, hide_index=True, width="stretch", key=f"sel::{R.query}::{len(AS)}",
+            disabled=[c for c in df.columns if c != "Incluir"],
+            column_config={
+                "Incluir": st.column_config.CheckboxColumn(help="¿Entra en los estadísticos?"),
+                "Precio": st.column_config.NumberColumn(format="%.2f €"),
+                "Antes": st.column_config.NumberColumn(format="%.2f €", help="Precio tachado / de referencia de la ficha"),
+                "Envío": st.column_config.NumberColumn(format="%.2f €", help="vacío = desconocido"),
+                "Precio final": st.column_config.NumberColumn(
+                    format="%.2f €", help="Precio + envío − cupón con código visto en la web y no aplicado ya"),
+                "Fiabilidad": st.column_config.ProgressColumn(min_value=0, max_value=100, format="%.0f"),
+                "Enlace": st.column_config.LinkColumn(display_text="abrir"),
+            })
+        mask = [bool(x) for x in edited["Incluir"]]
+        sel = [a for a, m in zip(AS, mask) if m]
+        values = stats.describe_offers(sel, chosen, base)
 
-        # precio final por tienda; color = nivel de fiabilidad (con icono en la etiqueta)
-        A = list(reversed(R.assessments))
+        st.markdown(f"**Estadísticos de «{base}» sobre {len(sel)} de {len(AS)} ofertas**")
+        if not sel:
+            st.info("No hay ninguna oferta marcada en «Incluir».")
+        elif values:
+            cols = st.columns(min(len(values), 5))
+            for i, (name, v) in enumerate(values.items()):
+                cols[i % len(cols)].metric(name, report.eur(v) if v is not None else "—")
+        best_sel = core.recommend(sel)
+        st.caption("Mejor opción fiable entre las marcadas: " + (
+            f"{report.seller_label(best_sel.offer)} · {report.eur(best_sel.final_price)}"
+            if best_sel else "ninguna (ninguna marcada con fiabilidad Alta/Media y en stock)"))
+
+        # precio por tienda; color = nivel de fiabilidad (con icono); atenuadas las no incluidas
+        pick = stats.BASES[base]
+        order = list(reversed(range(len(AS))))
         fig = go.Figure(go.Bar(
-            x=[a.final_price for a in A],
-            y=[f"{LEVEL_STYLE[a.reliability.level][0]} {report.seller_label(a.offer)}" for a in A],
-            orientation="h", marker_color=[LEVEL_COLOR[a.reliability.level] for a in A],
-            text=[report.eur(a.final_price) for a in A], textposition="outside", cliponaxis=False,
+            x=[pick(AS[i]) for i in order],
+            y=[f"{LEVEL_STYLE[AS[i].reliability.level][0]} {report.seller_label(AS[i].offer)}"
+               + (" ⚠️" if AS[i].requires_service else "") for i in order],
+            orientation="h", marker_color=[LEVEL_COLOR[AS[i].reliability.level] for i in order],
+            marker_opacity=[1.0 if mask[i] else 0.3 for i in order],
+            text=[report.eur(pick(AS[i])) for i in order], textposition="outside", cliponaxis=False,
             hovertemplate="%{y}<br>%{x:.2f} €<extra></extra>"))
-        if R.median_total:
-            fig.add_vline(x=R.median_total, line_dash="dot", line_color=MUTED,
-                          annotation_text="mediana", annotation_position="top")
-        fig.update_layout(height=60 + 42 * len(A), margin=dict(l=8, r=60, t=30, b=8), template="none",
+        lines = [(n, v) for n, v in values.items() if n in stats.LOCATION_STATS and v is not None]
+        for j, (name, v) in enumerate(lines):
+            fig.add_vline(x=v, line_dash="dot", line_color=SERIES[j % len(SERIES)],
+                          annotation_text=name.lower(), annotation_position="top" if j % 2 == 0 else "bottom",
+                          annotation_font_color=SERIES[j % len(SERIES)])
+        fig.update_layout(height=80 + 42 * len(AS), margin=dict(l=8, r=60, t=40, b=24), template="none",
                           paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", showlegend=False,
                           font=dict(family="system-ui, -apple-system, Segoe UI, sans-serif", color=INK2, size=12),
-                          title=dict(text="Precio final por tienda (color = fiabilidad)", font=dict(size=14)))
+                          title=dict(text=f"{base} por tienda (color = fiabilidad; atenuadas = no incluidas)",
+                                     font=dict(size=14)))
         fig.update_xaxes(gridcolor=GRID, linecolor=AXIS, zeroline=False, ticksuffix=" €")
         st.plotly_chart(fig, width="stretch")
-        st.caption("Leyenda: " + " · ".join(f"{i} {t}" for i, t in LEVEL_STYLE.values()))
+        st.caption("Leyenda: " + " · ".join(f"{i} {t}" for i, t in LEVEL_STYLE.values())
+                   + " · ⚠️ exige contratar un servicio · líneas = estadísticos de posición elegidos")
     st.download_button("Descargar informe (Markdown)", report.to_markdown(R),
                        file_name="comparativa_precios.md", mime="text/markdown")
 
@@ -170,6 +208,9 @@ with tab_det:
                        f"{', '.join(rep.sources) or 'ninguna'}")
             if rep.domain_age_days is not None:
                 l.markdown(f"**Antigüedad del dominio:** {rep.domain_age_days / 365:.1f} años")
+            if o.list_price is not None:
+                l.markdown(f"**Precio de referencia en la ficha:** {report.eur(o.list_price)} "
+                           f"(rebaja visible {1 - o.price / o.list_price:.0%})")
             if o.page_rating is not None:
                 l.markdown(f"**Valoración del producto en la ficha:** {o.page_rating:.1f}/5 "
                            f"({o.page_rating_count or 0} opiniones)")
@@ -188,6 +229,7 @@ with tab_det:
                 st.markdown("**Cupones y descuentos**")
                 st.dataframe(pd.DataFrame([{"Código": c.code or "—", "Descuento": f"{c.pct:.0%}" if finite(c.pct)
                                             else report.eur(c.amount), "Verificado": "Sí" if c.verified else "No",
+                                            "Cómo se trata": report.coupon_status(c),
                                             "Detalle": c.description, "Fuente": c.source} for c in a.coupons]),
                              hide_index=True, width="stretch")
             st.markdown(f"[Abrir la oferta]({o.url}) · fuente de la oferta: {o.source}")

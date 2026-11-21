@@ -65,6 +65,7 @@ class PageProduct:
     condition: str | None = None
     rating: float | None = None      # producto, normalizado a 0–5
     rating_count: int | None = None
+    list_price: float | None = None  # precio tachado / de referencia («antes», PVP), si consta
     method: str | None = None        # jsonld | microdata | opengraph
     text: str = ""
     extra: dict = field(default_factory=dict)
@@ -147,14 +148,38 @@ def _condition(v: Any) -> str | None:
     return "reacondicionado" if "refurb" in v else "usado" if "used" in v else "nuevo" if "new" in v else None
 
 
+_REF_TYPES = ("strikethroughprice", "listprice", "srp", "msrp", "invoiceprice")
+
+
+def _price_specs(off: dict) -> tuple[Any, Any, float | None]:
+    """(precio de venta, divisa, precio de referencia) a partir de ``priceSpecification``, que
+    puede ser un objeto o una lista con ``priceType`` StrikethroughPrice/ListPrice."""
+    specs = off.get("priceSpecification")
+    specs = specs if isinstance(specs, list) else [specs] if isinstance(specs, dict) else []
+    sale = cur = None
+    refs = []
+    for sp in specs:
+        if not isinstance(sp, dict):
+            continue
+        ptype = str(sp.get("priceType") or "").split("/")[-1].lower()
+        if ptype in _REF_TYPES:
+            refs.append(parse_price(sp.get("price")))
+        elif sale is None:
+            sale, cur = sp.get("price"), sp.get("priceCurrency")
+    refs = [r for r in refs if r]
+    return sale, cur, max(refs) if refs else None
+
+
 def _from_offer(prod: PageProduct, off: dict) -> None:
     price = off.get("price")
-    if price is None and isinstance(off.get("priceSpecification"), dict):
-        price = off["priceSpecification"].get("price")
+    spec_price, spec_cur, ref = _price_specs(off)
+    if price is None:
+        price = spec_price
     if price is None:
         price = off.get("lowPrice")  # AggregateOffer
     prod.price = parse_price(price)
-    prod.currency = off.get("priceCurrency") or (off.get("priceSpecification") or {}).get("priceCurrency")
+    prod.currency = off.get("priceCurrency") or spec_cur
+    prod.list_price = ref if ref and prod.price and ref > prod.price else None
     prod.in_stock = _availability(off.get("availability"))
     prod.condition = _condition(off.get("itemCondition"))
     prod.seller = _name(off.get("seller"))
@@ -185,7 +210,7 @@ def from_jsonld(soup: BeautifulSoup) -> PageProduct | None:
         if cands:
             new = [p for p in cands if p.condition in (None, "nuevo")]
             best = min(new or cands, key=lambda p: p.price)  # se prefiere el producto nuevo
-            for k in ("price", "currency", "in_stock", "shipping", "seller", "condition"):
+            for k in ("price", "currency", "in_stock", "shipping", "seller", "condition", "list_price"):
                 setattr(prod, k, getattr(best, k))
             prod.extra.update(best.extra)
         prod.rating, prod.rating_count = parse_aggregate_rating(node.get("aggregateRating"))
@@ -240,6 +265,22 @@ def visible_text(soup: BeautifulSoup, limit: int = 40_000) -> str:
     return re.sub(r"\s+", " ", soup.get_text(" ")).strip()[:limit]
 
 
+_REF_TXT = re.compile(
+    r"(?i:\bantes(?:\s+de\s+la\s+rebaja)?|\bpvpr?\b|precio\s+(?:anterior|original|habitual|recomendado|de\s+venta\s+recomendado|"
+    r"sin\s+descuento|de\s+referencia)|\bera\b|\bwas\b|\brrp\b)\s*:?\s*(?:€\s?)?"
+    r"(\d{1,3}(?:[.\s]\d{3})*(?:,\d{1,2})?|\d+(?:[.,]\d{1,2})?)")
+
+
+def reference_price(text: str, price: float | None) -> float | None:
+    """Precio de referencia anunciado en el texto («Antes 239,99 €», «PVP 249 €») mayor que
+    ``price`` y como mucho el triple (para no confundirlo con otros importes)."""
+    if not price:
+        return None
+    vals = [parse_price(m.group(1)) for m in _REF_TXT.finditer(text)]
+    vals = [v for v in vals if v and price < v <= 3 * price]
+    return min(vals) if vals else None
+
+
 def extract_product(html: str) -> PageProduct | None:
     """Producto de la página o ``None`` si no se encuentra ningún precio."""
     soup = BeautifulSoup(html, "lxml")
@@ -248,6 +289,8 @@ def extract_product(html: str) -> PageProduct | None:
         return None
     prod.name = prod.name or _meta(soup, "og:title") or (soup.title.string.strip() if soup.title and soup.title.string else None)
     prod.text = visible_text(soup)
+    if prod.list_price is None:
+        prod.list_price = reference_price(prod.text, prod.price)
     return prod
 
 
@@ -259,11 +302,34 @@ def tokens(s: str) -> set[str]:
     return {t for t in re.findall(r"[a-z0-9]+", s.lower()) if t not in _STOP and len(t) > 1}
 
 
+# Palabras que, si aparecen ANTES del producto buscado en el título, indican un accesorio
+# («Funda para Sony WH-1000XM5», «Soporte compatible con GHD…»). Detrás no cuentan: «Plancha GHD
+# Chronos Max con funda» es el producto.
+ACCESSORY_WORDS = frozenset({
+    "funda", "fundas", "carcasa", "carcasas", "protector", "protectores", "cristal", "templado",
+    "recambio", "recambios", "repuesto", "repuestos", "soporte", "estuche", "adaptador", "cargador",
+    "cable", "correa", "pegatina", "vinilo", "almohadillas", "case", "cover", "skin", "strap",
+    "compatible", "replacement",
+})
+
+
+def is_accessory(query: str, title: str | None) -> bool:
+    """El título describe un accesorio PARA el producto buscado, no el producto."""
+    words = [w for w in re.findall(r"[a-z0-9]+", (title or "").lower()) if w not in _STOP]
+    q = tokens(query)
+    acc = next((i for i, w in enumerate(words) if w in ACCESSORY_WORDS and w not in q), None)
+    if acc is None:
+        return False
+    first_q = next((i for i, w in enumerate(words) if w in q), None)
+    return first_q is None or acc < first_q
+
+
 def match_score(query: str, title: str | None) -> float:
     """Fracción de palabras de la búsqueda presentes en el título del producto (0–1).
-    Los tokens con dígitos (modelos: «xm5», «128gb») son obligatorios: si falta uno ⇒ 0."""
+    Los tokens con dígitos (modelos: «xm5», «128gb») son obligatorios: si falta uno ⇒ 0.
+    Un accesorio para el producto (``is_accessory``) también da 0."""
     q, t = tokens(query), tokens(title or "")
-    if not q:
+    if not q or is_accessory(query, title):
         return 0.0
     joined = re.sub(r"[^a-z0-9]", "", (title or "").lower())   # «WH-1000 XM5» → «wh1000xm5»
 

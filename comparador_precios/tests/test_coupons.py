@@ -49,3 +49,37 @@ def test_dedupe_prefers_verified():
     a = Coupon("a", "X10", pct=0.1, verified=False)
     b = Coupon("b", "X10", pct=0.1, verified=True)
     assert dedupe([a, b]) == [b]
+
+
+# --------------------------------------------------------------------------- doble descuento
+from pricecheck.coupons import already_applied, mark_applied  # noqa: E402
+from pricecheck.models import Coupon  # noqa: E402
+
+
+def _c(desc, code="BF20", pct=0.20, amount=None, min_purchase=None):
+    return Coupon(desc, code, pct=pct, amount=amount, min_purchase=min_purchase, verified=True)
+
+
+def test_coupon_already_in_strikethrough_price():
+    """Caso GHD Chronos Max: 269 € tachado, 215,20 € mostrado y código del 20 %: ya aplicado."""
+    assert already_applied(_c("20% de descuento con el código BF20"), 215.20, list_price=269.0)
+
+
+def test_coupon_with_sale_price_in_sentence():
+    assert already_applied(_c("Ahora 215,20 € con el código BF20"), 215.20)          # precio rebajado citado
+    assert already_applied(_c("269,00 € −20% con el código BF20"), 215.20)          # precio original citado
+    assert already_applied(_c("Precio con el código BF20 aplicado"), 215.20)        # lo dice la frase
+
+
+def test_coupon_not_applied_when_no_evidence():
+    assert not already_applied(_c("20% de descuento con el código BF20"), 269.0)
+    assert not already_applied(_c("20% de descuento con el código BF20"), 269.0, list_price=279.0)  # rebaja pequeña
+    # el mínimo de compra no se confunde con un precio
+    assert not already_applied(_c("BF20: 20% en compras superiores a 269 €", min_purchase=269.0), 269.0)
+    # el importe del cupón tampoco
+    assert not already_applied(_c("20 € de descuento con el código BF20", pct=None, amount=20.0), 200.0)
+
+
+def test_mark_applied_only_touches_codes():
+    cs = mark_applied([_c("Ahora 215,20 € con el código BF20"), _c("20% de descuento", code=None)], 215.20)
+    assert [c.applied for c in cs] == [True, False]

@@ -5,22 +5,62 @@ cambias una, cambia también esta página y `tests/test_scoring.py`.
 
 ## 1. Ofertas y precio final
 
-1. Se buscan tiendas con dos consultas al buscador («<producto> comprar precio» y «<producto>
-   oferta tienda»). Se descartan redes sociales, foros, prensa, comparadores y webs de cupones
-   (`search.NOT_SHOPS`) y se toma un resultado por dominio (máximo configurable, 12 por defecto).
+1. Se buscan tiendas con tres consultas al buscador («<producto> comprar precio», «<producto>
+   oferta tienda» y «"<producto>" precio», frase exacta). Se descartan redes sociales, foros,
+   prensa, blogs de reseñas, comparadores, anuncios de particulares y webs de cupones
+   (`search.NOT_SHOPS`) y las URL de artículos (`/blog/`, `/review`, `/comparativa`…). Por dominio
+   se guardan hasta 2 URL, fichas antes que listados (`/buscar`, `/categoria`…): si la primera no
+   es la ficha del producto se prueba la segunda (máximo de dominios configurable, 12 por defecto).
 2. Se visita cada ficha y se lee el precio de los datos estructurados que publican las tiendas:
    JSON-LD `schema.org/Product` → microdatos → meta OpenGraph, en ese orden. Si la ficha
    tiene varias ofertas se prefiere la de producto **nuevo** más barata.
 3. Se descarta la página si el título no contiene al menos el 60 % de las palabras buscadas o si
-   falta alguna palabra con dígitos (el modelo: «XM5», «128GB»). Así se evitan accesorios y
-   modelos parecidos.
+   falta alguna palabra con dígitos (el modelo: «XM5», «128GB»). También si es un **accesorio**
+   para el producto: una palabra como «funda», «soporte», «compatible», «recambio»… aparece en el
+   título *antes* del producto buscado («Funda para ghd chronos max»; pero «Plancha ghd chronos
+   max con funda» sí vale). Así se evitan accesorios y modelos parecidos.
 4. Con `SERPAPI_KEY`, se añaden además las ofertas de Google Shopping.
 5. Se excluyen reacondicionados/usados (salvo que se pida) y precios en otra divisa.
 
+6. **Ofertas ligadas a contratar un servicio** (`conditions.py`): si el dominio es de una
+   operadora (`TELCO_DOMAINS`), o el título o una frase de la ficha que habla de precio dice «con
+   tarifa», «al contratar fibra», «con tu línea móvil», «permanencia», «precio para clientes de
+   fibra», «con suscripción»…, el precio no es comparable. La oferta se marca ⚠️, va al final de
+   la lista y **no** cuenta para la mediana, el precio anómalo, «la más barata» ni la
+   recomendación. No cuentan como condición la financiación («3 plazos de 83 €/mes») ni las
+   newsletters («suscríbete y llévate un 10 %»).
+
 **Precio final** = precio + envío − ahorro del mejor cupón **con código visto en la propia
-ficha del vendedor**. Los descuentos sin código anunciados en la ficha se consideran ya incluidos
-en el precio mostrado. Los cupones de agregadores aparecen como «sin verificar» y **no** se
-restan (muchos están caducados); la app enseña también el precio «con cualquier cupón».
+ficha del vendedor** que no esté ya aplicado ni exija contratar nada. Los descuentos sin código
+anunciados en la ficha se consideran ya incluidos en el precio mostrado. Los cupones de
+agregadores aparecen como «sin verificar» y **no** se restan (muchos están caducados); la app
+enseña también el precio «con cualquier cupón».
+
+**Cupón ya aplicado** (`coupons.already_applied`, evita el doble descuento): muchas tiendas
+publican el precio con el código ya descontado y además anuncian el código. Se considera que
+el cupón ya está en el precio si:
+
+- la frase lo dice («precio con el código», «descuento ya aplicado»…), o
+- la frase cita un importe ≈ precio mostrado (tolerancia 1 %, mínimo 0,50 €), o
+- hay un precio de referencia R —tachado en el JSON-LD (`priceType` StrikethroughPrice/ListPrice),
+  «Antes/PVP/precio anterior» en el texto, `old_price` de Google Shopping o un importe de la frase
+  mayor que el precio— tal que R − ahorro(R) ≈ precio, o la rebaja visible R − precio cubre ya al
+  menos el 90 % del ahorro del cupón.
+
+En la duda **no** se resta: es preferible sobrestimar el precio a prometer uno que no existe
+(si una tienda permite acumular una rebaja y un código, el comparador dará el precio sin el
+código; el cupón aparece igualmente con su estado).
+
+## 1 bis. Estadísticos de la comparativa
+
+En la pestaña «Comparativa» se marca qué ofertas entran (columna **Incluir**; por defecto todas
+salvo las ligadas a un servicio y las de segunda mano), qué estadísticos se muestran y sobre qué
+precio (final, precio + envío o precio). Se recalculan al momento (`stats.py`): mediana, media,
+mínimo, máximo, percentiles 25 y 75 (interpolación lineal, como numpy/Excel), rango
+intercuartílico, desviación típica (muestral, n − 1) y media recortada al 10 % (quita el 10 %
+más bajo y más alto). También se recalcula la mejor opción fiable entre las marcadas. La
+mediana del resumen superior y la detección de precios anómalos usan siempre la selección por
+defecto (producto nuevo, sin servicio ligado, precio + envío).
 
 ## 2. Opiniones y problemas reportados
 
@@ -81,7 +121,7 @@ La media bayesiana evita que una tienda con 3 opiniones de 5★ supere a una con
 ## 5. Recomendación
 
 **Mejor opción fiable** = la de menor precio final entre las de fiabilidad Alta o Media que no
-estén marcadas sin stock. La **más barata sin filtrar** se enseña también, con su nivel, para que
+estén marcadas sin stock ni exijan contratar un servicio. La **más barata sin filtrar** se enseña también, con su nivel, para que
 se vea el riesgo que se asumiría.
 
 ## Limitaciones

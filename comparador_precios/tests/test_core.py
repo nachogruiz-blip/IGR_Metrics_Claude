@@ -35,10 +35,39 @@ def test_demo_expected_outcomes(demo):
     assert mega.final_price == 319.0 and mega.price_with_any_coupon == pytest.approx(319 * 0.95)
     # descuento sin código anunciado en la ficha: no se resta dos veces
     assert scam.final_price == 159.0
-    # orden ascendente por precio final
-    finals = [a.final_price for a in demo.assessments]
+    # orden ascendente por precio final (las ligadas a un servicio, al final)
+    finals = [a.final_price for a in demo.assessments if not a.requires_service]
     assert finals == sorted(finals)
     assert all(a.offer.condition == "nuevo" for a in demo.assessments)
+
+
+def test_demo_coupon_already_in_price_is_not_subtracted_twice(demo):
+    fan = by_dom(demo, "audiofan.example")
+    assert fan.offer.list_price is None                              # sólo en el texto de la ficha
+    assert [(c.code, c.applied) for c in fan.coupons] == [("FAN10", True)]
+    assert fan.final_price == pytest.approx(335.0 + 3.5)
+
+
+def test_demo_offer_tied_to_service(demo):
+    tel = by_dom(demo, "telered.example")
+    assert tel.requires_service and "contratar" in tel.reliability.warnings[0]
+    assert demo.assessments[-1] is tel                               # al final de la lista
+    assert demo.recommended is not tel and demo.cheapest is not tel
+    assert not tel.price_anomaly                                     # no entra en la mediana
+    assert any("contratar" in n for n in demo.notes)
+
+
+def test_ghd_like_page_does_not_double_discount():
+    """Ficha con precio ya rebajado (JSON-LD + tachado) y el código anunciado: final = precio mostrado."""
+    from pricecheck.http import FakeFetcher
+    from pricecheck.search import SearchResult, discover_offers
+    f = FakeFetcher({"https://tiendacinco.example/ghd": fixture("product_precio_ya_rebajado.html")})
+    pairs = discover_offers("ghd chronos max", lambda q: [SearchResult("ghd", "https://tiendacinco.example/ghd")], f)
+    s = core.Sources(offers=lambda q, e: pairs, reputation=lambda d, h: Reputation(d), coupons=lambda d: [])
+    a = core.check("ghd chronos max", s).assessments[0]
+    assert a.offer.price == 215.2 and a.offer.list_price == 269.0
+    assert [(c.code, c.applied) for c in a.coupons] == [("BF20", True)]
+    assert a.final_price == pytest.approx(215.2)                    # antes: 215,20 × 0,8 = 172,16 €
 
 
 def test_demo_include_used():

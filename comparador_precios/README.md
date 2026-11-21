@@ -12,6 +12,12 @@ encontrar, con
 
 Y una recomendación: la tienda más barata entre las fiables.
 
+Además avisa de las ofertas que **esconden un contrato** (precio «con tarifa», «al contratar
+fibra», permanencia…: se marcan ⚠️ y no cuentan), no resta dos veces un cupón cuyo descuento
+**ya está en el precio** de la ficha, y en la pestaña «Comparativa» puedes **elegir qué ofertas
+y qué estadísticos** (mediana, media, mínimo, máximo, percentiles, desviación…) entran en el
+cálculo: se recalcula al momento.
+
 ## Uso
 
 ```bash

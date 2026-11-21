@@ -36,7 +36,23 @@ NOT_SHOPS = frozenset({
     "cuponation.es", "groupon.es", "rtings.com", "tomsguide.com", "techradar.com", "ocu.org",
     "mediavida.com", "linkedin.com", "elmundo.es", "elpais.com", "20minutos.es", "computerhoy.com",
     "rastreator.com", "versus.com", "reclamaciones.com", "quejasonline.com",
+    # prensa, blogs de reseñas y comparadores
+    "hipertextual.com", "elespanol.com", "abc.es", "lavanguardia.com", "elconfidencial.com",
+    "eldiario.es", "huffingtonpost.es", "marca.com", "as.com", "trendencias.com", "vogue.es",
+    "elle.com", "telva.com", "glamour.es", "cosmopolitan.com", "mujerhoy.com", "businessinsider.es",
+    "genbeta.com", "applesfera.com", "andro4all.com", "androidphoria.com", "topesdegama.com",
+    "muycomputer.com", "profesionalreview.com", "geektopia.es", "kimovil.com", "tiendeo.es",
+    "ofertia.com", "promodescuentos.com", "cupones.es", "descuentos.es", "chollos.es",
+    "shopalike.es", "ciao.es", "twenga.es", "preciosmundi.com", "amazon-affiliate.com",
+    # anuncios de particulares (segunda mano)
+    "milanuncios.com", "vinted.es", "todocoleccion.net",
 })
+
+# Rutas que suelen ser listados, búsquedas internas o artículos, no fichas de producto.
+LISTING_HINTS = ("/search", "/buscar", "/busqueda", "/resultados", "?q=", "&q=", "/s?", "/categoria",
+                 "/category", "/categorias", "/c/", "/tag/", "/marca/", "/brand/", "/listado")
+ARTICLE_HINTS = ("/blog/", "/noticias/", "/news/", "/articulo", "/review", "/opiniones/", "/foro/",
+                 "/comparativa", "/mejores-", "/guia-", "/vs-")
 
 
 @dataclass
@@ -115,6 +131,12 @@ class SerpApiShopping:
         return parse_serpapi_shopping(data)
 
 
+def _old_price(r: dict, price: float) -> float | None:
+    old = r.get("extracted_old_price")
+    old = float(old) if isinstance(old, (int, float)) else parse_price(r.get("old_price"))
+    return old if old and old > price else None
+
+
 def parse_serpapi_shopping(data: dict) -> list[Offer]:
     out = []
     for r in data.get("shopping_results", []):
@@ -128,6 +150,7 @@ def parse_serpapi_shopping(data: dict) -> list[Offer]:
         out.append(Offer(seller=r.get("source") or registrable_domain(link), domain=registrable_domain(link),
                          url=link, price=price, shipping=shipping, title=r.get("title", ""),
                          page_rating=r.get("rating"), page_rating_count=r.get("reviews"),
+                         list_price=_old_price(r, price),
                          condition="reacondicionado" if "reacond" in (r.get("second_hand_condition") or "").lower()
                          else "usado" if r.get("second_hand_condition") else "nuevo",
                          source="Google Shopping"))
@@ -135,18 +158,36 @@ def parse_serpapi_shopping(data: dict) -> list[Offer]:
 
 
 # --------------------------------------------------------------------------- descubrimiento
-def shop_candidates(results: list[SearchResult], max_shops: int) -> list[SearchResult]:
-    """Primer resultado de cada dominio, excluyendo los que no son tiendas."""
-    seen, out = set(), []
+def url_kind(url: str) -> str:
+    """«article» (blog, reseña, comparativa), «listing» (búsqueda o categoría) o «product»."""
+    u = url.lower()
+    if any(h in u for h in ARTICLE_HINTS):
+        return "article"
+    if any(h in u for h in LISTING_HINTS):
+        return "listing"
+    return "product"
+
+
+def candidate_groups(results: list[SearchResult], max_shops: int, per_domain: int = 2) -> list[list[SearchResult]]:
+    """Hasta ``per_domain`` URLs por dominio (fichas primero, listados al final, sin artículos),
+    excluyendo los que no son tiendas. Si la primera URL no da el producto se prueba la siguiente."""
+    groups: dict[str, list[SearchResult]] = {}
+    seen_urls: set[str] = set()
     for r in results:
         d = r.domain
-        if d in NOT_SHOPS or d in seen or not r.url.startswith("http"):
+        if d in NOT_SHOPS or not r.url.startswith("http") or r.url in seen_urls or url_kind(r.url) == "article":
             continue
-        seen.add(d)
-        out.append(r)
-        if len(out) >= max_shops:
-            break
-    return out
+        seen_urls.add(r.url)
+        if d not in groups and len(groups) >= max_shops:
+            continue
+        groups.setdefault(d, []).append(r)
+    rank = {"product": 0, "listing": 1}
+    return [sorted(g, key=lambda r: rank[url_kind(r.url)])[:per_domain] for g in groups.values()]
+
+
+def shop_candidates(results: list[SearchResult], max_shops: int) -> list[SearchResult]:
+    """Mejor resultado de cada dominio (ver ``candidate_groups``)."""
+    return [g[0] for g in candidate_groups(results, max_shops, per_domain=1)]
 
 
 def offer_from_page(r: SearchResult, html: str, query: str) -> tuple[Offer | None, str]:
@@ -161,8 +202,14 @@ def offer_from_page(r: SearchResult, html: str, query: str) -> tuple[Offer | Non
     return Offer(seller=seller, domain=dom, url=r.url, price=prod.price, currency=prod.currency or "EUR",
                  shipping=prod.shipping, in_stock=prod.in_stock, condition=prod.condition or "nuevo",
                  title=prod.name or r.title, brand=prod.brand, marketplace_seller=prod.seller,
-                 page_rating=prod.rating, page_rating_count=prod.rating_count,
+                 page_rating=prod.rating, page_rating_count=prod.rating_count, list_price=prod.list_price,
                  source=f"ficha ({prod.method})"), prod.text
+
+
+def search_queries(query: str) -> list[str]:
+    """Consultas al buscador: intención de compra, de oferta y la frase exacta del modelo."""
+    q = " ".join(query.split())
+    return [f"{q} comprar precio", f"{q} oferta tienda", f'"{q}" precio']
 
 
 def discover_offers(query: str, search, fetcher: Fetcher, max_shops: int = 12,
@@ -171,21 +218,31 @@ def discover_offers(query: str, search, fetcher: Fetcher, max_shops: int = 12,
     Devuelve pares (oferta, texto de la ficha) — el texto sirve para buscar cupones."""
     errors = errors if errors is not None else []
     results: list[SearchResult] = []
-    for q in (f"{query} comprar precio", f"{query} oferta tienda"):
+    for q in search_queries(query):
         try:
             results += search(q)
         except FetchError as e:
             errors.append(f"Buscador ({getattr(search, 'name', '?')}): {e}. Si persiste, define "
                           "BRAVE_API_KEY o SERPAPI_KEY (ver README)")
-    cands = shop_candidates(results, max_shops)
+    groups = candidate_groups(results, max_shops)
 
-    def visit(r: SearchResult):
-        try:
-            return offer_from_page(r, fetcher.get_text(r.url), query)
-        except FetchError as e:
-            errors.append(f"{r.domain}: {e}")
-            return None, ""
+    def visit(group: list[SearchResult]):
+        """Prueba las URLs del dominio en orden hasta que una sea la ficha del producto."""
+        fail = None
+        for r in group:
+            try:
+                o, t = offer_from_page(r, fetcher.get_text(r.url), query)
+            except FetchError as e:
+                fail = f"{r.domain}: {e}"
+                if "robots" in str(e) or "403" in str(e):
+                    break           # el dominio no deja leer: no insistir
+                continue
+            if o is not None:
+                return o, t
+        if fail:
+            errors.append(fail)
+        return None, ""
 
     with ThreadPoolExecutor(max_workers=6) as ex:
-        pages = list(ex.map(visit, cands))
+        pages = list(ex.map(visit, groups))
     return [(o, t) for o, t in pages if o is not None]
